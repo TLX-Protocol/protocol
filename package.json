@@ -1,0 +1,27 @@
+{
+  "name": "tlx-protocol",
+  "version": "1.0.0",
+  "description": "TODO",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "lint": "npx prettier --list-different 'src/**/*.sol'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TLX-Protocol/protocol-dev.git"
+  },
+  "author": "TLX Protocol",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/TLX-Protocol/protocol-dev/issues"
+  },
+  "homepage": "https://github.com/TLX-Protocol/protocol-dev#readme",
+  "devDependencies": {
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.3"
+  }
+}
