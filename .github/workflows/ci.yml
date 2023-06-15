@@ -9,7 +9,7 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
+  unit-tests:
     strategy:
       fail-fast: true
 
@@ -35,3 +35,16 @@ jobs:
         run: |
           forge test -vvv
         id: test
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Lint
+        run: yarn lint
