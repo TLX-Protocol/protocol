@@ -9,7 +9,7 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
+  unit-tests:
     strategy:
       fail-fast: true
 
@@ -35,7 +35,7 @@ jobs:
         run: |
           forge test -vvv
         id: test
-  check:
+  lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
