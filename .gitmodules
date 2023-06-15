@@ -1,0 +1,3 @@
+[submodule "meow/lib/forge-std"]
+	path = meow/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

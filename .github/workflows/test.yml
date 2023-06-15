@@ -1,6 +1,9 @@
-name: test
+name: ci
 
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 env:
   FOUNDRY_PROFILE: ci
@@ -10,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
 
-    name: Foundry project
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
