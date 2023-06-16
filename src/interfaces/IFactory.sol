@@ -2,12 +2,12 @@
 pragma solidity ^0.8.13;
 
 interface IFactory {
+    event NewLeveragedToken(address indexed token);
+
     error TokenExists();
     error ZeroAddress();
     error ZeroLeverage();
     error MaxLeverage();
-
-    event NewLeveragedToken(address indexed token);
 
     // Creates a new Long and Short Leveraged Token for the given target asset and leverage
     function createLeveragedTokens(
