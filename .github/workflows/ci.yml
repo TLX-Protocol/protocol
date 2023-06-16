@@ -9,12 +9,14 @@ env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  unit-tests:
+  tests:
     strategy:
       fail-fast: true
 
-    name: Unit tests
+    name: Tests
     runs-on: ubuntu-latest
+    env:
+      RPC: ${{ secrets.RPC }}
     steps:
       - uses: actions/checkout@v3
         with:
