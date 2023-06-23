@@ -95,6 +95,12 @@ It will hold these `LeveragedToken`s indefinitely, and can be considered POL (Pr
 It will have a function `equalize` which will move these `LeveragedTokens` around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
 This reduces needed exposure on GMX, therefore reducing fees for users.
 
+### Timelock
+
+The `Timelock` contract is set as the owner of all contracts in the protocol.
+It adds a delay for key goverannce functions that can be set per function signature.
+Governance calls can be queued, executed and cancelled.
+
 ## Tokenomics Contracts
 
 Contracts to support the TLX token, inflation, and fee distribution.
@@ -114,13 +120,36 @@ It will have two minters, the `Airdrop` and `Bonding` contracts
 ### Airdrop
 
 The `Airdrop` contract will be responsible for the initial airdrop of TLX tokens (currently planned for GMX holders).
-It will mint `TLX` as needed and distributed to users based on their claimable amount via a `claim` function.
-It will have a function that can be called after 6 months to return any unclaimed TLX to the treasury.
+It will:
+
+- Mint `TLX` as needed and distributed to users based on their claimable amount via a `claim` function.
+- Have a function that can be called after 6 months to return any unclaimed TLX to the treasury.
 
 ### Locker
 
-TODO
+The `Locker` is responsible for locking users TLX tokens and distributing fees to them.
+It will:
+
+- Have a `lock` function that will lock users tokens indefinitely.
+- Have a `queueUnlock` function that will queue a users tokens to be unlocked after 2 weeks.
+- While a users tokens are queued, they will be able to claim any fees that have been distributed to them.
+- A function `relock` exists to relock tokens that have been queued.
+- Have a `unlock` function that will execute an available unlock.
+- Have a `claim` function that will claim any fees that have been distributed to the user.
+- Expose `balanceOf`, `symbol` and `name` views to use for governance (e.g. "vlTLX")
 
 ### Bonding
 
-TODO
+The `Bonding` contract is responsible for distributing TLX tokens to users in exchange for `LeveragedTokens` to be sent to the `PositionEqualizer`.
+The `Bonding` contract will have a self maintained inflation schedule for minting TLX tokens.
+The inflation schedule will be piecewise linear, with a 1 month segments and an infinite duration.
+30% of the allocated token supply will be distributed within the first year.
+
+The bonding will function as follows:
+
+- The `Bonding` contract will keep track of how much TLX is has idle ready to distribute
+- An `exchangeRate` view will keep track of how many TLX tokens are distributed per USD value of `LeveragedTokens`
+- This `exchangeRate` view will scale linearly with the amount of TLX tokens idle
+- At a point when a user is happy with the current exchange rate, they can call the `bond` function to send their `LeveragedTokens` to the `PositionEqualizer` and receive TLX tokens in return based on the current exchange rate
+- They can only mint TLX tokens up to the amount of idle TLX tokens
+- All TLX tokens minted will be locked in the `Locker` on behalf of the user
