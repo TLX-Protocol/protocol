@@ -74,7 +74,6 @@ The `PositionManager` contract can be considered the 'core' contract of the prot
 It will:
 
 - Mint new `LeveragedTokens` from deposited USDC, and redeem `LeveragedTokens` back for USDC
-- Create new `LeveragedTokens` for the target asset and expose views for querying them
 - Handle the matching of Long and Short positions to offset profits and losses between `LeveragedTokens`
 - Orchestrate calls to the `DerivativesHandler` for taking out long or short positions to fill any unmatched liquidity
 - Expose some `rebalance` function that rewards users for rebalancing the positions
@@ -114,6 +113,7 @@ It will:
 - Have 18 decimals
 - Have the name: "TLX Token"
 - Have the symbol "TLX"
+- Mint an amount of TLX tokens to the deployer for the treasury and team
 
 It will have two minters, the `Airdrop` and `Bonding` contracts
 
@@ -132,8 +132,8 @@ It will:
 
 - Have a `lock` function that will lock user's tokens indefinitely.
 - Have a `queueUnlock` function that will queue a user's tokens to be unlocked after 2 weeks.
-- While a user's tokens are queued, they will be able to claim any fees that have been distributed to them.
-- A function `relock` exists to relock tokens that have been queued.
+- Not distribute fees to users who are queued.
+- Have a `relock` function to relock tokens that have been queued.
 - Have an `unlock` function that will execute an available unlock.
 - Have a `claim` function that will claim any fees that have been distributed to the user.
 - Expose `balanceOf`, `symbol` and `name` views to use for governance (e.g. "vlTLX")
@@ -151,5 +151,5 @@ The bonding will function as follows:
 - An `exchangeRate` view will keep track of how many TLX tokens are distributed per USD value of `LeveragedTokens`
 - This `exchangeRate` view will scale linearly with the amount of TLX tokens idle
 - At a point when a user is happy with the current exchange rate, they can call the `bond` function to send their `LeveragedTokens` to the `PositionEqualizer` and receive TLX tokens in return based on the current exchange rate
-- They can only mint TLX tokens up to the amount of idle TLX tokens
+- They can only redeem TLX tokens up to the amount of idle TLX tokens
 - All TLX tokens minted will be locked in the `Locker` on behalf of the user
