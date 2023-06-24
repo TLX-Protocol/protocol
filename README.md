@@ -70,7 +70,7 @@ It will:
 
 ### Position Manager
 
-The `PositionManager` contract can be considered the 'core' contract of the procotol, it will handle most of the logic and orchestration.
+The `PositionManager` contract can be considered the 'core' contract of the protocol, it will handle most of the logic and orchestration.
 It will:
 
 - Mint new `LeveragedTokens` from deposited USDC, and redeem `LeveragedTokens` back for USDC
@@ -86,7 +86,7 @@ The `DerivativesHandler` is responsible for taking out positions on external pro
 It will:
 
 - Be a generic wrapper for these protocols, allowing us to update the protocol we use for these external positions by creating a new `DerivativesHandler` for a new source of liquidity and updating to that.
-- Use delegatecall for interractions so that the positions are held by the `PositionManager`.
+- Use delegatecall for interactions so that the positions are held by the `PositionManager`.
 
 ### Position Equalizer
 
@@ -98,7 +98,7 @@ This reduces needed exposure on GMX, therefore reducing fees for users.
 ### Timelock
 
 The `Timelock` contract is set as the owner of all contracts in the protocol.
-It adds a delay for key goverannce functions that can be set per function signature.
+It adds a delay for key governance functions that can be set per function signature.
 Governance calls can be queued, executed and cancelled.
 
 ## Tokenomics Contracts
@@ -130,11 +130,11 @@ It will:
 The `Locker` is responsible for locking users TLX tokens and distributing fees to them.
 It will:
 
-- Have a `lock` function that will lock users tokens indefinitely.
-- Have a `queueUnlock` function that will queue a users tokens to be unlocked after 2 weeks.
-- While a users tokens are queued, they will be able to claim any fees that have been distributed to them.
+- Have a `lock` function that will lock user's tokens indefinitely.
+- Have a `queueUnlock` function that will queue a user's tokens to be unlocked after 2 weeks.
+- While a user's tokens are queued, they will be able to claim any fees that have been distributed to them.
 - A function `relock` exists to relock tokens that have been queued.
-- Have a `unlock` function that will execute an available unlock.
+- Have an `unlock` function that will execute an available unlock.
 - Have a `claim` function that will claim any fees that have been distributed to the user.
 - Expose `balanceOf`, `symbol` and `name` views to use for governance (e.g. "vlTLX")
 
@@ -142,7 +142,7 @@ It will:
 
 The `Bonding` contract is responsible for distributing TLX tokens to users in exchange for `LeveragedTokens` to be sent to the `PositionEqualizer`.
 The `Bonding` contract will have a self maintained inflation schedule for minting TLX tokens.
-The inflation schedule will be piecewise linear, with a 1 month segments and an infinite duration.
+The inflation schedule will be piecewise linear, with 1 month segments and an infinite duration.
 30% of the allocated token supply will be distributed within the first year.
 
 The bonding will function as follows:
