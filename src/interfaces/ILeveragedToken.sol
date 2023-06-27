@@ -7,7 +7,7 @@ interface ILeveragedToken is IERC20Metadata {
     // The target asset of the leveraged token
     function targetAsset() external view returns (address);
 
-    // The target leverage of the leveraged token (3 decimals)
+    // The target leverage of the leveraged token (2 decimals)
     function targetLeverage() external view returns (uint256);
 
     // If the leveraged token is long or short
