@@ -14,11 +14,11 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
     constructor(
         string memory name_,
         string memory symbol_,
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) ERC20(name_, symbol_) {
-        targetAsset = target_;
+        targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
     }

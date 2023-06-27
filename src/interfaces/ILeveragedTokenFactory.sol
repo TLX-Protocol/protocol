@@ -11,7 +11,7 @@ interface ILeveragedTokenFactory {
 
     // Creates a new Long and Short Leveraged Token for the given target asset and leverage
     function createLeveragedTokens(
-        address target,
+        address targetAsset,
         uint256 targetLeverage
     ) external returns (address longToken, address shortToken);
 
@@ -25,28 +25,30 @@ interface ILeveragedTokenFactory {
     function shortTokens() external view returns (address[] memory);
 
     // Returns all Leveraged Tokens for the given target asset
-    function allTokens(address target) external view returns (address[] memory);
+    function allTokens(
+        address targetAsset
+    ) external view returns (address[] memory);
 
     // Returns all Long Leveraged Tokens for the given target asset
     function longTokens(
-        address target
+        address targetAsset
     ) external view returns (address[] memory);
 
     // Returns all Short Leveraged Tokens for the given target asset
     function shortTokens(
-        address target
+        address targetAsset
     ) external view returns (address[] memory);
 
     // Returns the Leveraged Token for the given target asset and leverage
     function getToken(
-        address target,
+        address targetAsset,
         uint256 targetLeverage,
         bool isLong
     ) external view returns (address);
 
     // Returns true if the Leveraged Token for the given target asset and leverage exists
     function tokenExists(
-        address target,
+        address targetAsset,
         uint256 targetLeverage,
         bool isLong
     ) external view returns (bool);

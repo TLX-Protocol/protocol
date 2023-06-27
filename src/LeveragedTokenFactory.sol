@@ -22,7 +22,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(address => address) public override pair;
 
     function createLeveragedTokens(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_
     )
         external
@@ -31,14 +31,15 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         returns (address longToken, address shortToken)
     {
         // Checks
-        if (target_ == address(0)) revert ZeroAddress();
+        if (targetAsset_ == address(0)) revert ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
         if (targetLeverage_ > 100e3) revert MaxLeverage();
-        if (tokenExists(target_, targetLeverage_, true)) revert TokenExists();
+        if (tokenExists(targetAsset_, targetLeverage_, true))
+            revert TokenExists();
 
         // Deploying tokens
-        longToken = _deployToken(target_, targetLeverage_, true);
-        shortToken = _deployToken(target_, targetLeverage_, false);
+        longToken = _deployToken(targetAsset_, targetLeverage_, true);
+        shortToken = _deployToken(targetAsset_, targetLeverage_, false);
 
         // Setting pairs
         pair[longToken] = shortToken;
@@ -58,85 +59,85 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function allTokens(
-        address target_
+        address targetAsset_
     ) external view override returns (address[] memory) {
-        return _allTargetTokens[target_];
+        return _allTargetTokens[targetAsset_];
     }
 
     function longTokens(
-        address target_
+        address targetAsset_
     ) external view override returns (address[] memory) {
-        return _longTargetTokens[target_];
+        return _longTargetTokens[targetAsset_];
     }
 
     function shortTokens(
-        address target_
+        address targetAsset_
     ) external view override returns (address[] memory) {
-        return _shortTargetTokens[target_];
+        return _shortTargetTokens[targetAsset_];
     }
 
     function getToken(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) external view override returns (address) {
-        return _tokens[target_][targetLeverage_][isLong_];
+        return _tokens[targetAsset_][targetLeverage_][isLong_];
     }
 
     function tokenExists(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) public view override returns (bool) {
-        return _tokens[target_][targetLeverage_][isLong_] != address(0);
+        return _tokens[targetAsset_][targetLeverage_][isLong_] != address(0);
     }
 
     function _deployToken(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal returns (address) {
         address token_ = address(
             new LeveragedToken(
-                _getName(target_, targetLeverage_, isLong_),
-                _getSymbol(target_, targetLeverage_, isLong_),
-                target_,
+                _getName(targetAsset_, targetLeverage_, isLong_),
+                _getSymbol(targetAsset_, targetLeverage_, isLong_),
+                targetAsset_,
                 targetLeverage_,
                 isLong_
             )
         );
-        _tokens[target_][targetLeverage_][isLong_] = token_;
+        _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
-        _allTargetTokens[target_].push(token_);
+        _allTargetTokens[targetAsset_].push(token_);
         if (isLong_) {
             _longTokens.push(token_);
-            _longTargetTokens[target_].push(token_);
+            _longTargetTokens[targetAsset_].push(token_);
         } else {
             _shortTokens.push(token_);
-            _shortTargetTokens[target_].push(token_);
+            _shortTargetTokens[targetAsset_].push(token_);
         }
         return token_;
     }
 
     function _getName(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal view returns (string memory) {
         string memory direction_ = isLong_ ? "Long" : "Short";
-        string memory symbol_ = IERC20Metadata(target_).symbol();
+        string memory symbol_ = IERC20Metadata(targetAsset_).symbol();
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return
             string(abi.encodePacked(symbol_, " ", leverage_, "x ", direction_));
     }
 
     function _getSymbol(
-        address target_,
+        address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal view returns (string memory) {
         string memory direction_ = isLong_ ? "L" : "S";
-        string memory symbol_ = IERC20Metadata(target_).symbol();
+        string memory symbol_ = IERC20Metadata(targetAsset_).symbol();
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return string(abi.encodePacked(symbol_, leverage_, direction_));
     }

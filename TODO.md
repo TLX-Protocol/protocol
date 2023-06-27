@@ -1,4 +1,3 @@
-- Change name `target` to `targetAsset`
 - Create Address Provider
 - Create `DerivativesHandler`
 - Create `PositionManager`
