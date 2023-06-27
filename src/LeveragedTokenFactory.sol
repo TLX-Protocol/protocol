@@ -5,11 +5,11 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {IFactory} from "./interfaces/IFactory.sol";
+import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
 
-contract Factory is IFactory, Ownable {
+contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;

@@ -4,16 +4,17 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
-import {Factory} from "../src/Factory.sol";
-import {IFactory} from "../src/interfaces/IFactory.sol";
+import {LeveragedTokenFactory} from "../src/LeveragedTokenFactory.sol";
+
+import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
-contract FactoryTest is IntegrationTest {
-    Factory public factory;
+contract LeveragedTokenFactoryTest is IntegrationTest {
+    LeveragedTokenFactory public factory;
 
     function setUp() public {
-        factory = new Factory();
+        factory = new LeveragedTokenFactory();
     }
 
     function testDeployTokens() public {
@@ -55,14 +56,14 @@ contract FactoryTest is IntegrationTest {
 
     function testReverts() public {
         // Expect revert
-        vm.expectRevert(IFactory.ZeroAddress.selector);
+        vm.expectRevert(ILeveragedTokenFactory.ZeroAddress.selector);
         factory.createLeveragedTokens(address(0), 123);
-        vm.expectRevert(IFactory.ZeroLeverage.selector);
+        vm.expectRevert(ILeveragedTokenFactory.ZeroLeverage.selector);
         factory.createLeveragedTokens(Tokens.UNI, 0);
-        vm.expectRevert(IFactory.MaxLeverage.selector);
+        vm.expectRevert(ILeveragedTokenFactory.MaxLeverage.selector);
         factory.createLeveragedTokens(Tokens.UNI, 1000001);
         factory.createLeveragedTokens(Tokens.UNI, 123);
-        vm.expectRevert(IFactory.TokenExists.selector);
+        vm.expectRevert(ILeveragedTokenFactory.TokenExists.selector);
         factory.createLeveragedTokens(Tokens.UNI, 123);
     }
 }

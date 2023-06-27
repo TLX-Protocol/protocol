@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-interface IFactory {
+interface ILeveragedTokenFactory {
     event NewLeveragedToken(address indexed token);
 
     error TokenExists();
