@@ -44,6 +44,18 @@ contract LeveragedTokenFactoryTest is IntegrationTest {
         address[] memory shortTokens = factory.shortTokens();
         assertEq(shortTokens.length, 1);
         assertEq(shortTokens[0], shortTokenAddress_);
+        address[] memory allTargetTokens = factory.allTokens(Tokens.UNI);
+        assertEq(allTargetTokens.length, 2);
+        assertEq(allTargetTokens[0], longTokenAddress_);
+        assertEq(allTargetTokens[1], shortTokenAddress_);
+        address[] memory emptyTokens = factory.allTokens(Tokens.USDC);
+        assertEq(emptyTokens.length, 0);
+        address[] memory longTargetTokens = factory.longTokens(Tokens.UNI);
+        assertEq(longTargetTokens.length, 1);
+        assertEq(longTargetTokens[0], longTokenAddress_);
+        address[] memory shortTargetTokens = factory.shortTokens(Tokens.UNI);
+        assertEq(shortTargetTokens.length, 1);
+        assertEq(shortTargetTokens[0], shortTokenAddress_);
         address longTokenAddress = factory.getToken(Tokens.UNI, 123, true);
         assertEq(longTokenAddress, longTokenAddress_);
         address shortTokenAddress = factory.getToken(Tokens.UNI, 123, false);

@@ -13,6 +13,9 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
+    mapping(address => address[]) internal _allTargetTokens;
+    mapping(address => address[]) internal _longTargetTokens;
+    mapping(address => address[]) internal _shortTargetTokens;
     mapping(address => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
@@ -54,6 +57,24 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _shortTokens;
     }
 
+    function allTokens(
+        address target_
+    ) external view override returns (address[] memory) {
+        return _allTargetTokens[target_];
+    }
+
+    function longTokens(
+        address target_
+    ) external view override returns (address[] memory) {
+        return _longTargetTokens[target_];
+    }
+
+    function shortTokens(
+        address target_
+    ) external view override returns (address[] memory) {
+        return _shortTargetTokens[target_];
+    }
+
     function getToken(
         address target_,
         uint256 targetLeverage_,
@@ -86,10 +107,13 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         );
         _tokens[target_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
+        _allTargetTokens[target_].push(token_);
         if (isLong_) {
             _longTokens.push(token_);
+            _longTargetTokens[target_].push(token_);
         } else {
             _shortTokens.push(token_);
+            _shortTargetTokens[target_].push(token_);
         }
         return token_;
     }

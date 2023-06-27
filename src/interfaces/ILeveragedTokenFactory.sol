@@ -24,6 +24,19 @@ interface ILeveragedTokenFactory {
     // Returns all Short Leveraged Tokens
     function shortTokens() external view returns (address[] memory);
 
+    // Returns all Leveraged Tokens for the given target asset
+    function allTokens(address target) external view returns (address[] memory);
+
+    // Returns all Long Leveraged Tokens for the given target asset
+    function longTokens(
+        address target
+    ) external view returns (address[] memory);
+
+    // Returns all Short Leveraged Tokens for the given target asset
+    function shortTokens(
+        address target
+    ) external view returns (address[] memory);
+
     // Returns the Leveraged Token for the given target asset and leverage
     function getToken(
         address target,
