@@ -1,4 +1,3 @@
-- Create Address Provider
 - Create `DerivativesHandler`
 - Create `PositionManager`
 - Create `PositionManagerFactory`
@@ -8,3 +7,5 @@
 - Create `PositionEqualizer`
 - Create `Locker`
 - Create `Bonding`
+- Make many contracts upgradable
+- Deployment scripts
