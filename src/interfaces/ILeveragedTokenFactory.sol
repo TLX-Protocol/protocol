@@ -40,7 +40,7 @@ interface ILeveragedTokenFactory {
     ) external view returns (address[] memory);
 
     // Returns the Leveraged Token for the given target asset and leverage
-    function getToken(
+    function token(
         address targetAsset,
         uint256 targetLeverage,
         bool isLong

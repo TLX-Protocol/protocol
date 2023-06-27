@@ -76,7 +76,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _shortTargetTokens[targetAsset_];
     }
 
-    function getToken(
+    function token(
         address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
