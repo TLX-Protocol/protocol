@@ -2,6 +2,6 @@
 pragma solidity ^0.8.13;
 
 library Tokens {
-    address public constant UNI = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
-    address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address public constant UNI = 0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0;
+    address public constant USDC = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831;
 }
