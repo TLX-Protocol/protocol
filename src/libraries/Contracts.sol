@@ -31,4 +31,12 @@ library Contracts {
         0xe6fab3F0c7199b0d34d7FbE83394fc0e0D06e99d;
     address public constant GMX_ETH_UNISWAP_POOL =
         0x80A9ae39310abf666A87C743d6ebBD0E8C42158E;
+
+    // Chainlink
+    address public constant UNI_USD_ORACLE =
+        0x9C917083fDb403ab5ADbEC26Ee294f6EcAda2720;
+    address public constant ETH_USD_ORACLE =
+        0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612;
+    address public constant WBTC_ETH_ORACLE =
+        0xc5a90A6d7e4Af242dA238FFe279e9f2BA0c64B2e;
 }
