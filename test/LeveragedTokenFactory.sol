@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Test} from "forge-std/Test.sol";
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {LeveragedTokenFactory} from "../src/LeveragedTokenFactory.sol";
