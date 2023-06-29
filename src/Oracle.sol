@@ -64,7 +64,7 @@ contract Oracle is IOracle, Ownable {
         if (ethOracle_ == address(0)) revert NoOracle();
         uint256 ethPrice_ = _getChainlinkPrice(ethOracle_);
         uint256 ethUsdPrice_ = _getChainlinkPrice(_ethUsdOracle);
-        return (ethPrice_ * ethUsdPrice_) / 1e18;
+        return ethPrice_.mul(ethUsdPrice_);
     }
 
     function _getChainlinkPrice(
