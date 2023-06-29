@@ -6,17 +6,9 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Contracts} from "../src/libraries/Contracts.sol";
 
-import {Oracle} from "../src/Oracle.sol";
 import {IOracle} from "../src/interfaces/IOracle.sol";
 
 contract OracleTest is IntegrationTest {
-    Oracle public oracle;
-
-    function setUp() public {
-        oracle = new Oracle(Contracts.ETH_USD_ORACLE);
-        oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
-    }
-
     function testPriceThroughUsd() public {
         uint256 price_ = oracle.getUsdPrice(Tokens.UNI);
         assertGt(price_, 1e18);
