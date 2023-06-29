@@ -11,14 +11,10 @@ library ScaledNumber {
         if (decimals == _DEFAULT_DECIMALS) return value;
 
         if (decimals > _DEFAULT_DECIMALS) {
-            unchecked {
-                return value / 10 ** (decimals - _DEFAULT_DECIMALS);
-            }
+            return value / 10 ** (decimals - _DEFAULT_DECIMALS);
         }
 
-        unchecked {
-            return value * 10 ** (_DEFAULT_DECIMALS - decimals);
-        }
+        return value * 10 ** (_DEFAULT_DECIMALS - decimals);
     }
 
     function scaleTo(
@@ -28,13 +24,23 @@ library ScaledNumber {
         if (decimals == _DEFAULT_DECIMALS) return value;
 
         if (decimals > _DEFAULT_DECIMALS) {
-            unchecked {
-                return value * 10 ** (decimals - _DEFAULT_DECIMALS);
-            }
+            return value * 10 ** (decimals - _DEFAULT_DECIMALS);
         }
 
-        unchecked {
-            return value / 10 ** (_DEFAULT_DECIMALS - decimals);
-        }
+        return value / 10 ** (_DEFAULT_DECIMALS - decimals);
+    }
+
+    function div(
+        uint256 value,
+        uint256 divisor
+    ) internal pure returns (uint256) {
+        return (value * 10 ** _DEFAULT_DECIMALS) / divisor;
+    }
+
+    function mul(
+        uint256 value,
+        uint256 multiplier
+    ) internal pure returns (uint256) {
+        return (value * multiplier) / 10 ** _DEFAULT_DECIMALS;
     }
 }
