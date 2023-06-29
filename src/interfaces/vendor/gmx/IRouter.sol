@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 interface IRouter {
     function addPlugin(address _plugin) external;
 
+    function approvePlugin(address _plugin) external;
+
     function pluginTransfer(
         address _token,
         address _account,
