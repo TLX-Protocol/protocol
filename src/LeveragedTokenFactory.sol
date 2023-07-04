@@ -36,6 +36,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (targetLeverage_ > 100e3) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
+        // TODO Add check that a Position Manager exists for this asset
 
         // Deploying tokens
         longToken = _deployToken(targetAsset_, targetLeverage_, true);
