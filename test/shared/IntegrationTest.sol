@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, stdStorage, StdStorage} from "forge-std/Test.sol";
+
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
@@ -12,6 +14,8 @@ import {AddressProvider} from "../../src/AddressProvider.sol";
 import {GmxDerivativesHandler} from "../../src/GmxDerivativesHandler.sol";
 
 contract IntegrationTest is Test {
+    using stdStorage for StdStorage;
+
     Oracle public oracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
@@ -40,5 +44,17 @@ contract IntegrationTest is Test {
             Contracts.GMX_ROUTER,
             Tokens.USDC
         );
+    }
+
+    function _mintTokensFor(
+        address token_,
+        address account_,
+        uint256 amount_
+    ) internal {
+        stdstore
+            .target(token_)
+            .sig(IERC20(token_).balanceOf.selector)
+            .with_key(account_)
+            .checked_write(amount_);
     }
 }
