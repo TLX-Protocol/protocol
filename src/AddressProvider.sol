@@ -23,5 +23,6 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
 
     function setOracle(address oracle_) external override onlyOwner {
         oracle = oracle_;
+        emit OracleUpdated(oracle_);
     }
 }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
 
 contract PositionManager is IPositionManager {
-    // TODO Add events to all functions
     address public immutable override baseAsset;
     address public immutable override targetAsset;
 

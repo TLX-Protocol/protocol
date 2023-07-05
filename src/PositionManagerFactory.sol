@@ -33,6 +33,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         );
         _positionManagers.push(positionManager_);
         _positionManager[targetAsset_] = positionManager_;
+        emit PositionManagerCreated(positionManager_);
         return positionManager_;
     }
 

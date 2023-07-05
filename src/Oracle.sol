@@ -42,6 +42,7 @@ contract Oracle is IOracle, Ownable {
         address oracle_
     ) external override onlyOwner {
         _usdOracles[token_] = oracle_;
+        emit UsdOracleUpdated(token_, oracle_);
     }
 
     function setEthOracle(
@@ -49,10 +50,12 @@ contract Oracle is IOracle, Ownable {
         address oracle_
     ) external override onlyOwner {
         _ethOracles[token_] = oracle_;
+        emit EthOracleUpdated(token_, oracle_);
     }
 
     function setStalePriceDelay(uint256 delay_) external override onlyOwner {
         stalePriceDelay = delay_;
+        emit StalePriceDelayUpdated(delay_);
     }
 
     function getUsdPrice(

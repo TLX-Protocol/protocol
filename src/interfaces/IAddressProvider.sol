@@ -2,6 +2,8 @@
 pragma solidity ^0.8.13;
 
 interface IAddressProvider {
+    event OracleUpdated(address oracle);
+
     function initialize(
         address leveragedTokenFactory_,
         address positionManagerFactory_,

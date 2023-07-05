@@ -128,6 +128,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             _shortTokens.push(token_);
             _shortTargetTokens[targetAsset_].push(token_);
         }
+        emit NewLeveragedToken(token_);
         return token_;
     }
 

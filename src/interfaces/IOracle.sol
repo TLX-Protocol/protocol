@@ -2,6 +2,10 @@
 pragma solidity ^0.8.13;
 
 interface IOracle {
+    event UsdOracleUpdated(address indexed token, address oracle);
+    event EthOracleUpdated(address indexed token, address oracle);
+    event StalePriceDelayUpdated(uint256 delay);
+
     error RoundNotComplete();
     error StalePrice();
     error ZeroPrice();
