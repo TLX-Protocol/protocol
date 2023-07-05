@@ -12,6 +12,7 @@ contract LeveragedTokenTest is Test {
         leveragedToken = new LeveragedToken(
             "UNI 2x Long",
             "UNI2L",
+            Tokens.USDC,
             Tokens.UNI,
             2e18,
             true
@@ -22,6 +23,7 @@ contract LeveragedTokenTest is Test {
         assertEq(leveragedToken.name(), "UNI 2x Long");
         assertEq(leveragedToken.symbol(), "UNI2L");
         assertEq(leveragedToken.decimals(), 18);
+        assertEq(leveragedToken.baseAsset(), Tokens.USDC);
         assertEq(leveragedToken.targetAsset(), Tokens.UNI);
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());

@@ -5,6 +5,8 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+import {Tokens} from "./libraries/Tokens.sol";
+
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
@@ -113,11 +115,13 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             new LeveragedToken(
                 _getName(targetAsset_, targetLeverage_, isLong_),
                 _getSymbol(targetAsset_, targetLeverage_, isLong_),
+                Tokens.USDC,
                 targetAsset_,
                 targetLeverage_,
                 isLong_
             )
         );
+        // TODO Transfer ownership to the Position Manager
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);
