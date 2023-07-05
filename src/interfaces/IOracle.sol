@@ -8,13 +8,13 @@ interface IOracle {
     error RoundExpired();
     error NoOracle();
 
-    function getUsdPrice(address token_) external view returns (uint256);
-
-    function stalePriceDelay() external view returns (uint256);
-
     function setUsdOracle(address token_, address oracle_) external;
 
     function setEthOracle(address token_, address oracle_) external;
 
     function setStalePriceDelay(uint256 delay_) external;
+
+    function getUsdPrice(address token_) external view returns (uint256);
+
+    function stalePriceDelay() external view returns (uint256);
 }
