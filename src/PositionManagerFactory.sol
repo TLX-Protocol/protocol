@@ -15,7 +15,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     function createPositionManager(
         address targetAsset_
     ) external override onlyOwner returns (address) {
-        if (_positionManager[targetAsset_] == address(0))
+        if (_positionManager[targetAsset_] != address(0))
             revert AlreadyExists();
 
         address positionManager_ = address(
