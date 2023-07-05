@@ -12,7 +12,7 @@ import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol"
 import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
-    address internal _addressProvider;
+    address internal immutable _addressProvider;
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
@@ -48,7 +48,6 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             );
         if (positionManagerFactory_.positionManager(targetAsset_) == address(0))
             revert NoPositionManager();
-        // TODO Test the oracle can price it
 
         // Deploying tokens
         longToken = _deployToken(targetAsset_, targetLeverage_, true);

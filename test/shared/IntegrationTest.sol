@@ -37,7 +37,9 @@ contract IntegrationTest is Test {
         );
 
         // PositionManagerFactory Setup
-        positionManagerFactory = new PositionManagerFactory();
+        positionManagerFactory = new PositionManagerFactory(
+            address(addressProvider)
+        );
 
         // AddressProvider Initialization
         addressProvider.initialize(

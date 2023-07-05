@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 interface IPositionManagerFactory {
     error AlreadyExists();
+    error NoOracle();
 
     function createPositionManager(
         address targetAsset_
