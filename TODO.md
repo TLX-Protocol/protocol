@@ -1,3 +1,4 @@
+- Increase line length for prettier
 - Create `DerivativesHandler`
 - Create `PositionManager`
 - Create `PositionManagerFactory`
@@ -9,3 +10,5 @@
 - Create `Bonding`
 - Make many contracts upgradable
 - Deployment scripts
+- Add docs for all functions and views (comments in interfaces)
+- Check everything has `override` on it
