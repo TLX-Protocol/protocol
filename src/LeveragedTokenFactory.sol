@@ -7,6 +7,8 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/exten
 
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
+import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
@@ -41,7 +43,12 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (targetLeverage_ > 100e3) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
-        // TODO Add check that a Position Manager exists for this asset
+        IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(
+                IAddressProvider(_addressProvider).positionManagerFactory()
+            );
+        if (positionManagerFactory_.positionManager(targetAsset_) == address(0))
+            revert NoPositionManager();
+        // TODO Test the oracle can price it
 
         // Deploying tokens
         longToken = _deployToken(targetAsset_, targetLeverage_, true);

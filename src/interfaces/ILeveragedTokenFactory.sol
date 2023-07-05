@@ -8,6 +8,7 @@ interface ILeveragedTokenFactory {
     error ZeroAddress();
     error ZeroLeverage();
     error MaxLeverage();
+    error NoPositionManager();
 
     // Creates a new Long and Short Leveraged Token for the given target asset and leverage
     function createLeveragedTokens(

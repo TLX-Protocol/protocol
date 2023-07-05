@@ -8,6 +8,10 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
+    function setUp() public {
+        positionManagerFactory.createPositionManager(Tokens.UNI);
+    }
+
     function testDeployTokens() public {
         (
             address longTokenAddress_,
@@ -83,6 +87,8 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
 
     function testReverts() public {
         // Expect revert
+        vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.GMX, 123);
         vm.expectRevert(ILeveragedTokenFactory.ZeroAddress.selector);
         leveragedTokenFactory.createLeveragedTokens(address(0), 123);
         vm.expectRevert(ILeveragedTokenFactory.ZeroLeverage.selector);
