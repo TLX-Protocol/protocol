@@ -22,15 +22,19 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     function createPositionManager(
         address targetAsset_
     ) external override onlyOwner returns (address) {
+        // Checks
         if (_positionManager[targetAsset_] != address(0))
             revert AlreadyExists();
         IAddressProvider addressProvider_ = IAddressProvider(_addressProvider);
         IOracle oracle_ = IOracle(addressProvider_.oracle());
         if (oracle_.getUsdPrice(targetAsset_) == 0) revert NoOracle();
 
+        // Deploying position manager
         address positionManager_ = address(
             new PositionManager(Tokens.USDC, targetAsset_)
         );
+
+        // Updating state
         _positionManagers.push(positionManager_);
         _positionManager[targetAsset_] = positionManager_;
         emit PositionManagerCreated(positionManager_);

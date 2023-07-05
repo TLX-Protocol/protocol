@@ -48,12 +48,24 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(
                 IAddressProvider(_addressProvider).positionManagerFactory()
             );
-        if (positionManagerFactory_.positionManager(targetAsset_) == address(0))
-            revert NoPositionManager();
+        address positionManager_ = positionManagerFactory_.positionManager(
+            targetAsset_
+        );
+        if (positionManager_ == address(0)) revert NoPositionManager();
 
         // Deploying tokens
-        longToken = _deployToken(targetAsset_, targetLeverage_, true);
-        shortToken = _deployToken(targetAsset_, targetLeverage_, false);
+        longToken = _deployToken(
+            positionManager_,
+            targetAsset_,
+            targetLeverage_,
+            true
+        );
+        shortToken = _deployToken(
+            positionManager_,
+            targetAsset_,
+            targetLeverage_,
+            false
+        );
 
         // Setting pairs
         pair[longToken] = shortToken;
@@ -107,6 +119,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function _deployToken(
+        address positionManager_,
         address targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
@@ -118,10 +131,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
                 Tokens.USDC,
                 targetAsset_,
                 targetLeverage_,
-                isLong_
+                isLong_,
+                positionManager_
             )
         );
-        // TODO Transfer ownership to the Position Manager
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);

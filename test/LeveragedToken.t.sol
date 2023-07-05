@@ -15,7 +15,8 @@ contract LeveragedTokenTest is Test {
             Tokens.USDC,
             Tokens.UNI,
             2e18,
-            true
+            true,
+            address(this)
         );
     }
 
