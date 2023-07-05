@@ -11,7 +11,6 @@ import {Contracts} from "../../src/libraries/Contracts.sol";
 import {Oracle} from "../../src/Oracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
-import {GmxDerivativesHandler} from "../../src/GmxDerivativesHandler.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 
 contract IntegrationTest is Test {
@@ -20,7 +19,6 @@ contract IntegrationTest is Test {
     Oracle public oracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
-    GmxDerivativesHandler public derivativesHandler;
     PositionManagerFactory public positionManagerFactory;
 
     constructor() {
@@ -40,14 +38,6 @@ contract IntegrationTest is Test {
 
         // PositionManagerFactory Setup
         positionManagerFactory = new PositionManagerFactory();
-
-        // DerivativesHandler Setup
-        derivativesHandler = new GmxDerivativesHandler(
-            address(addressProvider),
-            Contracts.GMX_POSITION_ROUTER,
-            Contracts.GMX_ROUTER,
-            Tokens.USDC
-        );
 
         // AddressProvider Initialization
         addressProvider.initialize(
