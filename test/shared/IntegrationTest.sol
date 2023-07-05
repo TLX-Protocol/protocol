@@ -12,6 +12,7 @@ import {Oracle} from "../../src/Oracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {GmxDerivativesHandler} from "../../src/GmxDerivativesHandler.sol";
+import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -20,22 +21,25 @@ contract IntegrationTest is Test {
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     GmxDerivativesHandler public derivativesHandler;
+    PositionManagerFactory public positionManagerFactory;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
+
+        // AddressProvider Setup
+        addressProvider = new AddressProvider();
 
         // Oracle Setup
         oracle = new Oracle(Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
 
         // LeveragedTokenFactory Setup
-        leveragedTokenFactory = new LeveragedTokenFactory();
-
-        // AddressProvider Setup
-        addressProvider = new AddressProvider(
-            address(leveragedTokenFactory),
-            address(oracle)
+        leveragedTokenFactory = new LeveragedTokenFactory(
+            address(addressProvider)
         );
+
+        // PositionManagerFactory Setup
+        positionManagerFactory = new PositionManagerFactory();
 
         // DerivativesHandler Setup
         derivativesHandler = new GmxDerivativesHandler(
@@ -43,6 +47,13 @@ contract IntegrationTest is Test {
             Contracts.GMX_POSITION_ROUTER,
             Contracts.GMX_ROUTER,
             Tokens.USDC
+        );
+
+        // AddressProvider Initialization
+        addressProvider.initialize(
+            address(leveragedTokenFactory),
+            address(positionManagerFactory),
+            address(oracle)
         );
     }
 
