@@ -90,8 +90,8 @@ It will:
 ### Position Equalizer
 
 The `PositionEqualizer` contract accepts donations of `LeveragedTokens`.
-It will hold these `LeveragedToken`s indefinitely, and can be considered POL (Protocol Owned Liquidity).
-It will have a function `equalize` which will move these `LeveragedTokens` around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
+It will hold the collateral for these `LeveragedToken`s indefinitely, and can be considered POL (Protocol Owned Liquidity).
+It will have a function `equalize` which will move the collateral between different `LeveragedTokens` and around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
 This reduces needed exposure on GMX, therefore reducing fees for users.
 
 ### Timelock
