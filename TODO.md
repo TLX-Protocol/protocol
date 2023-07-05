@@ -1,15 +1,13 @@
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
-- Create `PositionManager`
-- Create `PositionManagerFactory`
+- Add functionality to `PositionManager`
 - Create `Timelock`
 - Create `TLXToken`
 - Create `Airdrop`
 - Create `PositionEqualizer`
 - Create `Locker`
 - Create `Bonding`
-- Make many contracts upgradable
+- Make contracts upgradable
 - Deployment scripts
 - Add docs for all functions and views (comments in interfaces)
-- Check everything has `override` on it
 - Create final `DerivativesHandler`
