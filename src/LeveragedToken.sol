@@ -24,12 +24,10 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         isLong = isLong_;
     }
 
-    // TODO Test
     function mint(address account, uint256 amount) external override onlyOwner {
         _mint(account, amount);
     }
 
-    // TODO Test
     function burn(address account, uint256 amount) external override onlyOwner {
         _burn(account, amount);
     }

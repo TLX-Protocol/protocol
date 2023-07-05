@@ -26,4 +26,14 @@ contract LeveragedTokenTest is Test {
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());
     }
+
+    function testMintAndBurn() public {
+        leveragedToken.mint(address(this), 100e18);
+        assertEq(leveragedToken.totalSupply(), 100e18);
+        assertEq(leveragedToken.balanceOf(address(this)), 100e18);
+
+        leveragedToken.burn(address(this), 70e18);
+        assertEq(leveragedToken.totalSupply(), 30e18);
+        assertEq(leveragedToken.balanceOf(address(this)), 30e18);
+    }
 }
