@@ -3,10 +3,11 @@ pragma solidity ^0.8.13;
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-contract LeveragedToken is ILeveragedToken, ERC20 {
+contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     address public override targetAsset;
     uint256 public override targetLeverage;
     bool public override isLong;
@@ -21,5 +22,15 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
+    }
+
+    // TODO Test
+    function mint(address account, uint256 amount) external override onlyOwner {
+        _mint(account, amount);
+    }
+
+    // TODO Test
+    function burn(address account, uint256 amount) external override onlyOwner {
+        _burn(account, amount);
     }
 }
