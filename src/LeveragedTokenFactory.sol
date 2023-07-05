@@ -10,6 +10,7 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
+    address internal _addressProvider;
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
@@ -20,6 +21,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         internal _tokens;
 
     mapping(address => address) public override pair;
+
+    constructor(address addressProvider_) {
+        _addressProvider = addressProvider_;
+    }
 
     function createLeveragedTokens(
         address targetAsset_,
