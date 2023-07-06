@@ -11,6 +11,6 @@ contract AddressProviderTest is IntegrationTest {
             addressProvider.leveragedTokenFactory(),
             address(leveragedTokenFactory)
         );
-        assertEq(addressProvider.oracle(), address(oracle));
+        assertEq(addressProvider.oracle(), address(chainlinkOracle));
     }
 }

@@ -5,9 +5,9 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
-import {IOracle} from "./interfaces/IOracle.sol";
+import {IChainlinkOracle} from "./interfaces/IChainlinkOracle.sol";
 
-interface IChainlinkOracle {
+interface IChainlink {
     function latestRoundData()
         external
         view
@@ -22,7 +22,7 @@ interface IChainlinkOracle {
     function decimals() external view returns (uint8);
 }
 
-contract Oracle is IOracle, Ownable {
+contract ChainlinkOracle is IChainlinkOracle, Ownable {
     using ScaledNumber for uint256;
 
     address internal immutable _ethUsdOracle;
@@ -79,11 +79,11 @@ contract Oracle is IOracle, Ownable {
             ,
             uint256 updatedAt_,
             uint80 answeredInRound_
-        ) = IChainlinkOracle(oracle_).latestRoundData();
+        ) = IChainlink(oracle_).latestRoundData();
         if (updatedAt_ == 0) revert RoundNotComplete();
         if (block.timestamp > updatedAt_ + stalePriceDelay) revert StalePrice();
         if (price_ == 0) revert ZeroPrice();
         if (answeredInRound_ < roundId_) revert RoundExpired();
-        return uint256(price_).scaleFrom(IChainlinkOracle(oracle_).decimals());
+        return uint256(price_).scaleFrom(IChainlink(oracle_).decimals());
     }
 }

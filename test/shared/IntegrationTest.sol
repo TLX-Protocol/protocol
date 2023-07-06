@@ -8,7 +8,8 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 
-import {Oracle} from "../../src/Oracle.sol";
+import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
+import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
@@ -16,7 +17,8 @@ import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
 
-    Oracle public oracle;
+    ChainlinkOracle public chainlinkOracle;
+    MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
@@ -27,9 +29,20 @@ contract IntegrationTest is Test {
         // AddressProvider Setup
         addressProvider = new AddressProvider();
 
-        // Oracle Setup
-        oracle = new Oracle(Contracts.ETH_USD_ORACLE);
-        oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
+        // Chainlink Oracle Setup
+        chainlinkOracle = new ChainlinkOracle(Contracts.ETH_USD_ORACLE);
+        chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
+        chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
+        chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+
+        // Mock Oracle Setup
+        mockOracle = new MockOracle();
+        uint256 uniPrice_ = chainlinkOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, uniPrice_);
+        uint256 ethPrice_ = chainlinkOracle.getUsdPrice(address(0));
+        mockOracle.setPrice(address(0), ethPrice_);
+        uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
+        mockOracle.setPrice(Tokens.USDC, usdcPrice_);
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
@@ -45,7 +58,7 @@ contract IntegrationTest is Test {
         addressProvider.initialize(
             address(leveragedTokenFactory),
             address(positionManagerFactory),
-            address(oracle)
+            address(chainlinkOracle)
         );
     }
 
