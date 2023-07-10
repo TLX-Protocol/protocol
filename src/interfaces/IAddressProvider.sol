@@ -2,15 +2,11 @@
 pragma solidity ^0.8.13;
 
 interface IAddressProvider {
-    event OracleUpdated(address oracle);
+    event AddressUpdated(bytes32 indexed key, address value);
 
-    function initialize(
-        address leveragedTokenFactory_,
-        address positionManagerFactory_,
-        address oracle_
-    ) external;
+    function updateAddress(bytes32 key, address value) external;
 
-    function setOracle(address oracle_) external;
+    function addressOf(bytes32 key) external view returns (address);
 
     function leveragedTokenFactory() external view returns (address);
 

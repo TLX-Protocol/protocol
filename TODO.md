@@ -1,3 +1,5 @@
+- Add docs for all functions and views (comments in interfaces)
+
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
@@ -9,5 +11,4 @@
 - Create `Bonding`
 - Make contracts upgradable
 - Deployment scripts
-- Add docs for all functions and views (comments in interfaces)
 - Create final `DerivativesHandler`

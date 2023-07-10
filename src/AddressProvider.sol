@@ -4,25 +4,34 @@ pragma solidity ^0.8.13;
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Initializable} from "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 
+import {AddressKeys} from "./libraries/AddressKeys.sol";
+
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 contract AddressProvider is IAddressProvider, Ownable, Initializable {
-    address public override leveragedTokenFactory;
-    address public override positionManagerFactory;
-    address public override oracle;
+    mapping(bytes32 => address) internal _addresses;
 
-    function initialize(
-        address leveragedTokenFactory_,
-        address positionManagerFactory_,
-        address oracle_
-    ) external override initializer onlyOwner {
-        leveragedTokenFactory = leveragedTokenFactory_;
-        positionManagerFactory = positionManagerFactory_;
-        oracle = oracle_;
+    function updateAddress(
+        bytes32 key_,
+        address value_
+    ) external override onlyOwner {
+        _addresses[key_] = value_;
+        emit AddressUpdated(key_, value_);
     }
 
-    function setOracle(address oracle_) external override onlyOwner {
-        oracle = oracle_;
-        emit OracleUpdated(oracle_);
+    function addressOf(bytes32 key_) external view override returns (address) {
+        return _addresses[key_];
+    }
+
+    function leveragedTokenFactory() external view override returns (address) {
+        return _addresses[AddressKeys.LEVERAGED_TOKEN_FACTORY];
+    }
+
+    function positionManagerFactory() external view override returns (address) {
+        return _addresses[AddressKeys.POSITION_MANAGER_FACTORY];
+    }
+
+    function oracle() external view override returns (address) {
+        return _addresses[AddressKeys.ORACLE];
     }
 }

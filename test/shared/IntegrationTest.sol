@@ -7,6 +7,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
+import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 
 import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
@@ -34,6 +35,10 @@ contract IntegrationTest is Test {
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+        addressProvider.updateAddress(
+            AddressKeys.ORACLE,
+            address(chainlinkOracle)
+        );
 
         // Mock Oracle Setup
         mockOracle = new MockOracle();
@@ -48,17 +53,18 @@ contract IntegrationTest is Test {
         leveragedTokenFactory = new LeveragedTokenFactory(
             address(addressProvider)
         );
+        addressProvider.updateAddress(
+            AddressKeys.LEVERAGED_TOKEN_FACTORY,
+            address(leveragedTokenFactory)
+        );
 
         // PositionManagerFactory Setup
         positionManagerFactory = new PositionManagerFactory(
             address(addressProvider)
         );
-
-        // AddressProvider Initialization
-        addressProvider.initialize(
-            address(leveragedTokenFactory),
-            address(positionManagerFactory),
-            address(chainlinkOracle)
+        addressProvider.updateAddress(
+            AddressKeys.POSITION_MANAGER_FACTORY,
+            address(positionManagerFactory)
         );
     }
 
