@@ -14,11 +14,29 @@ interface IChainlinkOracle is IOracle {
     error RoundExpired();
     error NoOracle();
 
-    function setUsdOracle(address token_, address oracle_) external;
+    /**
+     * @notice Sets the USD oracle for a given token.
+     * @param token The token to set the oracle for.
+     * @param oracle The oracle to set.
+     */
+    function setUsdOracle(address token, address oracle) external;
 
-    function setEthOracle(address token_, address oracle_) external;
+    /**
+     * @notice Sets the ETH oracle for a given token.
+     * @param token The token to set the oracle for.
+     * @param oracle The oracle to set.
+     */
+    function setEthOracle(address token, address oracle) external;
 
-    function setStalePriceDelay(uint256 delay_) external;
+    /**
+     * @notice Sets the stale price delay.
+     * @param delay The delay to set.
+     */
+    function setStalePriceDelay(uint256 delay) external;
 
-    function stalePriceDelay() external view returns (uint256);
+    /**
+     * @notice Returns the current stake price delay.
+     * @return stalePriceDelay The current stale price delay.
+     */
+    function stalePriceDelay() external view returns (uint256 stalePriceDelay);
 }
