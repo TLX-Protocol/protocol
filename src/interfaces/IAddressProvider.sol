@@ -41,4 +41,34 @@ interface IAddressProvider {
      * @return oracle The address of the Oracle contract.
      */
     function oracle() external view returns (address oracle);
+
+    /**
+     * @notice Returns the address for the Airdrop contract.
+     * @return airdrop The address of the Airdrop contract.
+     */
+    function airdrop() external view returns (address airdrop);
+
+    /**
+     * @notice Returns the address for the Bonding contract.
+     * @return bonding The address of the Bonding contract.
+     */
+    function bonding() external view returns (address bonding);
+
+    /**
+     * @notice Returns the address for the Treasury contract.
+     * @return treasury The address of the Treasury contract.
+     */
+    function treasury() external view returns (address treasury);
+
+    /**
+     * @notice Returns the address for the Vesting contract.
+     * @return vesting The address of the Vesting contract.
+     */
+    function vesting() external view returns (address vesting);
+
+    /**
+     * @notice Returns the address for the TLX contract.
+     * @return tlx The address of the TLX contract.
+     */
+    function tlx() external view returns (address tlx);
 }

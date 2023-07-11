@@ -34,4 +34,24 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function oracle() external view override returns (address) {
         return _addresses[AddressKeys.ORACLE];
     }
+
+    function airdrop() external view override returns (address) {
+        return _addresses[AddressKeys.AIRDROP];
+    }
+
+    function bonding() external view override returns (address) {
+        return _addresses[AddressKeys.BONDING];
+    }
+
+    function treasury() external view override returns (address) {
+        return _addresses[AddressKeys.TREASURY];
+    }
+
+    function vesting() external view override returns (address) {
+        return _addresses[AddressKeys.VESTING];
+    }
+
+    function tlx() external view override returns (address) {
+        return _addresses[AddressKeys.TLX];
+    }
 }
