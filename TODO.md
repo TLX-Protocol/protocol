@@ -1,7 +1,6 @@
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
-- Create `Timelock`
 - Create `TLXToken`
 - Create `Airdrop`
 - Create `PositionEqualizer`
