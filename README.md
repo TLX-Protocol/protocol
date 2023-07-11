@@ -46,7 +46,7 @@ It will extend the `IERC20Metadata` interface with standard functionality such a
 It will have additional views:
 
 - `targetAsset` The target asset of the leveraged token
-- `targetLeverage` The target leverage of the leveraged token (3 decimals)
+- `targetLeverage` The target leverage of the leveraged token (2 decimals)
 - `isLong` If the leveraged token is long or short
 
 The convention of leveraged tokens will be as follows:
@@ -90,8 +90,8 @@ It will:
 ### Position Equalizer
 
 The `PositionEqualizer` contract accepts donations of `LeveragedTokens`.
-It will hold these `LeveragedToken`s indefinitely, and can be considered POL (Protocol Owned Liquidity).
-It will have a function `equalize` which will move these `LeveragedTokens` around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
+It will hold the collateral for these `LeveragedToken`s indefinitely, and can be considered POL (Protocol Owned Liquidity).
+It will have a function `equalize` which will move the collateral between different `LeveragedTokens` and around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
 This reduces needed exposure on GMX, therefore reducing fees for users.
 
 ### Timelock

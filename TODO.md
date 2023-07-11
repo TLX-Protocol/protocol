@@ -1,0 +1,12 @@
+- Increase line length for prettier
+- Create `MockDerivativesHandler`
+- Add functionality to `PositionManager`
+- Create `Timelock`
+- Create `TLXToken`
+- Create `Airdrop`
+- Create `PositionEqualizer`
+- Create `Locker`
+- Create `Bonding`
+- Make contracts upgradable
+- Deployment scripts
+- Create final `DerivativesHandler`

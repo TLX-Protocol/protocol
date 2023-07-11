@@ -7,19 +7,45 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/exten
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract LeveragedToken is ILeveragedToken, ERC20 {
-    address public override targetAsset;
-    uint256 public override targetLeverage;
-    bool public override isLong;
+    address public immutable override baseAsset;
+    address public immutable override targetAsset;
+    uint256 public immutable override targetLeverage;
+    bool public immutable override isLong;
+
+    address internal immutable _positionManager;
+
+    modifier onlyPositionManager() {
+        if (msg.sender != _positionManager) revert NotAuthorized();
+        _;
+    }
 
     constructor(
         string memory name_,
         string memory symbol_,
-        address target_,
+        address baseAsset_,
+        address targetAsset_,
         uint256 targetLeverage_,
-        bool isLong_
+        bool isLong_,
+        address positionManager_
     ) ERC20(name_, symbol_) {
-        targetAsset = target_;
+        baseAsset = baseAsset_;
+        targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
+        _positionManager = positionManager_;
+    }
+
+    function mint(
+        address account,
+        uint256 amount
+    ) external override onlyPositionManager {
+        _mint(account, amount);
+    }
+
+    function burn(
+        address account,
+        uint256 amount
+    ) external override onlyPositionManager {
+        _burn(account, amount);
     }
 }
