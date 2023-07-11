@@ -7,6 +7,7 @@
 - Create `PositionEqualizer`
 - Create `Locker`
 - Create `Bonding`
+- Create `Vesting`
 - Make contracts upgradable
 - Deployment scripts
 - Create final `DerivativesHandler`
