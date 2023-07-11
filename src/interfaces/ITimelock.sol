@@ -2,12 +2,6 @@
 pragma solidity ^0.8.13;
 
 interface ITimelock {
-    error CallNotReady(uint64 id);
-    error CallAlreadyExecuted(uint64 id);
-    error CallAlreadyCancelled(uint64 id);
-    error CallFailed(uint64 id, bytes returnData);
-    error NotAuthorized();
-
     struct Call {
         uint64 id;
         uint64 ready;
@@ -16,6 +10,12 @@ interface ITimelock {
         address target;
         bytes data;
     }
+
+    error CallNotReady(uint64 id);
+    error CallAlreadyExecuted(uint64 id);
+    error CallAlreadyCancelled(uint64 id);
+    error CallFailed(uint64 id, bytes returnData);
+    error NotAuthorized();
 
     function prepareCall(address target, bytes calldata data) external;
 
