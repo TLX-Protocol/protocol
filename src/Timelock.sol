@@ -34,6 +34,7 @@ contract Timelock is ITimelock, Ownable {
                 data: data_
             })
         );
+        emit CallPrepared(_calls.length - 1, target_, data_);
     }
 
     function executeCall(uint64 id_) external onlyOwner {
@@ -47,6 +48,7 @@ contract Timelock is ITimelock, Ownable {
         );
         if (!success_) revert CallFailed(id_, returnData_);
         _calls[id_].executed = uint64(block.timestamp);
+        emit CallExecuted(id_, call_.target, call_.data);
     }
 
     function cancelCall(uint64 id_) external onlyOwner {
@@ -54,11 +56,13 @@ contract Timelock is ITimelock, Ownable {
         if (call_.cancelled != 0) revert CallAlreadyCancelled(id_);
         if (call_.executed != 0) revert CallAlreadyExecuted(id_);
         _calls[id_].cancelled = uint64(block.timestamp);
+        emit CallCancelled(id_, call_.target, call_.data);
     }
 
     function setDelay(bytes4 selector_, uint64 delay_) external {
         if (msg.sender != address(this)) revert NotAuthorized();
         _delays[selector_] = delay_;
+        emit DelaySet(selector_, delay_);
     }
 
     function allCalls() external view returns (Call[] memory) {

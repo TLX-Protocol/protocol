@@ -11,6 +11,11 @@ interface ITimelock {
         bytes data;
     }
 
+    event CallPrepared(uint64 id, address target, bytes data);
+    event CallExecuted(uint64 id, address target, bytes data);
+    event CallCancelled(uint64 id, address target, bytes data);
+    event DelaySet(bytes4 selector, uint64 delay);
+
     error CallNotReady(uint64 id);
     error CallAlreadyExecuted(uint64 id);
     error CallAlreadyCancelled(uint64 id);
