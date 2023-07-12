@@ -10,6 +10,10 @@ interface IAirdrop {
     error EverythingClaimed();
     error ClaimStillOngoing();
 
+    event MerkleRootUpdated(bytes32 merkleRoot);
+    event Claimed(address indexed account, uint256 amount);
+    event UnclaimedMinted(uint256 amount);
+
     function claim(
         uint256 index,
         uint256 amount,

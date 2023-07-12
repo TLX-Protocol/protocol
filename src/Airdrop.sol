@@ -54,10 +54,12 @@ contract Airdrop is IAirdrop, Ownable {
         // Updating state
         hasClaimed[account_] = true;
         totalClaimed += amount_;
+        emit Claimed(account_, amount_);
     }
 
     function updateMerkleRoot(bytes32 merkleRoot_) external override onlyOwner {
         merkleRoot = merkleRoot_;
+        emit MerkleRootUpdated(merkleRoot_);
     }
 
     function mintUnclaimed() external override onlyOwner {
@@ -69,6 +71,7 @@ contract Airdrop is IAirdrop, Ownable {
         if (unclaimed_ == 0) revert EverythingClaimed();
         ITlxToken tlx_ = ITlxToken(addressProvider_.tlx());
         tlx_.mint(treasury_, unclaimed_);
+        emit UnclaimedMinted(unclaimed_);
     }
 
     function _isValid(
