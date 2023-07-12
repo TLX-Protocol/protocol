@@ -2,6 +2,10 @@
 pragma solidity ^0.8.13;
 
 interface IAirdrop {
+    event MerkleRootUpdated(bytes32 merkleRoot);
+    event Claimed(address indexed account, uint256 amount);
+    event UnclaimedMinted(uint256 amount);
+
     error ClaimPeriodOver();
     error InvalidMerkleProof();
     error AlreadyClaimed();
@@ -9,10 +13,6 @@ interface IAirdrop {
     error InvalidTreasury();
     error EverythingClaimed();
     error ClaimStillOngoing();
-
-    event MerkleRootUpdated(bytes32 merkleRoot);
-    event Claimed(address indexed account, uint256 amount);
-    event UnclaimedMinted(uint256 amount);
 
     function claim(
         uint256 index,
