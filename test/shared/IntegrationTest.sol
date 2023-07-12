@@ -15,22 +15,31 @@ import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
+import {Airdrop} from "../../src/Airdrop.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
 
+    // Users
+    address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
+    address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
+    address public treasury = makeAddr("treasury");
+
+    // Contracts
     ChainlinkOracle public chainlinkOracle;
     MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
-    TlxToken public tlxToken;
+    TlxToken public tlx;
+    Airdrop public airdrop;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
+        addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
 
         // Chainlink Oracle Setup
         chainlinkOracle = new ChainlinkOracle(Contracts.ETH_USD_ORACLE);
@@ -70,8 +79,19 @@ contract IntegrationTest is Test {
         );
 
         // TLX Token Setup
-        tlxToken = new TlxToken(address(addressProvider));
-        addressProvider.updateAddress(AddressKeys.TLX, address(tlxToken));
+        tlx = new TlxToken(address(addressProvider));
+        addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
+
+        // Airdrop Setup
+        bytes32[] memory leaves = new bytes32[](2);
+        leaves[0] = keccak256(abi.encodePacked(alice, uint256(100e18)));
+        leaves[1] = keccak256(abi.encodePacked(bob, uint256(200e18)));
+        airdrop = new Airdrop(
+            address(addressProvider),
+            bytes32(0),
+            block.timestamp + 180 days
+        );
+        addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
     }
 
     function _mintTokensFor(
