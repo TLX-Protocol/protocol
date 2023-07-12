@@ -24,9 +24,10 @@ contract Timelock is ITimelock, Ownable {
             }
         }
 
+        uint64 id_ = uint64(_calls.length);
         _calls.push(
             Call({
-                id: uint64(_calls.length),
+                id: id_,
                 ready: uint64(block.timestamp) + _delays[selector_],
                 executed: 0,
                 cancelled: 0,
@@ -34,7 +35,7 @@ contract Timelock is ITimelock, Ownable {
                 data: data_
             })
         );
-        emit CallPrepared(_calls.length - 1, target_, data_);
+        emit CallPrepared(id_, target_, data_);
     }
 
     function executeCall(uint64 id_) external onlyOwner {
