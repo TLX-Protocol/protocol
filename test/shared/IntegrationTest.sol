@@ -14,6 +14,7 @@ import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
+import {TlxToken} from "../../src/TlxToken.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -23,6 +24,7 @@ contract IntegrationTest is Test {
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
+    TlxToken public tlxToken;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -66,6 +68,10 @@ contract IntegrationTest is Test {
             AddressKeys.POSITION_MANAGER_FACTORY,
             address(positionManagerFactory)
         );
+
+        // TLX Token Setup
+        tlxToken = new TlxToken(address(addressProvider));
+        addressProvider.updateAddress(AddressKeys.TLX, address(tlxToken));
     }
 
     function _mintTokensFor(
