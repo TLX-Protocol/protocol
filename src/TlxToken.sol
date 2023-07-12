@@ -23,7 +23,10 @@ contract TlxToken is ITlxToken, ERC20 {
         _addressProvider = addressProvider_;
     }
 
-    function mint(address to, uint256 amount) external override onlyAuthorized {
-        _mint(to, amount);
+    function mint(
+        address to_,
+        uint256 amount_
+    ) external override onlyAuthorized {
+        _mint(to_, amount_);
     }
 }
