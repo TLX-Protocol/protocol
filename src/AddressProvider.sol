@@ -54,4 +54,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function tlx() external view override returns (address) {
         return _addresses[AddressKeys.TLX];
     }
+
+    function locker() external view override returns (address) {
+        return _addresses[AddressKeys.LOCKER];
+    }
 }

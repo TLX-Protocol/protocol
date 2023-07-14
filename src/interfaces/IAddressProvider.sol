@@ -71,4 +71,10 @@ interface IAddressProvider {
      * @return tlx The address of the TLX contract.
      */
     function tlx() external view returns (address tlx);
+
+    /**
+     * @notice Returns the address for the Locker contract.
+     * @return locker The address of the Locker contract.
+     */
+    function locker() external view returns (address locker);
 }
