@@ -8,6 +8,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
+import {Config} from "../../src/libraries/Config.sol";
 
 import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
@@ -89,7 +90,7 @@ contract IntegrationTest is Test {
         airdrop = new Airdrop(
             address(addressProvider),
             bytes32(0),
-            block.timestamp + 180 days
+            block.timestamp + Config.AIRDROP_CLAIM_PERIOD
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
     }

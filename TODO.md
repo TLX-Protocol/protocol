@@ -1,6 +1,5 @@
 Tokenomics:
 
-- Create `DeploymentConfig` Library (move tlx max suplpy and airdrop duration itno that, maybe other stuf)
 - Create `Locker`
 - Create `Bonding`
 - Create `Vesting`
