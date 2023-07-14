@@ -1,9 +1,9 @@
 Tokenomics:
 
-- Create `Locker`
 - Create `Bonding`
 - Create `Vesting`
 - Add comments to all interfaces
+- Rename `Locker` to `Staker`
 
 - Increase line length for prettier
 - Create `MockDerivativesHandler`

@@ -17,6 +17,7 @@ import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
+import {Locker} from "../../src/Locker.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -24,6 +25,7 @@ contract IntegrationTest is Test {
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
     address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
+    address public gmxVault = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
     address public treasury = makeAddr("treasury");
 
     // Contracts
@@ -34,6 +36,7 @@ contract IntegrationTest is Test {
     PositionManagerFactory public positionManagerFactory;
     TlxToken public tlx;
     Airdrop public airdrop;
+    Locker public locker;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -93,6 +96,14 @@ contract IntegrationTest is Test {
             block.timestamp + Config.AIRDROP_CLAIM_PERIOD
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
+
+        // Locker Setup
+        locker = new Locker(
+            address(addressProvider),
+            Config.LOCKER_UNLOCK_DELAY,
+            Config.REWARD_TOKEN
+        );
+        addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
     }
 
     function _mintTokensFor(
