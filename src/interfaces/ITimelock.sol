@@ -22,23 +22,66 @@ interface ITimelock {
     error CallFailed(uint64 id, bytes returnData);
     error NotAuthorized();
 
+    /**
+     * @notice Prepare a call to be executed after a delay
+     * @param target The address of the contract to be called
+     * @param data The data to be passed to the contract
+     */
     function prepareCall(address target, bytes calldata data) external;
 
+    /**
+     * @notice Execute a call that is ready
+     * @param id The id of the call to be executed
+     */
     function executeCall(uint64 id) external;
 
+    /**
+     * @notice Cancel a call that is ready
+     * @param id The id of the call to be cancelled
+     */
     function cancelCall(uint64 id) external;
 
+    /**
+     * @notice Set the delay for a function selector
+     * @param selector The function selector to set the delay for
+     * @param delay The delay to set
+     */
     function setDelay(bytes4 selector, uint64 delay) external;
 
-    function allCalls() external view returns (Call[] memory);
+    /**
+     * @notice Get all calls
+     * @return calls All calls
+     */
+    function allCalls() external view returns (Call[] memory calls);
 
-    function pendingCalls() external view returns (Call[] memory);
+    /**
+     * @notice Get pending calls
+     * @return calls Pending calls
+     */
+    function pendingCalls() external view returns (Call[] memory calls);
 
-    function readyCalls() external view returns (Call[] memory);
+    /**
+     * @notice Get ready calls
+     * @return calls Ready calls
+     */
+    function readyCalls() external view returns (Call[] memory calls);
 
-    function executedCalls() external view returns (Call[] memory);
+    /**
+     * @notice Get executed calls
+     * @return calls Executed calls
+     */
+    function executedCalls() external view returns (Call[] memory calls);
 
-    function cancelledCalls() external view returns (Call[] memory);
+    /**
+     * @notice Get cancelled calls
+     * @return calls Cancelled calls
+     */
+    function cancelledCalls() external view returns (Call[] memory calls);
 
+    /**
+     * @notice Get the delay for a function selector
+     * @param selector The function selector to get the delay for
+     * @return delay The delay for the function selector
+     */
     function delay(bytes4 selector) external view returns (uint64 delay);
 }
