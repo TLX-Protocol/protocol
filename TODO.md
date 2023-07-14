@@ -4,6 +4,7 @@ Tokenomics:
 - Create `Locker`
 - Create `Bonding`
 - Create `Vesting`
+- Add comments to all interfaces
 
 - Increase line length for prettier
 - Create `MockDerivativesHandler`

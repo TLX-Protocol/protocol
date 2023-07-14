@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
-import {TlxMaxSupply} from "./libraries/TlxMaxSupply.sol";
+import {Config} from "./libraries/Config.sol";
 
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
@@ -40,13 +40,13 @@ contract Airdrop is IAirdrop, Ownable {
         bool isValid_ = _isValid(index_, account_, amount_, merkleProof_);
         if (!isValid_) revert InvalidMerkleProof();
         uint256 totalClaimed_ = totalClaimed;
-        bool completed_ = totalClaimed_ == TlxMaxSupply.AIRDRIP_MAX_SUPPLY;
+        bool completed_ = totalClaimed_ == Config.AIRDRIP_AMOUNT;
         if (completed_) revert AirdropCompleted();
 
         // Minting tokens
         amount_ *= 1e18;
-        if (totalClaimed_ + amount_ > TlxMaxSupply.AIRDRIP_MAX_SUPPLY) {
-            amount_ = TlxMaxSupply.AIRDRIP_MAX_SUPPLY - totalClaimed_;
+        if (totalClaimed_ + amount_ > Config.AIRDRIP_AMOUNT) {
+            amount_ = Config.AIRDRIP_AMOUNT - totalClaimed_;
         }
         ITlxToken tlx_ = ITlxToken(IAddressProvider(_addressProvider).tlx());
         tlx_.mint(account_, amount_);
@@ -67,7 +67,7 @@ contract Airdrop is IAirdrop, Ownable {
         IAddressProvider addressProvider_ = IAddressProvider(_addressProvider);
         address treasury_ = addressProvider_.treasury();
         if (treasury_ == address(0)) revert InvalidTreasury();
-        uint256 unclaimed_ = TlxMaxSupply.AIRDRIP_MAX_SUPPLY - totalClaimed;
+        uint256 unclaimed_ = Config.AIRDRIP_AMOUNT - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         ITlxToken tlx_ = ITlxToken(addressProvider_.tlx());
         tlx_.mint(treasury_, unclaimed_);

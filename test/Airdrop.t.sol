@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
-import {TlxMaxSupply} from "../src/libraries/TlxMaxSupply.sol";
+import {Config} from "../src/libraries/Config.sol";
 import {AddressKeys} from "../src/libraries/AddressKeys.sol";
 
 import {IAirdrop} from "../src/interfaces/IAirdrop.sol";
@@ -96,7 +96,7 @@ contract AirdropTest is IntegrationTest {
         airdrop.mintUnclaimed();
         assertEq(
             tlx.balanceOf(treasury),
-            TlxMaxSupply.AIRDRIP_MAX_SUPPLY,
+            Config.AIRDRIP_AMOUNT,
             "balanceOf(treasury)"
         );
     }
