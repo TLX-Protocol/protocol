@@ -29,12 +29,10 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     mapping(address => address) internal _usdOracles;
     mapping(address => address) internal _ethOracles;
 
-    uint256 public override stalePriceDelay;
+    uint256 public override stalePriceDelay = 1 days;
 
     constructor(address ethUsdOracle_) {
         _ethUsdOracle = ethUsdOracle_;
-
-        stalePriceDelay = 1 days;
     }
 
     function setUsdOracle(
