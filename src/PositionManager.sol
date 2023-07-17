@@ -48,6 +48,6 @@ contract PositionManager is IPositionManager {
         address /* leveragedToken_ */
     ) external view override returns (uint256) {
         // TODO implement
-        return 2 * 10 ** (18 - 6);
+        return 2e18;
     }
 }

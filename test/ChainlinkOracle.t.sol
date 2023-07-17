@@ -29,4 +29,13 @@ contract ChainlinkOracleTest is IntegrationTest {
         vm.expectRevert(IChainlinkOracle.StalePrice.selector);
         chainlinkOracle.getUsdPrice(Tokens.UNI);
     }
+
+    function testPriceLeveragedToken() public {
+        positionManagerFactory.createPositionManager(Tokens.UNI);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 123);
+        uint256 price_ = chainlinkOracle.getUsdPrice(
+            leveragedTokenFactory.longTokens(Tokens.UNI)[0]
+        );
+        assertApproxEqAbs(price_, 2e18, 1e16);
+    }
 }

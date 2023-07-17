@@ -46,7 +46,10 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
 
         // Chainlink Oracle Setup
-        chainlinkOracle = new ChainlinkOracle(Contracts.ETH_USD_ORACLE);
+        chainlinkOracle = new ChainlinkOracle(
+            address(addressProvider),
+            Contracts.ETH_USD_ORACLE
+        );
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
@@ -54,15 +57,6 @@ contract IntegrationTest is Test {
             AddressKeys.ORACLE,
             address(chainlinkOracle)
         );
-
-        // Mock Oracle Setup
-        mockOracle = new MockOracle();
-        uint256 uniPrice_ = chainlinkOracle.getUsdPrice(Tokens.UNI);
-        mockOracle.setPrice(Tokens.UNI, uniPrice_);
-        uint256 ethPrice_ = chainlinkOracle.getUsdPrice(address(0));
-        mockOracle.setPrice(address(0), ethPrice_);
-        uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
-        mockOracle.setPrice(Tokens.USDC, usdcPrice_);
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
@@ -104,6 +98,15 @@ contract IntegrationTest is Test {
             Config.REWARD_TOKEN
         );
         addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
+
+        // Mock Oracle Setup
+        mockOracle = new MockOracle();
+        uint256 uniPrice_ = chainlinkOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, uniPrice_);
+        uint256 ethPrice_ = chainlinkOracle.getUsdPrice(address(0));
+        mockOracle.setPrice(address(0), ethPrice_);
+        uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
+        mockOracle.setPrice(Tokens.USDC, usdcPrice_);
     }
 
     function _mintTokensFor(

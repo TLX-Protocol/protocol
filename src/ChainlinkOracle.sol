@@ -6,6 +6,11 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IChainlinkOracle} from "./interfaces/IChainlinkOracle.sol";
+import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
+import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
+import {IPositionManager} from "./interfaces/IPositionManager.sol";
+import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
 interface IChainlink {
     function latestRoundData()
@@ -26,13 +31,16 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     using ScaledNumber for uint256;
 
     address internal immutable _ethUsdOracle;
+    address internal immutable _addressProvider;
+
     mapping(address => address) internal _usdOracles;
     mapping(address => address) internal _ethOracles;
 
     uint256 public override stalePriceDelay = 1 days;
 
-    constructor(address ethUsdOracle_) {
+    constructor(address addressProvider_, address ethUsdOracle_) {
         _ethUsdOracle = ethUsdOracle_;
+        _addressProvider = addressProvider_;
     }
 
     function setUsdOracle(
@@ -58,7 +66,8 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
 
     function getUsdPrice(
         address token_
-    ) external view override returns (uint256) {
+    ) public view override returns (uint256) {
+        if (_isLeveragedToken(token_)) return _priceLeveragedToken(token_);
         address usdOracle_ = _usdOracles[token_];
         if (usdOracle_ != address(0)) return _getChainlinkPrice(usdOracle_);
         address ethOracle_ = _ethOracles[token_];
@@ -66,6 +75,13 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
         uint256 ethPrice_ = _getChainlinkPrice(ethOracle_);
         uint256 ethUsdPrice_ = _getChainlinkPrice(_ethUsdOracle);
         return ethPrice_.mul(ethUsdPrice_);
+    }
+
+    function _priceLeveragedToken(
+        address token_
+    ) internal view returns (uint256) {
+        address baseAsset_ = ILeveragedToken(token_).baseAsset();
+        return getUsdPrice(baseAsset_).mul(_exchangeRate(token_));
     }
 
     function _getChainlinkPrice(
@@ -83,5 +99,21 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
         if (price_ == 0) revert ZeroPrice();
         if (answeredInRound_ < roundId_) revert RoundExpired();
         return uint256(price_).scaleFrom(IChainlink(oracle_).decimals());
+    }
+
+    function _isLeveragedToken(address token_) internal view returns (bool) {
+        return
+            ILeveragedTokenFactory(
+                IAddressProvider(_addressProvider).leveragedTokenFactory()
+            ).isLeveragedToken(token_);
+    }
+
+    function _exchangeRate(address token_) internal view returns (uint256) {
+        return
+            IPositionManager(
+                IPositionManagerFactory(
+                    IAddressProvider(_addressProvider).positionManagerFactory()
+                ).positionManager(ILeveragedToken(token_).targetAsset())
+            ).exchangeRate(token_);
     }
 }
