@@ -57,4 +57,14 @@ interface IPositionManager {
      * @return targetAsset The target asset of the position.
      */
     function targetAsset() external view returns (address targetAsset);
+
+    /**
+     * @notice Returns the exchange rate from one leveraged token to one base asset.
+     * @dev In USD value: 1 leveraged token = 'exchangeRate' * 1 base asset.
+     * @param leveragedToken The address of the leveraged token.
+     * @return exchangeRate The exchange rate.
+     */
+    function exchangeRate(
+        address leveragedToken
+    ) external view returns (uint256 exchangeRate);
 }

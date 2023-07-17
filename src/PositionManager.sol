@@ -43,4 +43,11 @@ contract PositionManager is IPositionManager {
         // TODO implement
         return 0;
     }
+
+    function exchangeRate(
+        address /* leveragedToken_ */
+    ) external view override returns (uint256) {
+        // TODO implement
+        return 2 * 10 ** (18 - 6);
+    }
 }
