@@ -10,9 +10,6 @@ interface ILeveragedToken is IERC20Metadata {
 
     function burn(address account, uint256 amount) external;
 
-    // The base asset of the leveraged token
-    function baseAsset() external view returns (address);
-
     // The target asset of the leveraged token
     function targetAsset() external view returns (address);
 

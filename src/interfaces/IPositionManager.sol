@@ -47,12 +47,6 @@ interface IPositionManager {
     function rebalance() external returns (uint256);
 
     /**
-     * @notice Returns the base asset of the position.
-     * @return baseAsset The base asset of the position.
-     */
-    function baseAsset() external view returns (address baseAsset);
-
-    /**
      * @notice Returns the target asset of the position.
      * @return targetAsset The target asset of the position.
      */

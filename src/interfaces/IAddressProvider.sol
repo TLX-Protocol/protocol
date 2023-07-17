@@ -77,4 +77,10 @@ interface IAddressProvider {
      * @return locker The address of the Locker contract.
      */
     function locker() external view returns (address locker);
+
+    /**
+     * @notice Returns the address for the base asset.
+     * @return baseAsset The address of the base asset.
+     */
+    function baseAsset() external view returns (address baseAsset);
 }

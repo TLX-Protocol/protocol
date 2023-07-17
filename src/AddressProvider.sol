@@ -58,4 +58,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function locker() external view override returns (address) {
         return _addresses[AddressKeys.LOCKER];
     }
+
+    function baseAsset() external view override returns (address) {
+        return _addresses[AddressKeys.BASE_ASSET];
+    }
 }

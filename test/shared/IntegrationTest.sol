@@ -44,6 +44,7 @@ contract IntegrationTest is Test {
         // AddressProvider Setup
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
+        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
 
         // Chainlink Oracle Setup
         chainlinkOracle = new ChainlinkOracle(

@@ -11,4 +11,5 @@ library AddressKeys {
     bytes32 public constant VESTING = "vesting";
     bytes32 public constant TLX = "tlx";
     bytes32 public constant LOCKER = "locker";
+    bytes32 public constant BASE_ASSET = "baseAsset";
 }

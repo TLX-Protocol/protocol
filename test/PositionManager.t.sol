@@ -11,11 +11,10 @@ contract PositionManagerTest is IntegrationTest {
     PositionManager public positionManger;
 
     function setUp() public {
-        positionManger = new PositionManager(Tokens.USDC, Tokens.UNI);
+        positionManger = new PositionManager(Tokens.UNI);
     }
 
     function testInit() public {
-        assertEq(positionManger.baseAsset(), Tokens.USDC);
         assertEq(positionManger.targetAsset(), Tokens.UNI);
     }
 }

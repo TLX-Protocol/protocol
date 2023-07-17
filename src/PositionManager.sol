@@ -4,11 +4,9 @@ pragma solidity ^0.8.13;
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
 
 contract PositionManager is IPositionManager {
-    address public immutable override baseAsset;
     address public immutable override targetAsset;
 
-    constructor(address baseAsset_, address targetAsset_) {
-        baseAsset = baseAsset_;
+    constructor(address targetAsset_) {
         targetAsset = targetAsset_;
     }
 

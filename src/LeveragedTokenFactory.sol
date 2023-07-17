@@ -129,7 +129,6 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             new LeveragedToken(
                 _getName(targetAsset_, targetLeverage_, isLong_),
                 _getSymbol(targetAsset_, targetLeverage_, isLong_),
-                Tokens.USDC,
                 targetAsset_,
                 targetLeverage_,
                 isLong_,

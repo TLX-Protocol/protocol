@@ -80,7 +80,7 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     function _priceLeveragedToken(
         address token_
     ) internal view returns (uint256) {
-        address baseAsset_ = ILeveragedToken(token_).baseAsset();
+        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
         return getUsdPrice(baseAsset_).mul(_exchangeRate(token_));
     }
 
