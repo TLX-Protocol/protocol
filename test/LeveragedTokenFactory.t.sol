@@ -83,6 +83,15 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
             leveragedTokenFactory.pair(shortTokenAddress_),
             longTokenAddress_
         );
+        assertEq(
+            leveragedTokenFactory.isLeveragedToken(longTokenAddress),
+            true
+        );
+        assertEq(
+            leveragedTokenFactory.isLeveragedToken(shortTokenAddress),
+            true
+        );
+        assertEq(leveragedTokenFactory.isLeveragedToken(Tokens.UNI), false);
     }
 
     function testReverts() public {

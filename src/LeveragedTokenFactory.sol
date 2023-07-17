@@ -25,6 +25,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         internal _tokens;
 
     mapping(address => address) public override pair;
+    mapping(address => bool) public override isLeveragedToken;
 
     constructor(address addressProvider_) {
         _addressProvider = addressProvider_;
@@ -135,6 +136,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
                 positionManager_
             )
         );
+        isLeveragedToken[token_] = true;
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);

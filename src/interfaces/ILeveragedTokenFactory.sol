@@ -100,4 +100,13 @@ interface ILeveragedTokenFactory {
      * @return pair The address of the Leveraged Tokens inverse pair.
      */
     function pair(address token) external view returns (address pair);
+
+    /**
+     * @notice Returns if the given token is a Leveraged Token.
+     * @param token The address of the token.
+     * @return isLeveragedToken If the given token is a Leveraged Token.
+     */
+    function isLeveragedToken(
+        address token
+    ) external view returns (bool isLeveragedToken);
 }
