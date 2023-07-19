@@ -1,10 +1,11 @@
 Tokenomics:
 
-- Create `Bonding`
 - Create `Vesting`
 - Add comments to all interfaces
-- Rename `Locker` to `Staker`
+- Add events everywhere (if missing)
+- Change Airdrop to include pre-scaled numbers
 
+- Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
