@@ -18,6 +18,7 @@ import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
+import {Bonding} from "../../src/Bonding.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -37,6 +38,7 @@ contract IntegrationTest is Test {
     TlxToken public tlx;
     Airdrop public airdrop;
     Locker public locker;
+    Bonding public bonding;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -45,6 +47,16 @@ contract IntegrationTest is Test {
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
         addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
+
+        // Bonding Setup
+        bonding = new Bonding(
+            address(addressProvider),
+            Config.INITIAL_TLX_PER_SECOND,
+            Config.PERIOD_DECAY_MULTIPLIER,
+            Config.PERIOD_DURATION,
+            Config.BASE_FOR_ALL_TLX
+        );
+        addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
 
         // Chainlink Oracle Setup
         chainlinkOracle = new ChainlinkOracle(
