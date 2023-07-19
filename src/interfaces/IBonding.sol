@@ -2,16 +2,16 @@
 pragma solidity ^0.8.13;
 
 interface IBonding {
-    error NotLeveragedToken();
-    error MinTlxNotReached();
-    error ExceedsAvailable();
-
     event Bonded(
         address indexed account,
         address indexed leveragedToken,
         uint256 leveragedTokenAmount,
         uint256 tlxTokensReceived
     );
+
+    error NotLeveragedToken();
+    error MinTlxNotReached();
+    error ExceedsAvailable();
 
     function bond(
         address leveragedToken,
