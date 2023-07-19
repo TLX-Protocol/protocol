@@ -62,4 +62,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function baseAsset() external view override returns (address) {
         return _addresses[AddressKeys.BASE_ASSET];
     }
+
+    function positionEqualizer() external view override returns (address) {
+        return _addresses[AddressKeys.POSITION_EQUALIZER];
+    }
 }

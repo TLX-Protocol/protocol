@@ -83,4 +83,13 @@ interface IAddressProvider {
      * @return baseAsset The address of the base asset.
      */
     function baseAsset() external view returns (address baseAsset);
+
+    /**
+     * @notice Returns the address for the PositionEqualizer contract.
+     * @return positionEqualizer The address of the PositionEqualizer contract.
+     */
+    function positionEqualizer()
+        external
+        view
+        returns (address positionEqualizer);
 }
