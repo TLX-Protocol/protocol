@@ -1,3 +1,5 @@
+- Move max leverage to config
+- Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
@@ -10,3 +12,4 @@
 - Make contracts upgradable
 - Deployment scripts
 - Create final `DerivativesHandler`
+- Create aidrop boost system
