@@ -15,4 +15,5 @@ library Config {
     uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.966666666666666667e18; // Very roughly gives 30% of supply in first year
     uint256 public constant PERIOD_DURATION = 30 days;
     uint256 public constant BASE_FOR_ALL_TLX = 75_000e18; // Very roughly means it is 'worth' executing once every 3 days
+    uint256 public constant VESTING_DURATION = 365 days;
 }

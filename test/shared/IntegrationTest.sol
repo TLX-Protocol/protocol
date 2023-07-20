@@ -10,6 +10,8 @@ import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 
+import {IVesting} from "../../src/interfaces/IVesting.sol";
+
 import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
@@ -19,6 +21,7 @@ import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
 import {Bonding} from "../../src/Bonding.sol";
+import {Vesting} from "../../src/Vesting.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -39,6 +42,7 @@ contract IntegrationTest is Test {
     Airdrop public airdrop;
     Locker public locker;
     Bonding public bonding;
+    Vesting public vesting;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -47,6 +51,19 @@ contract IntegrationTest is Test {
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
         addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
+
+        // Vesting Setup
+        IVesting.VestingAmount[] memory amounts_ = new Vesting.VestingAmount[](
+            2
+        );
+        amounts_[0] = IVesting.VestingAmount(alice, 100e18);
+        amounts_[1] = IVesting.VestingAmount(bob, 200e18);
+        vesting = new Vesting(
+            address(addressProvider),
+            Config.VESTING_DURATION,
+            amounts_
+        );
+        addressProvider.updateAddress(AddressKeys.VESTING, address(vesting));
 
         // Bonding Setup
         bonding = new Bonding(
