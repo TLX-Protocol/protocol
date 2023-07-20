@@ -1,10 +1,11 @@
 Tokenomics:
 
-- Create `Vesting`
+- Revise if we should pass in config or call it directly and update all to match
 - Add comments to all interfaces
 - Add events everywhere (if missing)
 - Change Airdrop to include pre-scaled numbers
 
+- Move max leverage to config
 - Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
