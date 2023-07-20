@@ -1,4 +1,3 @@
-- Move max leverage to config
 - Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
