@@ -1,8 +1,3 @@
-Tokenomics:
-
-- Add events everywhere (if missing)
-- Change Airdrop to include pre-scaled numbers
-
 - Move max leverage to config
 - Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
