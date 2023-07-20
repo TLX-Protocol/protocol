@@ -1,6 +1,5 @@
 Tokenomics:
 
-- Add comments to all interfaces
 - Add events everywhere (if missing)
 - Change Airdrop to include pre-scaled numbers
 

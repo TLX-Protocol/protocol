@@ -14,21 +14,53 @@ interface IAirdrop {
     error EverythingClaimed();
     error ClaimStillOngoing();
 
+    /**
+     * @notice Claim tokens from the airdrop.
+     * @param index The index of the account in the merkle tree.
+     * @param amount The amount of tokens to claim.
+     * @param merkleProof The merkle proof for the account.
+     */
     function claim(
         uint256 index,
         uint256 amount,
         bytes32[] calldata merkleProof
     ) external;
 
+    /**
+     * @notice Update the merkle root for the airdrop.
+     * @param merkleRoot_ The new merkle root.
+     */
     function updateMerkleRoot(bytes32 merkleRoot_) external;
 
+    /**
+     * @notice Mint unclaimed tokens to the treasury.
+     */
     function mintUnclaimed() external;
 
-    function merkleRoot() external view returns (bytes32);
+    /**
+     * @notice Returns the merkle root for the airdrop.
+     * @return merkleRoot The merkle root for the airdrop.
+     */
+    function merkleRoot() external view returns (bytes32 merkleRoot);
 
-    function hasClaimed(address account) external view returns (bool);
+    /**
+     * @notice Returns if the `account` has claimed their airdrop.
+     * @param account The account to check.
+     * @return hasClaimed If the `account` has claimed their airdrop.
+     */
+    function hasClaimed(
+        address account
+    ) external view returns (bool hasClaimed);
 
-    function deadline() external view returns (uint256);
+    /**
+     * @notice Returns the deadline for the airdrop.
+     * @return deadline The deadline for the airdrop.
+     */
+    function deadline() external view returns (uint256 deadline);
 
-    function totalClaimed() external view returns (uint256);
+    /**
+     * @notice Returns the total amount of tokens claimed.
+     * @return totalClaimed The total amount of tokens claimed.
+     */
+    function totalClaimed() external view returns (uint256 totalClaimed);
 }
