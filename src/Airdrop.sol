@@ -4,14 +4,13 @@ pragma solidity ^0.8.13;
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
-import {Config} from "./libraries/Config.sol";
-
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 contract Airdrop is IAirdrop, Ownable {
-    address internal _addressProvider;
+    address internal immutable _addressProvider;
+    uint256 internal immutable _airdropAmount;
 
     bytes32 public override merkleRoot;
     mapping(address => bool) public override hasClaimed;
@@ -21,11 +20,13 @@ contract Airdrop is IAirdrop, Ownable {
     constructor(
         address addressProvider_,
         bytes32 merkleRoot_,
-        uint256 deadline_
+        uint256 deadline_,
+        uint256 airdropAmount_
     ) {
         _addressProvider = addressProvider_;
         merkleRoot = merkleRoot_;
         deadline = deadline_;
+        _airdropAmount = airdropAmount_;
     }
 
     function claim(
@@ -40,13 +41,13 @@ contract Airdrop is IAirdrop, Ownable {
         bool isValid_ = _isValid(index_, account_, amount_, merkleProof_);
         if (!isValid_) revert InvalidMerkleProof();
         uint256 totalClaimed_ = totalClaimed;
-        bool completed_ = totalClaimed_ == Config.AIRDRIP_AMOUNT;
+        bool completed_ = totalClaimed_ == _airdropAmount;
         if (completed_) revert AirdropCompleted();
 
         // Minting tokens
         amount_ *= 1e18;
-        if (totalClaimed_ + amount_ > Config.AIRDRIP_AMOUNT) {
-            amount_ = Config.AIRDRIP_AMOUNT - totalClaimed_;
+        if (totalClaimed_ + amount_ > _airdropAmount) {
+            amount_ = _airdropAmount - totalClaimed_;
         }
         ITlxToken tlx_ = ITlxToken(IAddressProvider(_addressProvider).tlx());
         tlx_.mint(account_, amount_);
@@ -67,7 +68,7 @@ contract Airdrop is IAirdrop, Ownable {
         IAddressProvider addressProvider_ = IAddressProvider(_addressProvider);
         address treasury_ = addressProvider_.treasury();
         if (treasury_ == address(0)) revert InvalidTreasury();
-        uint256 unclaimed_ = Config.AIRDRIP_AMOUNT - totalClaimed;
+        uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         ITlxToken tlx_ = ITlxToken(addressProvider_.tlx());
         tlx_.mint(treasury_, unclaimed_);

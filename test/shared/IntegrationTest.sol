@@ -117,7 +117,8 @@ contract IntegrationTest is Test {
         airdrop = new Airdrop(
             address(addressProvider),
             bytes32(0),
-            block.timestamp + Config.AIRDROP_CLAIM_PERIOD
+            block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
+            Config.AIRDRIP_AMOUNT
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 

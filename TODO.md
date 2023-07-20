@@ -1,6 +1,5 @@
 Tokenomics:
 
-- Revise if we should pass in config or call it directly and update all to match
 - Add comments to all interfaces
 - Add events everywhere (if missing)
 - Change Airdrop to include pre-scaled numbers
