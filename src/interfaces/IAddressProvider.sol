@@ -41,4 +41,13 @@ interface IAddressProvider {
      * @return oracle The address of the Oracle contract.
      */
     function oracle() external view returns (address oracle);
+
+    /**
+     * @notice Returns the address for the DerivativesHandler contract.
+     * @return derivativesHandler The address of the DerivativesHandler contract.
+     */
+    function derivativesHandler()
+        external
+        view
+        returns (address derivativesHandler);
 }
