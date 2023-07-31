@@ -91,21 +91,24 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, uniPrice_ * 2);
+        skip(365 days); // Incurring a year of fees
         IDerivativesHandler.Position memory position_ = mockDerivativesHandler
             .position();
         assertEq(position_.baseAmount, _AMOUNT);
         assertEq(position_.leverage, 2e18);
         assertEq(position_.isLong, true, "isLong");
         assertEq(position_.hasProfit, true, "hasProfit");
-        assertEq(position_.delta, _AMOUNT * 2);
-
-        skip(356 days); // Incurring a year of fees
+        uint256 expectedDelta_ = _AMOUNT * 2 - (_AMOUNT * 2).mul(fee_);
+        assertEq(position_.delta, expectedDelta_, "delta");
 
         uint256 owed_ = mockDerivativesHandler.closePosition();
-
-        uint256 expected_ = _AMOUNT * 3 - (_AMOUNT * 2).mul(fee_);
-        assertEq(owed_, expected_);
+        uint256 expected_ = _AMOUNT + expectedDelta_;
+        assertEq(owed_, expected_, "owed");
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(
+            IERC20(Tokens.USDC).balanceOf(address(this)),
+            expected_,
+            "gained"
+        );
     }
 }
