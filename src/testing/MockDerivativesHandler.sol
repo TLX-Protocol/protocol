@@ -103,7 +103,7 @@ contract MockDerivativesHandler is IDerivativesHandler {
 
     function _fee(Position memory position_) internal view returns (uint256) {
         uint256 timePassed_ = block.timestamp - position_.createdAt;
-        uint256 percentThroughYear_ = timePassed_ / 365 days;
+        uint256 percentThroughYear_ = (timePassed_ * 1e18) / 365 days;
         uint256 loaned_ = position_.baseAmount.mul(position_.leverage);
         return loaned_.mul(_annualFeePercent).mul(percentThroughYear_);
     }
