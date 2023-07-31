@@ -72,7 +72,7 @@ contract IntegrationTest is Test {
         // MockDerivativesHandler Setup
         mockDerivativesHandler = new MockDerivativesHandler(
             address(addressProvider),
-            0
+            0.2e18
         );
         _mintTokensFor(
             Tokens.USDC,

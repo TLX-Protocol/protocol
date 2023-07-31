@@ -12,7 +12,8 @@ import {IOracle} from "../interfaces/IOracle.sol";
 contract MockDerivativesHandler is IDerivativesHandler {
     using ScaledNumber for uint256;
 
-    uint256 internal immutable _fee; // TODO Add fee support
+    // TODO Add minting and redeeming fees
+    uint256 internal _annualFeePercent;
 
     bool internal _hasPosition;
     Position internal _position;
@@ -20,8 +21,8 @@ contract MockDerivativesHandler is IDerivativesHandler {
 
     address internal _addressProvider;
 
-    constructor(address addressProvider_, uint256 fee_) {
-        _fee = fee_;
+    constructor(address addressProvider_, uint256 annualFeePercent_) {
+        _annualFeePercent = annualFeePercent_;
         _addressProvider = addressProvider_;
     }
 
@@ -66,6 +67,10 @@ contract MockDerivativesHandler is IDerivativesHandler {
         return owed_;
     }
 
+    function updateFeePercent(uint256 annualFeePercent_) external {
+        _annualFeePercent = annualFeePercent_;
+    }
+
     function position() external view override returns (Position memory) {
         Position memory position_ = _position;
         (position_.delta, position_.hasProfit) = _profit(position_);
@@ -83,9 +88,24 @@ contract MockDerivativesHandler is IDerivativesHandler {
         uint256 priceDelta_ = _absDiff(currentPrice_, _entryPrice);
         uint256 percentDelta_ = priceDelta_.div(_entryPrice);
         uint256 scaledPercentDelta_ = percentDelta_.mul(position_.leverage);
-        delta_ = scaledPercentDelta_.mul(position_.baseAmount);
+        uint256 positionDelta_ = scaledPercentDelta_.mul(position_.baseAmount);
         bool isUp_ = currentPrice_ > _entryPrice;
-        hasProfit_ = position_.isLong ? isUp_ : !isUp_;
+        bool positionHasProfit_ = position_.isLong ? isUp_ : !isUp_;
+        uint256 fee_ = _fee(position_);
+        if (positionHasProfit_) {
+            if (fee_ > positionDelta_) {
+                return (fee_ - positionDelta_, false);
+            }
+            return (positionDelta_ - fee_, true);
+        }
+        return (positionDelta_ + fee_, false);
+    }
+
+    function _fee(Position memory position_) internal view returns (uint256) {
+        uint256 timePassed_ = block.timestamp - position_.createdAt;
+        uint256 percentThroughYear_ = timePassed_ / 365 days;
+        uint256 loaned_ = position_.baseAmount.mul(position_.leverage);
+        return loaned_.mul(_annualFeePercent).mul(percentThroughYear_);
     }
 
     function _usdPrice(address token_) internal view returns (uint256) {
