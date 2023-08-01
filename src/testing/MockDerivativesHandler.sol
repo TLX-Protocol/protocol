@@ -12,7 +12,6 @@ import {IOracle} from "../interfaces/IOracle.sol";
 contract MockDerivativesHandler is IDerivativesHandler {
     using ScaledNumber for uint256;
 
-    // TODO Add minting and redeeming fees
     uint256 internal _annualFeePercent;
 
     bool internal _hasPosition;
