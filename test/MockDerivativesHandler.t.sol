@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
@@ -15,6 +16,7 @@ import {IDerivativesHandler} from "../src/interfaces/IDerivativesHandler.sol";
 
 contract MockDerivativesHandlerTest is IntegrationTest {
     using ScaledNumber for uint256;
+    using Address for address;
 
     uint256 internal constant _AMOUNT = 100_000e6;
 
@@ -22,24 +24,32 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         addressProvider.updateAddress(AddressKeys.ORACLE, address(mockOracle));
         _mintTokensFor(Tokens.USDC, address(this), _AMOUNT);
         IERC20(Tokens.USDC).approve(
-            address(mockDerivativesHandler),
+            mockDerivativesHandler.approveAddress(),
             type(uint256).max
         );
     }
 
     function testInit() public {
         assertEq(mockDerivativesHandler.hasPosition(), false);
+    }
+
+    function testRevertsWithNoPositionsExist() public {
         vm.expectRevert(IDerivativesHandler.NoPositionExists.selector);
-        mockDerivativesHandler.closePosition();
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature("closePosition()")
+        );
     }
 
     function testCreatePosition() public {
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            true
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                true
+            )
         );
         assertEq(mockDerivativesHandler.hasPosition(), true, "hasPosition");
         IDerivativesHandler.Position memory position_ = mockDerivativesHandler
@@ -55,12 +65,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testLongProfitNoFee() public {
         mockDerivativesHandler.updateFeePercent(0);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            true
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                true
+            )
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, uniPrice_ * 2);
@@ -72,7 +85,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         assertEq(position_.hasProfit, true, "hasProfit");
         assertEq(position_.delta, _AMOUNT * 2);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         assertEq(owed_, _AMOUNT * 3);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
@@ -82,12 +97,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
     function testLongProfitFee() public {
         uint256 fee_ = 0.1e18;
         mockDerivativesHandler.updateFeePercent(fee_);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            true
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                true
+            )
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, uniPrice_ * 2);
@@ -101,7 +119,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = _AMOUNT * 2 - (_AMOUNT * 2).mul(fee_);
         assertEq(position_.delta, expectedDelta_, "delta");
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
         uint256 expected_ = _AMOUNT + expectedDelta_;
         assertEq(owed_, expected_, "owed");
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
@@ -114,12 +134,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testLongLossNoFee() public {
         mockDerivativesHandler.updateFeePercent(0);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            true
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                true
+            )
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 8) / 10);
@@ -132,7 +155,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10;
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
@@ -143,12 +168,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
     function testLongLossFee() public {
         uint256 fee_ = 0.05e18;
         mockDerivativesHandler.updateFeePercent(fee_);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            true
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                true
+            )
         );
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
@@ -162,7 +190,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10 + (_AMOUNT * 2).mul(fee_);
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
@@ -172,12 +202,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testShortProfitNoFee() public {
         mockDerivativesHandler.updateFeePercent(0);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            false
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                false
+            )
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 8) / 10);
@@ -190,7 +223,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10;
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT + expectedDelta_;
         assertEq(owed_, expected_);
@@ -200,12 +235,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testShortProfitFee() public {
         mockDerivativesHandler.updateFeePercent(0.1e18);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            false
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                false
+            )
         );
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
@@ -219,7 +257,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10 - (_AMOUNT * 2).mul(0.1e18);
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT + expectedDelta_;
         assertEq(owed_, expected_);
@@ -229,12 +269,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testShortLossNoFee() public {
         mockDerivativesHandler.updateFeePercent(0);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            false
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                false
+            )
         );
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 12) / 10);
@@ -247,7 +290,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10;
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
@@ -257,12 +302,15 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function testShortLossFee() public {
         mockDerivativesHandler.updateFeePercent(0.1e18);
-        mockDerivativesHandler.createPosition(
-            Tokens.USDC,
-            Tokens.UNI,
-            _AMOUNT,
-            2e18,
-            false
+        address(mockDerivativesHandler).functionDelegateCall(
+            abi.encodeWithSignature(
+                "createPosition(address,address,uint256,uint256,bool)",
+                Tokens.USDC,
+                Tokens.UNI,
+                _AMOUNT,
+                2e18,
+                false
+            )
         );
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
@@ -276,7 +324,9 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expectedDelta_ = (_AMOUNT * 4) / 10 + (_AMOUNT * 2).mul(0.1e18);
         assertEq(position_.delta, expectedDelta_);
 
-        uint256 owed_ = mockDerivativesHandler.closePosition();
+        bytes memory owedData_ = address(mockDerivativesHandler)
+            .functionDelegateCall(abi.encodeWithSignature("closePosition()"));
+        uint256 owed_ = abi.decode(owedData_, (uint256));
 
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);

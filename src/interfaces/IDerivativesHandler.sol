@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+// TODO Add documentation here
+
 interface IDerivativesHandler {
     struct Position {
         uint256 createdAt;
@@ -29,4 +31,6 @@ interface IDerivativesHandler {
     function position() external view returns (Position memory);
 
     function hasPosition() external view returns (bool);
+
+    function approveAddress() external view returns (address);
 }

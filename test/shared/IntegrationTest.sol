@@ -76,7 +76,7 @@ contract IntegrationTest is Test {
         );
         _mintTokensFor(
             Tokens.USDC,
-            address(mockDerivativesHandler),
+            address(mockDerivativesHandler.approveAddress()),
             10_000_000e6
         );
         addressProvider.updateAddress(
