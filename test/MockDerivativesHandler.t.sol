@@ -169,4 +169,118 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
         assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
     }
+
+    function testShortProfitNoFee() public {
+        mockDerivativesHandler.updateFeePercent(0);
+        mockDerivativesHandler.createPosition(
+            Tokens.USDC,
+            Tokens.UNI,
+            _AMOUNT,
+            2e18,
+            false
+        );
+        uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 8) / 10);
+        IDerivativesHandler.Position memory position_ = mockDerivativesHandler
+            .position();
+        assertEq(position_.baseAmount, _AMOUNT);
+        assertEq(position_.leverage, 2e18);
+        assertEq(position_.isLong, false, "isLong");
+        assertEq(position_.hasProfit, true, "hasProfit");
+        uint256 expectedDelta_ = (_AMOUNT * 4) / 10;
+        assertEq(position_.delta, expectedDelta_);
+
+        uint256 owed_ = mockDerivativesHandler.closePosition();
+
+        uint256 expected_ = _AMOUNT + expectedDelta_;
+        assertEq(owed_, expected_);
+        assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+    }
+
+    function testShortProfitFee() public {
+        mockDerivativesHandler.updateFeePercent(0.1e18);
+        mockDerivativesHandler.createPosition(
+            Tokens.USDC,
+            Tokens.UNI,
+            _AMOUNT,
+            2e18,
+            false
+        );
+        skip(365 days); // Incurring a year of fees
+        uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 8) / 10);
+        IDerivativesHandler.Position memory position_ = mockDerivativesHandler
+            .position();
+        assertEq(position_.baseAmount, _AMOUNT);
+        assertEq(position_.leverage, 2e18);
+        assertEq(position_.isLong, false, "isLong");
+        assertEq(position_.hasProfit, true, "hasProfit");
+        uint256 expectedDelta_ = (_AMOUNT * 4) / 10 - (_AMOUNT * 2).mul(0.1e18);
+        assertEq(position_.delta, expectedDelta_);
+
+        uint256 owed_ = mockDerivativesHandler.closePosition();
+
+        uint256 expected_ = _AMOUNT + expectedDelta_;
+        assertEq(owed_, expected_);
+        assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+    }
+
+    function testShortLossNoFee() public {
+        mockDerivativesHandler.updateFeePercent(0);
+        mockDerivativesHandler.createPosition(
+            Tokens.USDC,
+            Tokens.UNI,
+            _AMOUNT,
+            2e18,
+            false
+        );
+        uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 12) / 10);
+        IDerivativesHandler.Position memory position_ = mockDerivativesHandler
+            .position();
+        assertEq(position_.baseAmount, _AMOUNT);
+        assertEq(position_.leverage, 2e18);
+        assertEq(position_.isLong, false, "isLong");
+        assertEq(position_.hasProfit, false, "hasProfit");
+        uint256 expectedDelta_ = (_AMOUNT * 4) / 10;
+        assertEq(position_.delta, expectedDelta_);
+
+        uint256 owed_ = mockDerivativesHandler.closePosition();
+
+        uint256 expected_ = _AMOUNT - expectedDelta_;
+        assertEq(owed_, expected_);
+        assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+    }
+
+    function testShortLossFee() public {
+        mockDerivativesHandler.updateFeePercent(0.1e18);
+        mockDerivativesHandler.createPosition(
+            Tokens.USDC,
+            Tokens.UNI,
+            _AMOUNT,
+            2e18,
+            false
+        );
+        skip(365 days); // Incurring a year of fees
+        uint256 uniPrice_ = mockOracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, (uniPrice_ * 12) / 10);
+        IDerivativesHandler.Position memory position_ = mockDerivativesHandler
+            .position();
+        assertEq(position_.baseAmount, _AMOUNT);
+        assertEq(position_.leverage, 2e18);
+        assertEq(position_.isLong, false, "isLong");
+        assertEq(position_.hasProfit, false, "hasProfit");
+        uint256 expectedDelta_ = (_AMOUNT * 4) / 10 + (_AMOUNT * 2).mul(0.1e18);
+        assertEq(position_.delta, expectedDelta_);
+
+        uint256 owed_ = mockDerivativesHandler.closePosition();
+
+        uint256 expected_ = _AMOUNT - expectedDelta_;
+        assertEq(owed_, expected_);
+        assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+    }
 }
