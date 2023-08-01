@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-// TODO Add documentation here
-
 interface IDerivativesHandler {
     struct Position {
         uint256 createdAt;
@@ -18,6 +16,14 @@ interface IDerivativesHandler {
     error NoPositionExists();
     error PositionAlreadyExists();
 
+    /**
+     * @notice Creates a new position.
+     * @param baseToken The token to be used as collateral.
+     * @param targetToken The token to be traded.
+     * @param baseAmount The amount of baseToken to be used as collateral.
+     * @param leverage The amount of leverage to be used.
+     * @param isLong Whether the position is long or short.
+     */
     function createPosition(
         address baseToken,
         address targetToken,
@@ -26,11 +32,27 @@ interface IDerivativesHandler {
         bool isLong
     ) external;
 
-    function closePosition() external returns (uint256);
+    /**
+     * @notice Closes the position of the sender.
+     * @return baseAmountReceived The amount of baseToken received.
+     */
+    function closePosition() external returns (uint256 baseAmountReceived);
 
-    function position() external view returns (Position memory);
+    /**
+     * @notice Returns the position of the sender.
+     * @return position The position of the sender.
+     */
+    function position() external view returns (Position memory position);
 
-    function hasPosition() external view returns (bool);
+    /**
+     * @notice Returns if the sender has a position.
+     * @return hasPosition Whether the sender has a position.
+     */
+    function hasPosition() external view returns (bool hasPosition);
 
-    function approveAddress() external view returns (address);
+    /**
+     * @notice Returns the address of contract that the sender needs to approve spending for their base tokens.
+     * @return approveAddress The address of the contract that the sender needs to approve spending for their base tokens.
+     */
+    function approveAddress() external view returns (address approveAddress);
 }
