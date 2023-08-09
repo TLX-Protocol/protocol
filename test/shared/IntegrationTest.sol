@@ -14,15 +14,21 @@ import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
+import {Referrals} from "../../src/Referrals.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
+
+    // Users
+    address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
+    address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
 
     ChainlinkOracle public chainlinkOracle;
     MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
+    Referrals public referrals;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -65,6 +71,14 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(
             AddressKeys.POSITION_MANAGER_FACTORY,
             address(positionManagerFactory)
+        );
+
+        // Referrals Setup
+        // TODO Move these to our config library
+        referrals = new Referrals(0.2e18, 0.2e18, 0.5e18, 0.5e18);
+        addressProvider.updateAddress(
+            AddressKeys.REFERRALS,
+            address(referrals)
         );
     }
 
