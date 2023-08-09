@@ -41,4 +41,10 @@ interface IAddressProvider {
      * @return oracle The address of the Oracle contract.
      */
     function oracle() external view returns (address oracle);
+
+    /**
+     * @notice Returns the address for the Referrals contract.
+     * @return referrals The address of the Referrals contract.
+     */
+    function referrals() external view returns (address referrals);
 }
