@@ -23,7 +23,7 @@ interface IReferrals {
 
     function updateReferral(bytes32 code) external;
 
-    function updateCodeFor(bytes32 code, address user) external;
+    function updateReferralFor(address user, bytes32 code) external;
 
     function setPartner(address referrer, bool isPartner) external;
 

@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
+import {Tokens} from "../src/libraries/Tokens.sol";
+
 import {IReferrals} from "../src/interfaces/IReferrals.sol";
 
 contract ReferralsTest is IntegrationTest {
@@ -194,5 +196,33 @@ contract ReferralsTest is IntegrationTest {
         referrals.setPartnerEarnings(1.1e18);
         vm.expectRevert(IReferrals.InvalidAmount.selector);
         referrals.setPartnerEarnings(0.9e18);
+    }
+
+    function testUpdateReferralFor() public {
+        vm.prank(alice);
+        referrals.register(CODE);
+
+        address positionManager_ = positionManagerFactory.createPositionManager(
+            Tokens.UNI
+        );
+        vm.prank(positionManager_);
+        referrals.updateReferralFor(bob, CODE);
+
+        assertEq(referrals.discount(CODE), 0.2e18);
+        assertEq(referrals.discount(alice), 0);
+        assertEq(referrals.discount(bob), 0.2e18);
+        assertEq(referrals.referrer(CODE), alice);
+        assertEq(referrals.code(alice), CODE);
+        assertEq(referrals.code(bob), bytes32(0));
+        assertEq(referrals.referral(alice), bytes32(0));
+        assertEq(referrals.referral(bob), CODE);
+        assertEq(referrals.isPartner(alice), false);
+        assertEq(referrals.isPartner(bob), false);
+    }
+
+    function testUpdateReferralForRevertsForNonPositionManager() public {
+        vm.expectRevert(IReferrals.NotPositionManager.selector);
+        vm.prank(alice);
+        referrals.updateReferralFor(bob, CODE);
     }
 }

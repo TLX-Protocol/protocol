@@ -4,11 +4,14 @@ pragma solidity ^0.8.13;
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {IReferrals} from "./interfaces/IReferrals.sol";
+import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
 // TODO Add ability to earn rewards and claim them
-// TODO Lock updatecodefor to be only callable by something
 // TODO Add comments to inteface
 contract Referrals is IReferrals, Ownable {
+    address internal immutable _addressProvider;
+
     mapping(address => bytes32) internal _codes;
     mapping(bytes32 => address) internal _referrers;
     mapping(address => bytes32) internal _referrals;
@@ -19,12 +22,25 @@ contract Referrals is IReferrals, Ownable {
     uint256 public override partnerDiscount;
     uint256 public override partnerEarnings;
 
+    modifier onlyPositionManager() {
+        address positionManagerFactory_ = IAddressProvider(_addressProvider)
+            .positionManagerFactory();
+        bool isPositionManager_ = IPositionManagerFactory(
+            positionManagerFactory_
+        ).isPositionManager(msg.sender);
+
+        if (!isPositionManager_) revert NotPositionManager();
+        _;
+    }
+
     constructor(
+        address addressProvider_,
         uint256 referralDiscount_,
         uint256 referralEarnings_,
         uint256 partnerDiscount_,
         uint256 partnerEarnings_
     ) {
+        _addressProvider = addressProvider_;
         referralDiscount = referralDiscount_;
         referralEarnings = referralEarnings_;
         partnerDiscount = partnerDiscount_;
@@ -44,7 +60,10 @@ contract Referrals is IReferrals, Ownable {
         _updateCodeFor(code_, msg.sender);
     }
 
-    function updateCodeFor(bytes32 code_, address user_) external override {
+    function updateReferralFor(
+        address user_,
+        bytes32 code_
+    ) external override onlyPositionManager {
         _updateCodeFor(code_, user_);
     }
 

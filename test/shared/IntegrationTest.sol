@@ -75,7 +75,13 @@ contract IntegrationTest is Test {
 
         // Referrals Setup
         // TODO Move these to our config library
-        referrals = new Referrals(0.2e18, 0.2e18, 0.5e18, 0.5e18);
+        referrals = new Referrals(
+            address(addressProvider),
+            0.2e18,
+            0.2e18,
+            0.5e18,
+            0.5e18
+        );
         addressProvider.updateAddress(
             AddressKeys.REFERRALS,
             address(referrals)
