@@ -2,20 +2,25 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
+import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
-// TODO Add ability to earn rewards and claim them
 // TODO Add comments to inteface
 contract Referrals is IReferrals, Ownable {
+    using ScaledNumber for uint256;
+
     address internal immutable _addressProvider;
 
     mapping(address => bytes32) internal _codes;
     mapping(bytes32 => address) internal _referrers;
     mapping(address => bytes32) internal _referrals;
     mapping(address => bool) internal _partners;
+    mapping(address => uint256) internal _earnings;
 
     uint256 public override referralDiscount;
     uint256 public override referralEarnings;
@@ -45,6 +50,35 @@ contract Referrals is IReferrals, Ownable {
         referralEarnings = referralEarnings_;
         partnerDiscount = partnerDiscount_;
         partnerEarnings = partnerEarnings_;
+    }
+
+    function takeEarnings(
+        uint256 fees_,
+        address user_
+    ) external override returns (uint256) {
+        if (fees_ == 0) return 0;
+        if (user_ == address(0)) return 0;
+        bytes32 code_ = _codes[user_];
+        if (code_ == bytes32(0)) return 0;
+        address referrer_ = _referrers[code_];
+        if (referrer_ == address(0)) return 0;
+        bool isPartner_ = _partners[referrer_];
+        uint256 earnings_ = isPartner_ ? partnerEarnings : referralEarnings;
+        uint256 amount_ = fees_.mul(earnings_);
+        if (amount_ == 0) return 0;
+        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
+        IERC20(baseAsset_).transferFrom(msg.sender, address(this), amount_);
+        _earnings[referrer_] += amount_;
+        return amount_;
+    }
+
+    function claimEarnings() external override returns (uint256) {
+        uint256 amount_ = _earnings[msg.sender];
+        if (amount_ == 0) return 0;
+        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
+        delete _earnings[msg.sender];
+        IERC20(baseAsset_).transfer(msg.sender, amount_);
+        return amount_;
     }
 
     function register(bytes32 code_) external override {
@@ -138,6 +172,12 @@ contract Referrals is IReferrals, Ownable {
         address referrer_
     ) external view override returns (bool) {
         return _partners[referrer_];
+    }
+
+    function earned(
+        address referrer_
+    ) external view override returns (uint256) {
+        return _earnings[referrer_];
     }
 
     function _updateCodeFor(bytes32 code_, address user_) internal {

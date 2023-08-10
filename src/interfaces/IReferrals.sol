@@ -19,6 +19,13 @@ interface IReferrals {
     event PartnerDiscountSet(uint256 discount);
     event PartnerEarningsSet(uint256 earnings);
 
+    function takeEarnings(
+        uint256 fees,
+        address user
+    ) external returns (uint256);
+
+    function claimEarnings() external returns (uint256);
+
     function register(bytes32 code) external;
 
     function updateReferral(bytes32 code) external;
@@ -46,6 +53,8 @@ interface IReferrals {
     function referral(address user) external view returns (bytes32);
 
     function isPartner(address referrer) external view returns (bool);
+
+    function earned(address referrer) external view returns (uint256);
 
     function referralDiscount() external view returns (uint256);
 

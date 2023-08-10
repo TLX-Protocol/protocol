@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
@@ -26,6 +28,8 @@ contract ReferralsTest is IntegrationTest {
         assertEq(referrals.referral(bob), bytes32(0));
         assertEq(referrals.isPartner(alice), false);
         assertEq(referrals.isPartner(bob), false);
+        assertEq(referrals.earned(bob), 0);
+        assertEq(referrals.earned(alice), 0);
     }
 
     function testRegister() public {
@@ -224,5 +228,40 @@ contract ReferralsTest is IntegrationTest {
         vm.expectRevert(IReferrals.NotPositionManager.selector);
         vm.prank(alice);
         referrals.updateReferralFor(bob, CODE);
+    }
+
+    function testTakeEarnings() public {
+        vm.prank(alice);
+        referrals.register(CODE);
+
+        vm.prank(bob);
+        referrals.updateReferral(CODE);
+
+        _mintTokensFor(Tokens.USDC, address(this), 100e6);
+        IERC20(Tokens.USDC).approve(address(referrals), 100e6);
+        referrals.takeEarnings(10e6, alice);
+
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 2e6);
+        assertEq(referrals.earned(bob), 0);
+        assertEq(referrals.earned(alice), 2e6);
+    }
+
+    function testClaimEarnings() public {
+        vm.prank(alice);
+        referrals.register(CODE);
+
+        vm.prank(bob);
+        referrals.updateReferral(CODE);
+
+        _mintTokensFor(Tokens.USDC, address(this), 100e6);
+        IERC20(Tokens.USDC).approve(address(referrals), 100e6);
+        referrals.takeEarnings(10e6, alice);
+
+        vm.prank(alice);
+        referrals.claimEarnings();
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 0);
+        assertEq(referrals.earned(bob), 0);
+        assertEq(referrals.earned(alice), 0);
+        assertEq(IERC20(Tokens.USDC).balanceOf(alice), 2e6);
     }
 }
