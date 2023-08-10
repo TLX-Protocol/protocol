@@ -6,4 +6,5 @@ library AddressKeys {
     bytes32 public constant POSITION_MANAGER_FACTORY = "positionManagerFactory";
     bytes32 public constant ORACLE = "oracle";
     bytes32 public constant REFERRALS = "referrals";
+    bytes32 public constant BASE_ASSET = "baseAsset";
 }

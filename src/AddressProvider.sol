@@ -38,4 +38,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function referrals() external view override returns (address) {
         return _addresses[AddressKeys.REFERRALS];
     }
+
+    function baseAsset() external view override returns (address) {
+        return _addresses[AddressKeys.BASE_ASSET];
+    }
 }

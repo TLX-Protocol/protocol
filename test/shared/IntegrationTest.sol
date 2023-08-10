@@ -35,6 +35,7 @@ contract IntegrationTest is Test {
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
+        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
 
         // Chainlink Oracle Setup
         chainlinkOracle = new ChainlinkOracle(Contracts.ETH_USD_ORACLE);

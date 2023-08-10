@@ -47,4 +47,10 @@ interface IAddressProvider {
      * @return referrals The address of the Referrals contract.
      */
     function referrals() external view returns (address referrals);
+
+    /**
+     * @notice Returns the address for the base asset.
+     * @return baseAsset The address of the base asset.
+     */
+    function baseAsset() external view returns (address baseAsset);
 }
