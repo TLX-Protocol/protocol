@@ -10,7 +10,6 @@ import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
-// TODO Add comments to inteface
 contract Referrals is IReferrals, Ownable {
     using ScaledNumber for uint256;
 
