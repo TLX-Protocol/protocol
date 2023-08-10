@@ -15,6 +15,8 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     mapping(address => address) internal _positionManager;
     address internal immutable _addressProvider;
 
+    mapping(address => bool) public override isPositionManager;
+
     constructor(address addressProvider_) {
         _addressProvider = addressProvider_;
     }
@@ -35,6 +37,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         );
 
         // Updating state
+        isPositionManager[positionManager_] = true;
         _positionManagers.push(positionManager_);
         _positionManager[targetAsset_] = positionManager_;
         emit PositionManagerCreated(positionManager_);

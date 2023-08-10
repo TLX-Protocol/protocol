@@ -16,6 +16,7 @@ contract PositionManagerFactoryTest is IntegrationTest {
             positionManagerFactory.positionManager(Tokens.UNI),
             address(0)
         );
+        assertFalse(positionManagerFactory.isPositionManager(Tokens.UNI));
     }
 
     function testCreatePositionManager() public {
@@ -26,6 +27,9 @@ contract PositionManagerFactoryTest is IntegrationTest {
         assertEq(
             positionManagerFactory.positionManager(Tokens.UNI),
             positionManagers_[0]
+        );
+        assertTrue(
+            positionManagerFactory.isPositionManager(positionManagers_[0])
         );
     }
 
