@@ -2,6 +2,14 @@
 pragma solidity ^0.8.13;
 
 interface IReferrals {
+    event Registered(address indexed user, bytes32 code);
+    event UpdatedReferral(address indexed user, bytes32 code);
+    event PartnerSet(address indexed referrer, bool isPartner);
+    event ReferralDiscountSet(uint256 discount);
+    event ReferralEarningsSet(uint256 earnings);
+    event PartnerDiscountSet(uint256 discount);
+    event PartnerEarningsSet(uint256 earnings);
+
     error AlreadyRegistered();
     error InvalidCode();
     error CodeTaken();
@@ -10,14 +18,6 @@ interface IReferrals {
     error NotPositionManager();
     error NotChanged();
     error InvalidAmount();
-
-    event Registered(address indexed user, bytes32 code);
-    event UpdatedReferral(address indexed user, bytes32 code);
-    event PartnerSet(address indexed referrer, bool isPartner);
-    event ReferralDiscountSet(uint256 discount);
-    event ReferralEarningsSet(uint256 earnings);
-    event PartnerDiscountSet(uint256 discount);
-    event PartnerEarningsSet(uint256 earnings);
 
     function takeEarnings(
         uint256 fees,
