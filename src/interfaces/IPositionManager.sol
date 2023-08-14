@@ -77,7 +77,7 @@ interface IPositionManager {
 
     /**
      * @notice Returns the exchange rate from one leveraged token to one base asset.
-     * @dev In USD value: 1 leveraged token = 'exchangeRate' * 1 base asset.
+     * @dev In 18 decimals.
      * @param leveragedToken The address of the leveraged token.
      * @return exchangeRate The exchange rate.
      */
