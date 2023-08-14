@@ -35,6 +35,7 @@ contract IntegrationTest is Test {
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
             address(chainlinkOracle)
