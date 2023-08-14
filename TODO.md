@@ -13,3 +13,4 @@
 - Deployment scripts
 - Create final `DerivativesHandler`
 - Create aidrop boost system
+- Consider what zap support we might want (e.g. swapping leveraged tokens)
