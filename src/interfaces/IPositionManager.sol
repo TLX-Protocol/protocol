@@ -2,6 +2,23 @@
 pragma solidity ^0.8.13;
 
 interface IPositionManager {
+    event Minted(
+        address indexed leveragedToken,
+        address indexed account,
+        uint256 leveragedTokenAmount,
+        uint256 baseAssetAmount
+    );
+    event Redeemed(
+        address indexed leveragedToken,
+        address indexed account,
+        uint256 leveragedTokenAmount,
+        uint256 baseAssetAmount
+    );
+
+    error NotLeveragedToken();
+    error NotPositionManager();
+    error InsufficientAmount();
+
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
      * @param leveragedToken The address of the leveraged token to mint.
@@ -29,13 +46,13 @@ interface IPositionManager {
     ) external returns (uint256 baseAmountIn);
 
     /**
-     * @notice Burns leveragedTokenAmount of the leveraged token and returns the base asset.
-     * @param leveragedToken The address of the leveraged token to burn.
-     * @param leveragedTokenAmount The amount of the leveraged token to burn.
+     * @notice Redeems leveragedTokenAmount of the leveraged token and returns the base asset.
+     * @param leveragedToken The address of the leveraged token to redeem.
+     * @param leveragedTokenAmount The amount of the leveraged token to redeem.
      * @param minBaseAmountReceived The minimum amount of the base asset to receive (reverts otherwise).
      * @return baseAmountReceived The amount of the base asset received.
      */
-    function burn(
+    function redeem(
         address leveragedToken,
         uint256 leveragedTokenAmount,
         uint256 minBaseAmountReceived
@@ -57,4 +74,14 @@ interface IPositionManager {
      * @return targetAsset The target asset of the position.
      */
     function targetAsset() external view returns (address targetAsset);
+
+    /**
+     * @notice Returns the exchange rate from one leveraged token to one base asset.
+     * @dev In USD value: 1 leveraged token = 'exchangeRate' * 1 base asset.
+     * @param leveragedToken The address of the leveraged token.
+     * @return exchangeRate The exchange rate.
+     */
+    function exchangeRate(
+        address leveragedToken
+    ) external view returns (uint256 exchangeRate);
 }
