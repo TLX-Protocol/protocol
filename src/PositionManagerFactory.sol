@@ -30,7 +30,9 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         if (oracle_.getUsdPrice(targetAsset_) == 0) revert NoOracle();
 
         // Deploying position manager
-        address positionManager_ = address(new PositionManager(targetAsset_));
+        address positionManager_ = address(
+            new PositionManager(_addressProvider, targetAsset_)
+        );
 
         // Updating state
         _positionManagers.push(positionManager_);
