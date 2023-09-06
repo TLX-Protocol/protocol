@@ -12,3 +12,4 @@
 - Deployment scripts
 - Create final `DerivativesHandler`
 - Create aidrop boost system
+- Change to Optimism and Synthetix
