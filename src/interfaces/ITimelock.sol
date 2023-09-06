@@ -5,8 +5,6 @@ interface ITimelock {
     struct Call {
         uint64 id;
         uint64 ready;
-        uint64 executed;
-        uint64 cancelled;
         address target;
         bytes data;
     }
@@ -17,10 +15,10 @@ interface ITimelock {
     event DelaySet(bytes4 selector, uint64 delay);
 
     error CallNotReady(uint64 id);
-    error CallAlreadyExecuted(uint64 id);
-    error CallAlreadyCancelled(uint64 id);
     error CallFailed(uint64 id, bytes returnData);
     error NotAuthorized();
+    error InvalidTarget();
+    error CallDoesNotExist(uint64 id);
 
     /**
      * @notice Prepare a call to be executed after a delay
@@ -65,18 +63,6 @@ interface ITimelock {
      * @return calls Ready calls
      */
     function readyCalls() external view returns (Call[] memory calls);
-
-    /**
-     * @notice Get executed calls
-     * @return calls Executed calls
-     */
-    function executedCalls() external view returns (Call[] memory calls);
-
-    /**
-     * @notice Get cancelled calls
-     * @return calls Cancelled calls
-     */
-    function cancelledCalls() external view returns (Call[] memory calls);
 
     /**
      * @notice Get the delay for a function selector

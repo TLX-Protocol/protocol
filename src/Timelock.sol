@@ -7,12 +7,15 @@ import {ITimelock} from "./interfaces/ITimelock.sol";
 
 contract Timelock is ITimelock, Ownable {
     mapping(bytes4 => uint64) internal _delays;
-    Call[] internal _calls;
+    uint64 internal _nextCallId;
+    uint64[] internal _callIds;
+    mapping(uint64 => Call) internal _calls;
 
     function prepareCall(
         address target_,
         bytes calldata data_
     ) external onlyOwner {
+        if (target_ == address(0)) revert InvalidTarget();
         bytes4 selector_ = bytes4(data_[:4]);
 
         // Setting the delay for the setDelay function be the delay of the function it's setting
@@ -24,13 +27,12 @@ contract Timelock is ITimelock, Ownable {
             }
         }
 
-        uint64 id_ = uint64(_calls.length);
-        _calls.push(
+        uint64 id_ = _nextCallId++;
+        _callIds.push(id_);
+        _calls[id_] = (
             Call({
                 id: id_,
                 ready: uint64(block.timestamp) + _delays[selector_],
-                executed: 0,
-                cancelled: 0,
                 target: target_,
                 data: data_
             })
@@ -40,23 +42,21 @@ contract Timelock is ITimelock, Ownable {
 
     function executeCall(uint64 id_) external onlyOwner {
         Call memory call_ = _calls[id_];
+        if (call_.target == address(0)) revert CallDoesNotExist(id_);
         if (call_.ready > block.timestamp) revert CallNotReady(id_);
-        if (call_.executed != 0) revert CallAlreadyExecuted(id_);
-        if (call_.cancelled != 0) revert CallAlreadyCancelled(id_);
         // solhint-disable-next-line avoid-low-level-calls
         (bool success_, bytes memory returnData_) = call_.target.call(
             call_.data
         );
         if (!success_) revert CallFailed(id_, returnData_);
-        _calls[id_].executed = uint64(block.timestamp);
+        _deleteCall(id_);
         emit CallExecuted(id_, call_.target, call_.data);
     }
 
     function cancelCall(uint64 id_) external onlyOwner {
         Call memory call_ = _calls[id_];
-        if (call_.cancelled != 0) revert CallAlreadyCancelled(id_);
-        if (call_.executed != 0) revert CallAlreadyExecuted(id_);
-        _calls[id_].cancelled = uint64(block.timestamp);
+        if (call_.target == address(0)) revert CallDoesNotExist(id_);
+        _deleteCall(id_);
         emit CallCancelled(id_, call_.target, call_.data);
     }
 
@@ -67,17 +67,22 @@ contract Timelock is ITimelock, Ownable {
     }
 
     function allCalls() external view returns (Call[] memory) {
-        return _calls;
+        uint64[] memory callIds_ = _callIds;
+        Call[] memory calls_ = new Call[](callIds_.length);
+        for (uint256 i; i < callIds_.length; i++) {
+            calls_[i] = _calls[callIds_[i]];
+        }
+        return calls_;
     }
 
     function pendingCalls() external view returns (Call[] memory) {
-        Call[] memory calls_ = new Call[](_calls.length);
+        uint64[] memory callIds_ = _callIds;
+        Call[] memory calls_ = new Call[](callIds_.length);
         uint256 count_;
-        for (uint256 i; i < _calls.length; i++) {
-            if (_calls[i].ready > block.timestamp) continue;
-            if (_calls[i].executed != 0) continue;
-            if (_calls[i].cancelled != 0) continue;
-            calls_[count_] = _calls[i];
+        for (uint256 i; i < callIds_.length; i++) {
+            uint64 id_ = callIds_[i];
+            if (_calls[id_].ready <= block.timestamp) continue;
+            calls_[count_] = _calls[id_];
             count_++;
         }
         // solhint-disable-next-line no-inline-assembly
@@ -88,43 +93,13 @@ contract Timelock is ITimelock, Ownable {
     }
 
     function readyCalls() external view returns (Call[] memory) {
-        Call[] memory calls_ = new Call[](_calls.length);
+        uint64[] memory callIds_ = _callIds;
+        Call[] memory calls_ = new Call[](callIds_.length);
         uint256 count_;
-        for (uint256 i; i < _calls.length; i++) {
-            if (_calls[i].ready < block.timestamp) continue;
-            if (_calls[i].executed != 0) continue;
-            if (_calls[i].cancelled != 0) continue;
-            calls_[count_] = _calls[i];
-            count_++;
-        }
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            mstore(calls_, count_)
-        }
-        return calls_;
-    }
-
-    function executedCalls() external view returns (Call[] memory) {
-        Call[] memory calls_ = new Call[](_calls.length);
-        uint256 count_;
-        for (uint256 i; i < _calls.length; i++) {
-            if (_calls[i].executed == 0) continue;
-            calls_[count_] = _calls[i];
-            count_++;
-        }
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            mstore(calls_, count_)
-        }
-        return calls_;
-    }
-
-    function cancelledCalls() external view returns (Call[] memory) {
-        Call[] memory calls_ = new Call[](_calls.length);
-        uint256 count_;
-        for (uint256 i; i < _calls.length; i++) {
-            if (_calls[i].cancelled == 0) continue;
-            calls_[count_] = _calls[i];
+        for (uint256 i; i < callIds_.length; i++) {
+            uint64 id_ = callIds_[i];
+            if (_calls[id_].ready > block.timestamp) continue;
+            calls_[count_] = _calls[id_];
             count_++;
         }
         // solhint-disable-next-line no-inline-assembly
@@ -136,5 +111,19 @@ contract Timelock is ITimelock, Ownable {
 
     function delay(bytes4 selector) external view override returns (uint64) {
         return _delays[selector];
+    }
+
+    function _deleteCall(uint64 id_) internal {
+        uint64[] memory callids_ = _callIds;
+        uint256 index_;
+        for (uint256 i; i < callids_.length; i++) {
+            if (callids_[i] == id_) {
+                index_ = i;
+                break;
+            }
+        }
+        _callIds[index_] = callids_[index_];
+        _callIds.pop();
+        delete _calls[id_];
     }
 }

@@ -40,8 +40,6 @@ contract TimelockTest is Test {
         assertEq(timelock.allCalls().length, 0, "length");
         assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
         assertEq(timelock.readyCalls().length, 0, "readyCalls");
-        assertEq(timelock.executedCalls().length, 0, "executedCalls");
-        assertEq(timelock.cancelledCalls().length, 0, "cancelledCalls");
     }
 
     function testPrepareRevertsForNonOwner() public {
@@ -56,14 +54,10 @@ contract TimelockTest is Test {
         assertEq(allCalls_.length, 1, "length");
         assertEq(allCalls_[0].id, 0, "id");
         assertEq(allCalls_[0].ready, block.timestamp, "ready");
-        assertEq(allCalls_[0].executed, 0, "executed");
-        assertEq(allCalls_[0].cancelled, 0, "cancelled");
         assertEq(allCalls_[0].target, dummyAddress, "target");
         assertEq(allCalls_[0].data, dummyData, "data");
-        assertEq(timelock.pendingCalls().length, 1, "pendingCalls");
+        assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
         assertEq(timelock.readyCalls().length, 1, "readyCalls");
-        assertEq(timelock.executedCalls().length, 0, "executedCalls");
-        assertEq(timelock.cancelledCalls().length, 0, "cancelledCalls");
     }
 
     function testExecuteCall() public {
@@ -71,17 +65,9 @@ contract TimelockTest is Test {
         timelock.executeCall(0);
         ITimelock.Call[] memory allCalls_ = timelock.allCalls();
         assertEq(dummyContract.state(), 42);
-        assertEq(allCalls_.length, 1, "length");
-        assertEq(allCalls_[0].id, 0, "id");
-        assertEq(allCalls_[0].ready, block.timestamp, "ready");
-        assertEq(allCalls_[0].executed, block.timestamp, "executed");
-        assertEq(allCalls_[0].cancelled, 0, "cancelled");
-        assertEq(allCalls_[0].target, dummyAddress, "target");
-        assertEq(allCalls_[0].data, dummyData, "data");
+        assertEq(allCalls_.length, 0, "length");
         assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
         assertEq(timelock.readyCalls().length, 0, "readyCalls");
-        assertEq(timelock.executedCalls().length, 1, "executedCalls");
-        assertEq(timelock.cancelledCalls().length, 0, "cancelledCalls");
     }
 
     function testExecuteCallRevertsForNonOwner() public {
@@ -95,7 +81,7 @@ contract TimelockTest is Test {
         timelock.prepareCall(dummyAddress, dummyData);
         timelock.executeCall(0);
         vm.expectRevert(
-            abi.encodeWithSelector(ITimelock.CallAlreadyExecuted.selector, 0)
+            abi.encodeWithSelector(ITimelock.CallDoesNotExist.selector, 0)
         );
         timelock.executeCall(0);
     }
@@ -104,24 +90,16 @@ contract TimelockTest is Test {
         timelock.prepareCall(dummyAddress, dummyData);
         timelock.cancelCall(0);
         ITimelock.Call[] memory allCalls_ = timelock.allCalls();
-        assertEq(allCalls_.length, 1, "length");
-        assertEq(allCalls_[0].id, 0, "id");
-        assertEq(allCalls_[0].ready, block.timestamp, "ready");
-        assertEq(allCalls_[0].executed, 0, "executed");
-        assertEq(allCalls_[0].cancelled, block.timestamp, "cancelled");
-        assertEq(allCalls_[0].target, dummyAddress, "target");
-        assertEq(allCalls_[0].data, dummyData, "data");
+        assertEq(allCalls_.length, 0, "length");
         assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
         assertEq(timelock.readyCalls().length, 0, "readyCalls");
-        assertEq(timelock.executedCalls().length, 0, "executedCalls");
-        assertEq(timelock.cancelledCalls().length, 1, "cancelledCalls");
     }
 
     function testExecuteCallRevertsWhenCancelled() public {
         timelock.prepareCall(dummyAddress, dummyData);
         timelock.cancelCall(0);
         vm.expectRevert(
-            abi.encodeWithSelector(ITimelock.CallAlreadyCancelled.selector, 0)
+            abi.encodeWithSelector(ITimelock.CallDoesNotExist.selector, 0)
         );
         timelock.executeCall(0);
     }
@@ -184,7 +162,7 @@ contract TimelockTest is Test {
         timelock.prepareCall(dummyAddress, dummyData);
         timelock.cancelCall(0);
         vm.expectRevert(
-            abi.encodeWithSelector(ITimelock.CallAlreadyCancelled.selector, 0)
+            abi.encodeWithSelector(ITimelock.CallDoesNotExist.selector, 0)
         );
         timelock.cancelCall(0);
     }
@@ -193,8 +171,13 @@ contract TimelockTest is Test {
         timelock.prepareCall(dummyAddress, dummyData);
         timelock.executeCall(0);
         vm.expectRevert(
-            abi.encodeWithSelector(ITimelock.CallAlreadyExecuted.selector, 0)
+            abi.encodeWithSelector(ITimelock.CallDoesNotExist.selector, 0)
         );
         timelock.cancelCall(0);
+    }
+
+    function testRevetsWhenCreatingCallWithZeroAddress() public {
+        vm.expectRevert(ITimelock.InvalidTarget.selector);
+        timelock.prepareCall(address(0), dummyData);
     }
 }
