@@ -32,7 +32,7 @@ contract ChainlinkOracleTest is IntegrationTest {
 
     function testPriceLeveragedToken() public {
         positionManagerFactory.createPositionManager(Tokens.UNI);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 123);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
         uint256 price_ = chainlinkOracle.getUsdPrice(
             leveragedTokenFactory.longTokens(Tokens.UNI)[0]
         );
