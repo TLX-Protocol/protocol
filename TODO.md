@@ -1,3 +1,4 @@
+- Move max leverage to config
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
@@ -9,3 +10,5 @@
 - Make contracts upgradable
 - Deployment scripts
 - Create final `DerivativesHandler`
+- Create aidrop boost system
+- Change to Optimism and Synthetix

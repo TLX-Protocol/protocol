@@ -46,7 +46,7 @@ It will extend the `IERC20Metadata` interface with standard functionality such a
 It will have additional views:
 
 - `targetAsset` The target asset of the leveraged token
-- `targetLeverage` The target leverage of the leveraged token (2 decimals)
+- `targetLeverage` The target leverage of the leveraged token (18 decimals)
 - `isLong` If the leveraged token is long or short
 
 The convention of leveraged tokens will be as follows:
