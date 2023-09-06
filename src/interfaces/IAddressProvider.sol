@@ -53,4 +53,13 @@ interface IAddressProvider {
      * @return baseAsset The address of the base asset.
      */
     function baseAsset() external view returns (address baseAsset);
+
+    /**
+     * @notice Returns the address for the DerivativesHandler contract.
+     * @return derivativesHandler The address of the DerivativesHandler contract.
+     */
+    function derivativesHandler()
+        external
+        view
+        returns (address derivativesHandler);
 }

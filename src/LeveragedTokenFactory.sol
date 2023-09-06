@@ -21,6 +21,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(address => address[]) internal _allTargetTokens;
     mapping(address => address[]) internal _longTargetTokens;
     mapping(address => address[]) internal _shortTargetTokens;
+    mapping(address => bool) internal _isLeveragedToken;
     mapping(address => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
@@ -40,9 +41,13 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         returns (address longToken, address shortToken)
     {
         // Checks
+        uint256 leveragePartOfWhole_ = targetLeverage_ % 1e18;
+        uint256 truncatedToTwoDecimals_ = (leveragePartOfWhole_ / 1e16) * 1e16;
+        bool hasTwoDecimals_ = leveragePartOfWhole_ == truncatedToTwoDecimals_;
+        if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
         if (targetAsset_ == address(0)) revert ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
-        if (targetLeverage_ > 100e3) revert MaxLeverage();
+        if (targetLeverage_ > 100e18) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
         IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(
@@ -118,6 +123,12 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _tokens[targetAsset_][targetLeverage_][isLong_] != address(0);
     }
 
+    function tokenExists(
+        address leveragedToken_
+    ) public view override returns (bool exists) {
+        return _isLeveragedToken[leveragedToken_];
+    }
+
     function _deployToken(
         address positionManager_,
         address targetAsset_,
@@ -138,6 +149,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);
+        _isLeveragedToken[token_] = true;
         if (isLong_) {
             _longTokens.push(token_);
             _longTargetTokens[targetAsset_].push(token_);
@@ -175,8 +187,8 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     function _getLeverageString(
         uint256 targetLeverage_
     ) internal pure returns (string memory) {
-        uint256 wholeNumber_ = targetLeverage_ / 1e2;
-        uint256 partOfWhole_ = targetLeverage_ % 1e2;
+        uint256 wholeNumber_ = targetLeverage_ / 1e18;
+        uint256 partOfWhole_ = (targetLeverage_ % 1e18) / 1e16;
         string memory wholeNumberString_ = Strings.toString(wholeNumber_);
         if (partOfWhole_ == 0) return wholeNumberString_;
         string memory partOfWholeString_ = Strings.toString(partOfWhole_);

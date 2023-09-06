@@ -15,6 +15,7 @@ import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 import {Referrals} from "../../src/Referrals.sol";
+import {MockDerivativesHandler} from "../../src/testing/MockDerivativesHandler.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -29,6 +30,7 @@ contract IntegrationTest is Test {
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
     Referrals public referrals;
+    MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -42,6 +44,7 @@ contract IntegrationTest is Test {
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
             address(chainlinkOracle)
@@ -86,6 +89,21 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(
             AddressKeys.REFERRALS,
             address(referrals)
+        );
+
+        // MockDerivativesHandler Setup
+        mockDerivativesHandler = new MockDerivativesHandler(
+            address(addressProvider),
+            0.2e18
+        );
+        _mintTokensFor(
+            Tokens.USDC,
+            address(mockDerivativesHandler.approveAddress()),
+            10_000_000e6
+        );
+        addressProvider.updateAddress(
+            AddressKeys.DERIVATIVES_HANDLER,
+            address(mockDerivativesHandler)
         );
     }
 

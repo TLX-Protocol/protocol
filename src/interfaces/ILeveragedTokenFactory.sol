@@ -9,6 +9,7 @@ interface ILeveragedTokenFactory {
     error ZeroLeverage();
     error MaxLeverage();
     error NoPositionManager();
+    error MaxOfTwoDecimals();
 
     /**
      * @notice Creates a new Long and Short Leveraged Token for the given target asset and leverage.
@@ -92,6 +93,15 @@ interface ILeveragedTokenFactory {
         address targetAsset,
         uint256 targetLeverage,
         bool isLong
+    ) external view returns (bool exists);
+
+    /**
+     * @notice Returns if the given Leveraged Token exists.
+     * @param leveragedToken The address of the Leveraged Token.
+     * @return exists If the Leveraged Token exists.
+     */
+    function tokenExists(
+        address leveragedToken
     ) external view returns (bool exists);
 
     /**

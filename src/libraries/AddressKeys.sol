@@ -7,4 +7,5 @@ library AddressKeys {
     bytes32 public constant ORACLE = "oracle";
     bytes32 public constant REFERRALS = "referrals";
     bytes32 public constant BASE_ASSET = "baseAsset";
+    bytes32 public constant DERIVATIVES_HANDLER = "derivativesHandler";
 }

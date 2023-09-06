@@ -33,7 +33,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
 
         // Deploying position manager
         address positionManager_ = address(
-            new PositionManager(Tokens.USDC, targetAsset_)
+            new PositionManager(_addressProvider, Tokens.USDC, targetAsset_)
         );
 
         // Updating state
