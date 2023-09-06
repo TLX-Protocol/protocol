@@ -66,4 +66,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function positionEqualizer() external view override returns (address) {
         return _addresses[AddressKeys.POSITION_EQUALIZER];
     }
+
+    function derivativesHandler() external view override returns (address) {
+        return _addresses[AddressKeys.DERIVATIVES_HANDLER];
+    }
 }

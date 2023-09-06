@@ -1,4 +1,3 @@
-- Add docs to interface for `ILeveragedToken` and `ITlxToken` and anything else missing
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`
@@ -11,3 +10,4 @@
 - Consider what zap support we might want (e.g. swapping leveraged tokens)
 - Clean up a bunch of the TODOS once all the PRs are merged
 - Go through and move all the remaning hard coded values to config
+- Change to Optimism and Synthetix

@@ -44,6 +44,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         returns (address longToken, address shortToken)
     {
         // Checks
+        uint256 leveragePartOfWhole_ = targetLeverage_ % 1e18;
+        uint256 truncatedToTwoDecimals_ = (leveragePartOfWhole_ / 1e16) * 1e16;
+        bool hasTwoDecimals_ = leveragePartOfWhole_ == truncatedToTwoDecimals_;
+        if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
         if (targetAsset_ == address(0)) revert ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
@@ -186,8 +190,8 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     function _getLeverageString(
         uint256 targetLeverage_
     ) internal pure returns (string memory) {
-        uint256 wholeNumber_ = targetLeverage_ / 1e2;
-        uint256 partOfWhole_ = targetLeverage_ % 1e2;
+        uint256 wholeNumber_ = targetLeverage_ / 1e18;
+        uint256 partOfWhole_ = (targetLeverage_ % 1e18) / 1e16;
         string memory wholeNumberString_ = Strings.toString(wholeNumber_);
         if (partOfWhole_ == 0) return wholeNumberString_;
         string memory partOfWholeString_ = Strings.toString(partOfWhole_);

@@ -92,4 +92,13 @@ interface IAddressProvider {
         external
         view
         returns (address positionEqualizer);
+
+    /**
+     * @notice Returns the address for the DerivativesHandler contract.
+     * @return derivativesHandler The address of the DerivativesHandler contract.
+     */
+    function derivativesHandler()
+        external
+        view
+        returns (address derivativesHandler);
 }

@@ -13,4 +13,5 @@ library AddressKeys {
     bytes32 public constant LOCKER = "locker";
     bytes32 public constant BASE_ASSET = "baseAsset";
     bytes32 public constant POSITION_EQUALIZER = "positionEqualizer";
+    bytes32 public constant DERIVATIVES_HANDLER = "derivativesHandler";
 }

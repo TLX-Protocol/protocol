@@ -21,9 +21,8 @@ contract PositionManagerTest is IntegrationTest {
         positionManager = PositionManager(
             positionManagerFactory.positionManager(Tokens.UNI)
         );
-        // leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 2e18);
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Tokens.UNI, 123);
+            .createLeveragedTokens(Tokens.UNI, 1.23e18);
         leveragedToken = LeveragedToken(longTokenAddress_);
     }
 
@@ -63,7 +62,7 @@ contract PositionManagerTest is IntegrationTest {
     function testMintAmountInRevertsForInvalidPositionManager() public {
         positionManagerFactory.createPositionManager(Tokens.WBTC);
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Tokens.WBTC, 123);
+            .createLeveragedTokens(Tokens.WBTC, 1.23e18);
 
         vm.expectRevert(IPositionManager.NotPositionManager.selector);
         positionManager.mintAmountIn(longTokenAddress_, 1, 1);
@@ -110,7 +109,7 @@ contract PositionManagerTest is IntegrationTest {
     function testMintAmountOutRevertsForInvalidPositionManager() public {
         positionManagerFactory.createPositionManager(Tokens.WBTC);
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Tokens.WBTC, 123);
+            .createLeveragedTokens(Tokens.WBTC, 1.23e18);
 
         vm.expectRevert(IPositionManager.NotPositionManager.selector);
         positionManager.mintAmountOut(longTokenAddress_, 1, 1);

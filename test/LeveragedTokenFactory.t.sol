@@ -16,20 +16,20 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
         (
             address longTokenAddress_,
             address shortTokenAddress_
-        ) = leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 123);
+        ) = leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
         ILeveragedToken longToken = ILeveragedToken(longTokenAddress_);
         ILeveragedToken shortToken = ILeveragedToken(shortTokenAddress_);
         assertEq(longToken.name(), "UNI 1.23x Long");
         assertEq(longToken.symbol(), "UNI1.23L");
         assertEq(longToken.decimals(), 18);
         assertEq(longToken.targetAsset(), Tokens.UNI);
-        assertEq(longToken.targetLeverage(), 123);
+        assertEq(longToken.targetLeverage(), 1.23e18);
         assertTrue(longToken.isLong());
         assertEq(shortToken.name(), "UNI 1.23x Short");
         assertEq(shortToken.symbol(), "UNI1.23S");
         assertEq(shortToken.decimals(), 18);
         assertEq(shortToken.targetAsset(), Tokens.UNI);
-        assertEq(shortToken.targetLeverage(), 123);
+        assertEq(shortToken.targetLeverage(), 1.23e18);
         assertFalse(shortToken.isLong());
         address[] memory tokens = leveragedTokenFactory.allTokens();
         assertEq(tokens.length, 2);
@@ -63,21 +63,25 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
         assertEq(shortTargetTokens[0], shortTokenAddress_);
         address longTokenAddress = leveragedTokenFactory.token(
             Tokens.UNI,
-            123,
+            1.23e18,
             true
         );
         assertEq(longTokenAddress, longTokenAddress_);
         address shortTokenAddress = leveragedTokenFactory.token(
             Tokens.UNI,
-            123,
+            1.23e18,
             false
         );
         assertEq(shortTokenAddress, shortTokenAddress_);
-        assertTrue(leveragedTokenFactory.tokenExists(Tokens.UNI, 123, true));
-        assertTrue(leveragedTokenFactory.tokenExists(Tokens.UNI, 123, false));
         assertEq(leveragedTokenFactory.tokenExists(longTokenAddress_), true);
         assertEq(leveragedTokenFactory.tokenExists(shortTokenAddress_), true);
         assertEq(leveragedTokenFactory.tokenExists(Tokens.UNI), false);
+        assertTrue(
+            leveragedTokenFactory.tokenExists(Tokens.UNI, 1.23e18, true)
+        );
+        assertTrue(
+            leveragedTokenFactory.tokenExists(Tokens.UNI, 1.23e18, false)
+        );
         assertEq(
             leveragedTokenFactory.pair(longTokenAddress_),
             shortTokenAddress_
@@ -97,18 +101,29 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
         assertEq(leveragedTokenFactory.isLeveragedToken(Tokens.UNI), false);
     }
 
-    function testReverts() public {
-        // Expect revert
+    function testRevertsNoPositionManager() public {
         vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.GMX, 123);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.GMX, 1.23e18);
+    }
+
+    function testRevertsZeroAddress() public {
         vm.expectRevert(ILeveragedTokenFactory.ZeroAddress.selector);
-        leveragedTokenFactory.createLeveragedTokens(address(0), 123);
+        leveragedTokenFactory.createLeveragedTokens(address(0), 1.23e18);
+    }
+
+    function testRevertsZeroLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.ZeroLeverage.selector);
         leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 0);
+    }
+
+    function testRevertsMaxLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.MaxLeverage.selector);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1000001);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 123);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 101e18);
+    }
+
+    function testRevertsTokenExists() public {
+        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
         vm.expectRevert(ILeveragedTokenFactory.TokenExists.selector);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 123);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
     }
 }

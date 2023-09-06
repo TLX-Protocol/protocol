@@ -22,6 +22,7 @@ import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
+import {MockDerivativesHandler} from "../../src/testing/MockDerivativesHandler.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -43,6 +44,7 @@ contract IntegrationTest is Test {
     Locker public locker;
     Bonding public bonding;
     Vesting public vesting;
+    MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
@@ -140,6 +142,21 @@ contract IntegrationTest is Test {
         mockOracle.setPrice(address(0), ethPrice_);
         uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
         mockOracle.setPrice(Tokens.USDC, usdcPrice_);
+
+        // MockDerivativesHandler Setup
+        mockDerivativesHandler = new MockDerivativesHandler(
+            address(addressProvider),
+            0.2e18
+        );
+        _mintTokensFor(
+            Tokens.USDC,
+            address(mockDerivativesHandler.approveAddress()),
+            10_000_000e6
+        );
+        addressProvider.updateAddress(
+            AddressKeys.DERIVATIVES_HANDLER,
+            address(mockDerivativesHandler)
+        );
     }
 
     function _mintTokensFor(
