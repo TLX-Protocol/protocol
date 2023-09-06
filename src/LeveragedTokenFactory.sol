@@ -21,6 +21,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(address => address[]) internal _allTargetTokens;
     mapping(address => address[]) internal _longTargetTokens;
     mapping(address => address[]) internal _shortTargetTokens;
+    mapping(address => bool) internal _isLeveragedToken;
     mapping(address => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
@@ -122,6 +123,12 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _tokens[targetAsset_][targetLeverage_][isLong_] != address(0);
     }
 
+    function tokenExists(
+        address leveragedToken_
+    ) public view override returns (bool exists) {
+        return _isLeveragedToken[leveragedToken_];
+    }
+
     function _deployToken(
         address positionManager_,
         address targetAsset_,
@@ -142,6 +149,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);
+        _isLeveragedToken[token_] = true;
         if (isLong_) {
             _longTokens.push(token_);
             _longTargetTokens[targetAsset_].push(token_);
