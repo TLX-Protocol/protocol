@@ -18,14 +18,11 @@ contract Referrals is IReferrals, Ownable {
     mapping(address => bytes32) internal _codes;
     mapping(bytes32 => address) internal _referrers;
     mapping(address => bytes32) internal _referrals;
-    mapping(address => bool) internal _partners;
     // Earnings contains both referrer earnings and rebates
     mapping(address => uint256) internal _earnings;
 
-    uint256 public override referralDiscount;
-    uint256 public override referralEarnings;
-    uint256 public override partnerDiscount;
-    uint256 public override partnerEarnings;
+    uint256 public override rebate;
+    uint256 public override earnings;
 
     modifier onlyPositionManager() {
         address positionManagerFactory_ = IAddressProvider(_addressProvider)
@@ -38,18 +35,10 @@ contract Referrals is IReferrals, Ownable {
         _;
     }
 
-    constructor(
-        address addressProvider_,
-        uint256 referralDiscount_,
-        uint256 referralEarnings_,
-        uint256 partnerDiscount_,
-        uint256 partnerEarnings_
-    ) {
+    constructor(address addressProvider_, uint256 rebate_, uint256 earnings_) {
         _addressProvider = addressProvider_;
-        referralDiscount = referralDiscount_;
-        referralEarnings = referralEarnings_;
-        partnerDiscount = partnerDiscount_;
-        partnerEarnings = partnerEarnings_;
+        rebate = rebate_;
+        earnings = earnings_;
     }
 
     function takeEarnings(
@@ -63,16 +52,8 @@ contract Referrals is IReferrals, Ownable {
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
 
-        bool isPartner_ = _partners[referrer_];
-        uint256 earningsFraction_ = isPartner_
-            ? partnerEarnings
-            : referralEarnings;
-        uint256 rebateFraction_ = isPartner_
-            ? partnerDiscount
-            : referralDiscount;
-
-        uint256 earningsAmount_ = fees_.mul(earningsFraction_);
-        uint256 rebateAmount_ = fees_.mul(rebateFraction_);
+        uint256 earningsAmount_ = fees_.mul(earnings);
+        uint256 rebateAmount_ = fees_.mul(rebate);
         if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
         address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
         uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
@@ -95,13 +76,16 @@ contract Referrals is IReferrals, Ownable {
         return amount_;
     }
 
-    function register(bytes32 code_) external override {
+    function register(
+        address referrer_,
+        bytes32 code_
+    ) external override onlyOwner {
         if (_referrers[code_] != address(0)) revert CodeTaken();
-        if (_codes[msg.sender] != bytes32(0)) revert AlreadyRegistered();
+        if (_codes[referrer_] != bytes32(0)) revert AlreadyRegistered();
         if (code_ == bytes32(0)) revert InvalidCode();
-        _codes[msg.sender] = code_;
-        _referrers[code_] = msg.sender;
-        emit Registered(msg.sender, code_);
+        _codes[referrer_] = code_;
+        _referrers[code_] = referrer_;
+        emit Registered(referrer_, code_);
     }
 
     function updateReferral(bytes32 code_) external override {
@@ -115,59 +99,34 @@ contract Referrals is IReferrals, Ownable {
         _updateCodeFor(code_, user_);
     }
 
-    function setPartner(
-        address referrer_,
-        bool isPartner_
-    ) external override onlyOwner {
-        if (_partners[referrer_] == isPartner_) revert NotChanged();
-        _partners[referrer_] = isPartner_;
-        emit PartnerSet(referrer_, isPartner_);
+    function setRebate(uint256 rebate_) external override onlyOwner {
+        if (rebate_ == rebate) revert NotChanged();
+        if (rebate_ > 1e18) revert InvalidAmount();
+        if (rebate_ + earnings > 1e18) revert InvalidAmount();
+        rebate = rebate_;
+        emit RebateSet(rebate_);
     }
 
-    function setReferralDiscount(
-        uint256 discount_
-    ) external override onlyOwner {
-        if (discount_ == referralDiscount) revert NotChanged();
-        if (discount_ > 1e18) revert InvalidAmount();
-        if (discount_ + referralEarnings > 1e18) revert InvalidAmount();
-        referralDiscount = discount_;
-        emit ReferralDiscountSet(discount_);
-    }
-
-    function setReferralEarnings(
-        uint256 earnings_
-    ) external override onlyOwner {
-        if (earnings_ == referralEarnings) revert NotChanged();
+    function setEarnings(uint256 earnings_) external override onlyOwner {
+        if (earnings_ == earnings) revert NotChanged();
         if (earnings_ > 1e18) revert InvalidAmount();
-        if (earnings_ + referralDiscount > 1e18) revert InvalidAmount();
-        referralEarnings = earnings_;
-        emit ReferralEarningsSet(earnings_);
+        if (earnings_ + rebate > 1e18) revert InvalidAmount();
+        earnings = earnings_;
+        emit EarningsSet(earnings_);
     }
 
-    function setPartnerDiscount(uint256 discount_) external override onlyOwner {
-        if (discount_ == partnerDiscount) revert NotChanged();
-        if (discount_ > 1e18) revert InvalidAmount();
-        if (discount_ + partnerEarnings > 1e18) revert InvalidAmount();
-        partnerDiscount = discount_;
-        emit PartnerDiscountSet(discount_);
+    function codeRebate(
+        bytes32 code_
+    ) external view override returns (uint256) {
+        return _codeRebate(code_);
     }
 
-    function setPartnerEarnings(uint256 earnings_) external override onlyOwner {
-        if (earnings_ == partnerEarnings) revert NotChanged();
-        if (earnings_ > 1e18) revert InvalidAmount();
-        if (earnings_ + partnerDiscount > 1e18) revert InvalidAmount();
-        partnerEarnings = earnings_;
-        emit PartnerEarningsSet(earnings_);
-    }
-
-    function discount(bytes32 code_) external view override returns (uint256) {
-        return _codeDiscount(code_);
-    }
-
-    function discount(address user_) external view override returns (uint256) {
+    function userRebate(
+        address user_
+    ) external view override returns (uint256) {
         bytes32 code_ = _referrals[user_];
         if (code_ == bytes32(0)) return 0;
-        return _codeDiscount(code_);
+        return _codeRebate(code_);
     }
 
     function referrer(bytes32 code_) external view override returns (address) {
@@ -180,12 +139,6 @@ contract Referrals is IReferrals, Ownable {
 
     function referral(address user_) external view override returns (bytes32) {
         return _referrals[user_];
-    }
-
-    function isPartner(
-        address referrer_
-    ) external view override returns (bool) {
-        return _partners[referrer_];
     }
 
     function earned(
@@ -201,11 +154,9 @@ contract Referrals is IReferrals, Ownable {
         emit UpdatedReferral(user_, code_);
     }
 
-    function _codeDiscount(bytes32 code_) internal view returns (uint256) {
+    function _codeRebate(bytes32 code_) internal view returns (uint256) {
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
-        bool isPartner_ = _partners[referrer_];
-        if (isPartner_) return partnerDiscount;
-        return referralDiscount;
+        return rebate;
     }
 }

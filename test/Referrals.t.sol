@@ -14,84 +14,74 @@ contract ReferralsTest is IntegrationTest {
     bytes32 public constant ALT = bytes32(bytes("alt"));
 
     function testInit() public {
-        assertEq(referrals.referralDiscount(), 0.2e18);
-        assertEq(referrals.referralEarnings(), 0.2e18);
-        assertEq(referrals.partnerDiscount(), 0.5e18);
-        assertEq(referrals.partnerEarnings(), 0.5e18);
+        assertEq(referrals.rebate(), 0.5e18);
+        assertEq(referrals.earnings(), 0.5e18);
 
-        assertEq(referrals.discount(CODE), 0);
-        assertEq(referrals.discount(alice), 0);
-        assertEq(referrals.discount(bob), 0);
+        assertEq(referrals.codeRebate(CODE), 0);
+        assertEq(referrals.userRebate(alice), 0);
+        assertEq(referrals.userRebate(bob), 0);
         assertEq(referrals.referrer(CODE), address(0));
         assertEq(referrals.code(alice), bytes32(0));
         assertEq(referrals.code(bob), bytes32(0));
         assertEq(referrals.referral(alice), bytes32(0));
         assertEq(referrals.referral(bob), bytes32(0));
-        assertEq(referrals.isPartner(alice), false);
-        assertEq(referrals.isPartner(bob), false);
         assertEq(referrals.earned(bob), 0);
         assertEq(referrals.earned(alice), 0);
     }
 
     function testRegister() public {
-        vm.prank(alice);
-        referrals.register(CODE);
-        assertEq(referrals.discount(CODE), 0.2e18);
-        assertEq(referrals.discount(alice), 0);
-        assertEq(referrals.discount(bob), 0);
+        referrals.register(alice, CODE);
+        assertEq(referrals.codeRebate(CODE), 0.5e18);
+        assertEq(referrals.userRebate(alice), 0);
+        assertEq(referrals.userRebate(bob), 0);
         assertEq(referrals.referrer(CODE), alice);
         assertEq(referrals.code(alice), CODE);
         assertEq(referrals.code(bob), bytes32(0));
         assertEq(referrals.referral(alice), bytes32(0));
         assertEq(referrals.referral(bob), bytes32(0));
-        assertEq(referrals.isPartner(alice), false);
-        assertEq(referrals.isPartner(bob), false);
+    }
+
+    function testRegisterRevertsForNonOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        referrals.register(alice, CODE);
     }
 
     function testRegisterRevertsForCodeTaken() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
         vm.expectRevert(IReferrals.CodeTaken.selector);
-        vm.prank(bob);
-        referrals.register(CODE);
+        referrals.register(bob, CODE);
     }
 
     function testRegisterRevertsAlreadyRegistered() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
         vm.expectRevert(IReferrals.AlreadyRegistered.selector);
-        vm.prank(alice);
-        referrals.register(ALT);
+        referrals.register(alice, ALT);
     }
 
     function testRegisterRevertsWithInvalidCode() public {
-        vm.prank(alice);
         vm.expectRevert(IReferrals.InvalidCode.selector);
-        referrals.register(bytes32(0));
+        referrals.register(alice, bytes32(0));
     }
 
     function testUpdateReferral() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
 
         vm.prank(bob);
         referrals.updateReferral(CODE);
 
-        assertEq(referrals.discount(CODE), 0.2e18);
-        assertEq(referrals.discount(alice), 0);
-        assertEq(referrals.discount(bob), 0.2e18);
+        assertEq(referrals.codeRebate(CODE), 0.5e18);
+        assertEq(referrals.userRebate(alice), 0);
+        assertEq(referrals.userRebate(bob), 0.5e18);
         assertEq(referrals.referrer(CODE), alice);
         assertEq(referrals.code(alice), CODE);
         assertEq(referrals.code(bob), bytes32(0));
         assertEq(referrals.referral(alice), bytes32(0));
         assertEq(referrals.referral(bob), CODE);
-        assertEq(referrals.isPartner(alice), false);
-        assertEq(referrals.isPartner(bob), false);
     }
 
     function testUpdateReferralRevertsForSameCode() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
 
         vm.prank(bob);
         referrals.updateReferral(CODE);
@@ -107,105 +97,42 @@ contract ReferralsTest is IntegrationTest {
         referrals.updateReferral(CODE);
     }
 
-    function testSetPartner() public {
-        vm.prank(alice);
-        referrals.register(CODE);
-
-        vm.prank(bob);
-        referrals.updateReferral(CODE);
-        referrals.setPartner(alice, true);
-
-        assertEq(referrals.discount(CODE), 0.5e18);
-        assertEq(referrals.discount(alice), 0);
-        assertEq(referrals.discount(bob), 0.5e18);
-        assertEq(referrals.referrer(CODE), alice);
-        assertEq(referrals.code(alice), CODE);
-        assertEq(referrals.code(bob), bytes32(0));
-        assertEq(referrals.referral(alice), bytes32(0));
-        assertEq(referrals.referral(bob), CODE);
-        assertEq(referrals.isPartner(alice), true);
-        assertEq(referrals.isPartner(bob), false);
+    function testSetRebate() public {
+        referrals.setRebate(0.3e18);
+        assertEq(referrals.rebate(), 0.3e18);
     }
 
-    function testSetPartnerRevertsWhenNotChanged() public {
+    function testSetRebateRevertsWhenNotChanged() public {
         vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setPartner(alice, false);
-        referrals.setPartner(alice, true);
+        referrals.setRebate(0.5e18);
+    }
+
+    function testSetRebateRevertsForInvalidAmount() public {
+        vm.expectRevert(IReferrals.InvalidAmount.selector);
+        referrals.setRebate(1.1e18);
+        vm.expectRevert(IReferrals.InvalidAmount.selector);
+        referrals.setRebate(0.9e18);
+    }
+
+    function testSetEarnings() public {
+        referrals.setEarnings(0.3e18);
+        assertEq(referrals.earnings(), 0.3e18);
+    }
+
+    function testSetEarningsRevertsWhenNotChanged() public {
         vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setPartner(alice, true);
+        referrals.setEarnings(0.5e18);
     }
 
-    function testSetReferralDiscount() public {
-        referrals.setReferralDiscount(0.3e18);
-        assertEq(referrals.referralDiscount(), 0.3e18);
-    }
-
-    function testSetReferralDiscountRevertsWhenNotChanged() public {
-        vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setReferralDiscount(0.2e18);
-    }
-
-    function testSetReferralDiscountRevertsForInvalidAmount() public {
+    function testSetEarningsRevertsForInvalidAmount() public {
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setReferralDiscount(1.1e18);
+        referrals.setEarnings(1.1e18);
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setReferralDiscount(0.9e18);
-    }
-
-    function testSetReferralEarnings() public {
-        referrals.setReferralEarnings(0.3e18);
-        assertEq(referrals.referralEarnings(), 0.3e18);
-    }
-
-    function testSetReferralEarningsRevertsWhenNotChanged() public {
-        vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setReferralEarnings(0.2e18);
-    }
-
-    function testSetReferralEarningsRevertsForInvalidAmount() public {
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setReferralEarnings(1.1e18);
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setReferralEarnings(0.9e18);
-    }
-
-    function testSetPartnerDiscount() public {
-        referrals.setPartnerDiscount(0.4e18);
-        assertEq(referrals.partnerDiscount(), 0.4e18);
-    }
-
-    function testSetPartnerDiscountRevertsWhenNotChanged() public {
-        vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setPartnerDiscount(0.5e18);
-    }
-
-    function testSetPartnerDiscountRevertsForInvalidAmount() public {
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setPartnerDiscount(1.1e18);
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setPartnerDiscount(0.9e18);
-    }
-
-    function testSetPartnerEarnings() public {
-        referrals.setPartnerEarnings(0.4e18);
-        assertEq(referrals.partnerEarnings(), 0.4e18);
-    }
-
-    function testSetPartnerEarningsRevertsWhenNotChanged() public {
-        vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setPartnerEarnings(0.5e18);
-    }
-
-    function testSetPartnerEarningsRevertsForInvalidAmount() public {
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setPartnerEarnings(1.1e18);
-        vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setPartnerEarnings(0.9e18);
+        referrals.setEarnings(0.9e18);
     }
 
     function testUpdateReferralFor() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
 
         address positionManager_ = positionManagerFactory.createPositionManager(
             Tokens.UNI
@@ -213,16 +140,14 @@ contract ReferralsTest is IntegrationTest {
         vm.prank(positionManager_);
         referrals.updateReferralFor(bob, CODE);
 
-        assertEq(referrals.discount(CODE), 0.2e18);
-        assertEq(referrals.discount(alice), 0);
-        assertEq(referrals.discount(bob), 0.2e18);
+        assertEq(referrals.codeRebate(CODE), 0.5e18);
+        assertEq(referrals.userRebate(alice), 0);
+        assertEq(referrals.userRebate(bob), 0.5e18);
         assertEq(referrals.referrer(CODE), alice);
         assertEq(referrals.code(alice), CODE);
         assertEq(referrals.code(bob), bytes32(0));
         assertEq(referrals.referral(alice), bytes32(0));
         assertEq(referrals.referral(bob), CODE);
-        assertEq(referrals.isPartner(alice), false);
-        assertEq(referrals.isPartner(bob), false);
     }
 
     function testUpdateReferralForRevertsForNonPositionManager() public {
@@ -232,8 +157,7 @@ contract ReferralsTest is IntegrationTest {
     }
 
     function testTakeEarnings() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
 
         vm.prank(bob);
         referrals.updateReferral(CODE);
@@ -242,14 +166,13 @@ contract ReferralsTest is IntegrationTest {
         IERC20(Tokens.USDC).approve(address(referrals), 100e6);
         referrals.takeEarnings(10e6, bob);
 
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 4e6);
-        assertEq(referrals.earned(bob), 2e6);
-        assertEq(referrals.earned(alice), 2e6);
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 10e6);
+        assertEq(referrals.earned(bob), 5e6);
+        assertEq(referrals.earned(alice), 5e6);
     }
 
     function testClaimEarnings() public {
-        vm.prank(alice);
-        referrals.register(CODE);
+        referrals.register(alice, CODE);
 
         vm.prank(bob);
         referrals.updateReferral(CODE);
@@ -260,9 +183,9 @@ contract ReferralsTest is IntegrationTest {
 
         vm.prank(alice);
         referrals.claimEarnings();
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 2e6);
-        assertEq(referrals.earned(bob), 2e6);
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 5e6);
+        assertEq(referrals.earned(bob), 5e6);
         assertEq(referrals.earned(alice), 0);
-        assertEq(IERC20(Tokens.USDC).balanceOf(alice), 2e6);
+        assertEq(IERC20(Tokens.USDC).balanceOf(alice), 5e6);
     }
 }

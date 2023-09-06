@@ -4,11 +4,8 @@ pragma solidity ^0.8.13;
 interface IReferrals {
     event Registered(address indexed user, bytes32 code);
     event UpdatedReferral(address indexed user, bytes32 code);
-    event PartnerSet(address indexed referrer, bool isPartner);
-    event ReferralDiscountSet(uint256 discount);
-    event ReferralEarningsSet(uint256 earnings);
-    event PartnerDiscountSet(uint256 discount);
-    event PartnerEarningsSet(uint256 earnings);
+    event RebateSet(uint256 rebate);
+    event EarningsSet(uint256 earnings);
 
     error AlreadyRegistered();
     error InvalidCode();
@@ -40,7 +37,7 @@ interface IReferrals {
      * @notice Registers the given code for the sender.
      * @param code The code to register.
      */
-    function register(bytes32 code) external;
+    function register(address referrer, bytes32 code) external;
 
     /**
      * @notice Updates the referral code for the sender.
@@ -57,54 +54,32 @@ interface IReferrals {
     function updateReferralFor(address user, bytes32 code) external;
 
     /**
-     * @notice Sets the given referrer as a partner or not.
+     * @notice Sets the rebate.
      * @dev Can only be called by the owner.
-     * @param referrer The referrer to set as a partner.
-     * @param isPartner Whether or not the referrer is a partner.
+     * @param rebate The rebate to set.
      */
-    function setPartner(address referrer, bool isPartner) external;
+    function setRebate(uint256 rebate) external;
 
     /**
-     * @notice Sets the referral discount.
-     * @dev Can only be called by the owner.
-     * @param discount The discount to set.
-     */
-    function setReferralDiscount(uint256 discount) external;
-
-    /**
-     * @notice Sets the referral earnings.
+     * @notice Sets the earnings.
      * @dev Can only be called by the owner.
      * @param earnings The earnings to set.
      */
-    function setReferralEarnings(uint256 earnings) external;
+    function setEarnings(uint256 earnings) external;
 
     /**
-     * @notice Sets the partner discount.
-     * @dev Can only be called by the owner.
-     * @param discount The discount to set.
+     * @notice Returns the reabate for the given code.
+     * @param code The code to get the rebate for.
+     * @return rebate The rebate for the given code.
      */
-    function setPartnerDiscount(uint256 discount) external;
+    function codeRebate(bytes32 code) external view returns (uint256 rebate);
 
     /**
-     * @notice Sets the partner earnings.
-     * @dev Can only be called by the owner.
-     * @param earnings The earnings to set.
+     * @notice Returns the rebate for the given user.
+     * @param user The user to get the rebate for.
+     * @return rebate The rebate for the given user.
      */
-    function setPartnerEarnings(uint256 earnings) external;
-
-    /**
-     * @notice Returns the discount for the given code.
-     * @param code The code to get the discount for.
-     * @return discount The discount for the given code.
-     */
-    function discount(bytes32 code) external view returns (uint256 discount);
-
-    /**
-     * @notice Returns the discount for the given user.
-     * @param user The user to get the discount for.
-     * @return discount The discount for the given user.
-     */
-    function discount(address user) external view returns (uint256 discount);
+    function userRebate(address user) external view returns (uint256 rebate);
 
     /**
      * @notice Returns the referrer for the given code.
@@ -128,13 +103,6 @@ interface IReferrals {
     function referral(address user) external view returns (bytes32 code);
 
     /**
-     * @notice Returns whether or not the given referrer is a partner.
-     * @param referrer The referrer to check.
-     * @return isPartner Whether or not the given referrer is a partner.
-     */
-    function isPartner(address referrer) external view returns (bool isPartner);
-
-    /**
      * @notice Returns the earnings for the given referrer.
      * @param referrer The referrer to get the earnings for.
      * @return earned The earnings for the given referrer.
@@ -142,30 +110,16 @@ interface IReferrals {
     function earned(address referrer) external view returns (uint256 earned);
 
     /**
-     * @notice Returns the referral discount.
+     * @notice Returns the rebate.
      * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return discount The referral discount.
+     * @return rebate The rebate.
      */
-    function referralDiscount() external view returns (uint256 discount);
+    function rebate() external view returns (uint256 rebate);
 
     /**
-     * @notice Returns the referral earnings.
+     * @notice Returns the earnings.
      * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return earnings The referral earnings.
+     * @return earnings The earnings.
      */
-    function referralEarnings() external view returns (uint256 earnings);
-
-    /**
-     * @notice Returns the partner discount.
-     * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return discount The partner discount.
-     */
-    function partnerDiscount() external view returns (uint256 discount);
-
-    /**
-     * @notice Returns the partner earnings.
-     * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return earnings The partner earnings.
-     */
-    function partnerEarnings() external view returns (uint256 earnings);
+    function earnings() external view returns (uint256 earnings);
 }
