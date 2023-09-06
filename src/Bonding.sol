@@ -91,8 +91,14 @@ contract Bonding is IBonding, Ownable {
     }
 
     function availableTlx() public view override returns (uint256) {
+        uint256 nextDecay_ = _lastDecayTimestamp + _periodDuration;
         return
-            _tlxInRange(_lastUpdate, block.timestamp, _tlxPerSecond) +
+            _tlxInRange(
+                _lastUpdate,
+                block.timestamp,
+                _tlxPerSecond,
+                nextDecay_
+            ) +
             _availableTlxCache -
             totalTlxBonded;
     }
@@ -134,18 +140,21 @@ contract Bonding is IBonding, Ownable {
     function _tlxInRange(
         uint256 rangeStart_,
         uint256 rangeEnd_,
-        uint256 tlxPerSecond_
+        uint256 tlxPerSecond_,
+        uint256 nextDecay_
     ) internal view returns (uint256) {
         if (rangeStart_ == rangeEnd_) return 0;
         uint256 time_ = rangeEnd_ - rangeStart_;
-        if (time_ > _periodDuration) {
+        if (rangeEnd_ > nextDecay_) {
+            time_ = nextDecay_ - rangeStart_;
             return
-                _periodDuration *
+                time_ *
                 tlxPerSecond_ +
                 _tlxInRange(
-                    rangeStart_ + _periodDuration,
+                    rangeStart_ + time_,
                     rangeEnd_,
-                    tlxPerSecond_.mul(_periodDecayMultiplier)
+                    tlxPerSecond_.mul(_periodDecayMultiplier),
+                    nextDecay_ + _periodDuration
                 );
         }
         return time_ * tlxPerSecond_;
