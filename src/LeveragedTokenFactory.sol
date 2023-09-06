@@ -15,6 +15,7 @@ import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     address internal immutable _addressProvider;
+    uint256 internal immutable _maxLeverage;
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
@@ -28,8 +29,9 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(address => address) public override pair;
     mapping(address => bool) public override isLeveragedToken;
 
-    constructor(address addressProvider_) {
+    constructor(address addressProvider_, uint256 maxLeverage_) {
         _addressProvider = addressProvider_;
+        _maxLeverage = maxLeverage_;
     }
 
     function createLeveragedTokens(
@@ -44,7 +46,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         // Checks
         if (targetAsset_ == address(0)) revert ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
-        if (targetLeverage_ > 100e3) revert MaxLeverage();
+        if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
         IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(

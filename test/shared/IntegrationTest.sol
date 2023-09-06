@@ -91,7 +91,8 @@ contract IntegrationTest is Test {
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
-            address(addressProvider)
+            address(addressProvider),
+            Config.MAX_LEVERAGE
         );
         addressProvider.updateAddress(
             AddressKeys.LEVERAGED_TOKEN_FACTORY,
