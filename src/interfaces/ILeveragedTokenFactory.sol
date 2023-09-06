@@ -9,6 +9,7 @@ interface ILeveragedTokenFactory {
     error ZeroLeverage();
     error MaxLeverage();
     error NoPositionManager();
+    error MaxOfTwoDecimals();
 
     /**
      * @notice Creates a new Long and Short Leveraged Token for the given target asset and leverage.
