@@ -18,6 +18,7 @@ contract ReferralsTest is IntegrationTest {
         assertEq(referrals.referralEarnings(), 0.2e18);
         assertEq(referrals.partnerDiscount(), 0.5e18);
         assertEq(referrals.partnerEarnings(), 0.5e18);
+
         assertEq(referrals.discount(CODE), 0);
         assertEq(referrals.discount(alice), 0);
         assertEq(referrals.discount(bob), 0);
@@ -239,10 +240,10 @@ contract ReferralsTest is IntegrationTest {
 
         _mintTokensFor(Tokens.USDC, address(this), 100e6);
         IERC20(Tokens.USDC).approve(address(referrals), 100e6);
-        referrals.takeEarnings(10e6, alice);
+        referrals.takeEarnings(10e6, bob);
 
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 2e6);
-        assertEq(referrals.earned(bob), 0);
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 4e6);
+        assertEq(referrals.earned(bob), 2e6);
         assertEq(referrals.earned(alice), 2e6);
     }
 
@@ -255,12 +256,12 @@ contract ReferralsTest is IntegrationTest {
 
         _mintTokensFor(Tokens.USDC, address(this), 100e6);
         IERC20(Tokens.USDC).approve(address(referrals), 100e6);
-        referrals.takeEarnings(10e6, alice);
+        referrals.takeEarnings(10e6, bob);
 
         vm.prank(alice);
         referrals.claimEarnings();
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 0);
-        assertEq(referrals.earned(bob), 0);
+        assertEq(IERC20(Tokens.USDC).balanceOf(address(referrals)), 2e6);
+        assertEq(referrals.earned(bob), 2e6);
         assertEq(referrals.earned(alice), 0);
         assertEq(IERC20(Tokens.USDC).balanceOf(alice), 2e6);
     }

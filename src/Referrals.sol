@@ -19,6 +19,7 @@ contract Referrals is IReferrals, Ownable {
     mapping(bytes32 => address) internal _referrers;
     mapping(address => bytes32) internal _referrals;
     mapping(address => bool) internal _partners;
+    // Earnings contains both referrer earnings and rebates
     mapping(address => uint256) internal _earnings;
 
     uint256 public override referralDiscount;
@@ -57,18 +58,32 @@ contract Referrals is IReferrals, Ownable {
     ) external override returns (uint256) {
         if (fees_ == 0) return 0;
         if (user_ == address(0)) return 0;
-        bytes32 code_ = _codes[user_];
+        bytes32 code_ = _referrals[user_];
         if (code_ == bytes32(0)) return 0;
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
+
         bool isPartner_ = _partners[referrer_];
-        uint256 earnings_ = isPartner_ ? partnerEarnings : referralEarnings;
-        uint256 amount_ = fees_.mul(earnings_);
-        if (amount_ == 0) return 0;
+        uint256 earningsFraction_ = isPartner_
+            ? partnerEarnings
+            : referralEarnings;
+        uint256 rebateFraction_ = isPartner_
+            ? partnerDiscount
+            : referralDiscount;
+
+        uint256 earningsAmount_ = fees_.mul(earningsFraction_);
+        uint256 rebateAmount_ = fees_.mul(rebateFraction_);
+        if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
         address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
-        IERC20(baseAsset_).transferFrom(msg.sender, address(this), amount_);
-        _earnings[referrer_] += amount_;
-        return amount_;
+        uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
+        IERC20(baseAsset_).transferFrom(
+            msg.sender,
+            address(this),
+            totalAmount_
+        );
+        _earnings[referrer_] += earningsAmount_;
+        _earnings[user_] += rebateAmount_;
+        return totalAmount_;
     }
 
     function claimEarnings() external override returns (uint256) {
