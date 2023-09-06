@@ -34,4 +34,8 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
     function oracle() external view override returns (address) {
         return _addresses[AddressKeys.ORACLE];
     }
+
+    function derivativesHandler() external view override returns (address) {
+        return _addresses[AddressKeys.DERIVATIVES_HANDLER];
+    }
 }
