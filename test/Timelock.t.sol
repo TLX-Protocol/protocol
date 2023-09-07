@@ -48,6 +48,48 @@ contract TimelockTest is Test {
         timelock.prepareCall(dummyAddress, dummyData);
     }
 
+    function testPrepareProposal() public {
+        address[] memory targets = new address[](2);
+        targets[0] = dummyAddress;
+        targets[1] = dummyAddress;
+        bytes[] memory data = new bytes[](2);
+        data[0] = dummyData;
+        data[1] = dummyData;
+        ITimelock.Proposal memory proposal = ITimelock.Proposal(targets, data);
+        timelock.prepareProposal(proposal);
+        ITimelock.Call[] memory allCalls_ = timelock.allCalls();
+
+        assertEq(allCalls_.length, 2, "length");
+        assertEq(allCalls_[0].id, 0, "id");
+        assertEq(allCalls_[1].id, 1, "id");
+        assertEq(allCalls_[0].ready, block.timestamp, "ready");
+        assertEq(allCalls_[0].target, dummyAddress, "target");
+        assertEq(allCalls_[0].data, dummyData, "data");
+        assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
+        assertEq(timelock.readyCalls().length, 2, "readyCalls");
+    }
+
+    function testExecuteMultiple() public {
+        address[] memory targets = new address[](2);
+        targets[0] = dummyAddress;
+        targets[1] = dummyAddress;
+        bytes[] memory data = new bytes[](2);
+        data[0] = dummyData;
+        data[1] = dummyData;
+        ITimelock.Proposal memory proposal = ITimelock.Proposal(targets, data);
+        timelock.prepareProposal(proposal);
+
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = 0;
+        ids[1] = 1;
+        timelock.executeMultiple(ids);
+        ITimelock.Call[] memory allCalls_ = timelock.allCalls();
+        assertEq(dummyContract.state(), 42);
+        assertEq(allCalls_.length, 0, "length");
+        assertEq(timelock.pendingCalls().length, 0, "pendingCalls");
+        assertEq(timelock.readyCalls().length, 0, "readyCalls");
+    }
+
     function testPrepareCall() public {
         timelock.prepareCall(dummyAddress, dummyData);
         ITimelock.Call[] memory allCalls_ = timelock.allCalls();
