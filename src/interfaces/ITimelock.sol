@@ -3,64 +3,44 @@ pragma solidity ^0.8.13;
 
 interface ITimelock {
     struct Call {
-        uint256 id;
-        uint256 ready;
         address target;
         bytes data;
     }
 
     struct Proposal {
-        address[] targets;
-        bytes[] data;
+        uint256 id;
+        uint256 ready;
+        Call[] calls;
     }
 
-    event CallPrepared(uint256 id, address target, bytes data);
-    event CallExecuted(uint256 id, address target, bytes data);
-    event CallCancelled(uint256 id, address target, bytes data);
-    event DelaySet(bytes4 selector, uint256 delay);
+    event ProposalCreated(uint256 indexed id, uint256 ready, Call[] calls);
+    event ProposalExecuted(uint256 indexed id);
+    event ProposalCancelled(uint256 indexed id);
+    event DelaySet(bytes4 indexed selector, uint256 delay);
 
-    error CallNotReady(uint256 id);
-    error CallFailed(uint256 id, bytes returnData);
+    error ProposalNotReady(uint256 id);
     error NotAuthorized();
     error InvalidTarget();
-    error CallDoesNotExist(uint256 id);
+    error ProposalDoesNotExist(uint256 id);
 
     /**
-     * @notice Prepare a proposal with multiple calls
-     * @param proposal The proposal containing a number of calls
-     * @return ids Ids of the prepared calls
+     * @notice Creates a proposal, containig multiple calls
+     * @param calls_ The calls to execute
+     * @return id id of the proposal
      */
-    function prepareProposal(
-        Proposal calldata proposal
-    ) external returns (uint256[] memory);
+    function createProposal(Call[] calldata calls_) external returns (uint256);
 
     /**
-     * @notice Execute multiple calls
-     * @param ids Teh ids of the calls to execute
-     * @return returnData return data from all the executed calls
+     * @notice Executes a proposal
+     * @param id The id of the proposal to execute
      */
-    function executeMultiple(
-        uint256[] calldata ids
-    ) external returns (bytes[] memory);
-
-    /**
-     * @notice Prepare a call to be executed after a delay
-     * @param target The address of the contract to be called
-     * @param data The data to be passed to the contract
-     */
-    function prepareCall(address target, bytes calldata data) external;
-
-    /**
-     * @notice Execute a call that is ready
-     * @param id The id of the call to be executed
-     */
-    function executeCall(uint256 id) external returns (bytes memory);
+    function executeProposal(uint256 id) external;
 
     /**
      * @notice Cancel a call that is ready
      * @param id The id of the call to be cancelled
      */
-    function cancelCall(uint256 id) external;
+    function cancelProposal(uint256 id) external;
 
     /**
      * @notice Set the delay for a function selector
@@ -70,22 +50,28 @@ interface ITimelock {
     function setDelay(bytes4 selector, uint256 delay) external;
 
     /**
-     * @notice Get all calls
-     * @return calls All calls
+     * @notice Get all proposals
+     * @return proposals All proposals
      */
-    function allCalls() external view returns (Call[] memory calls);
+    function allProposals() external view returns (Proposal[] memory proposals);
 
     /**
-     * @notice Get pending calls
-     * @return calls Pending calls
+     * @notice Get pending proposals
+     * @return proposals pending proposals
      */
-    function pendingCalls() external view returns (Call[] memory calls);
+    function pendingProposals()
+        external
+        view
+        returns (Proposal[] memory proposals);
 
     /**
-     * @notice Get ready calls
-     * @return calls Ready calls
+     * @notice Get ready proposals
+     * @return proposals Ready proposals
      */
-    function readyCalls() external view returns (Call[] memory calls);
+    function readyProposals()
+        external
+        view
+        returns (Proposal[] memory proposals);
 
     /**
      * @notice Get the delay for a function selector
