@@ -67,6 +67,12 @@ interface IAddressProvider {
     function vesting() external view returns (address vesting);
 
     /**
+     * @notice Returns the address for the Vesting contract for the treasury.
+     * @return vesting The address of the Vesting contract.
+     */
+    function treasuryVesting() external view returns (address);
+
+    /**
      * @notice Returns the address for the TLX contract.
      * @return tlx The address of the TLX contract.
      */
