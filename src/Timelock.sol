@@ -2,67 +2,41 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import "openzeppelin-contracts/contracts/utils/Address.sol";
-import "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 import {ITimelock} from "./interfaces/ITimelock.sol";
 
 contract Timelock is ITimelock, Ownable {
     using Address for address;
     using EnumerableSet for EnumerableSet.UintSet;
+
     mapping(bytes4 => uint256) internal _delays;
-    uint256 internal _nextCallId;
-    EnumerableSet.UintSet internal _callIds;
-    mapping(uint256 => Call) internal _calls;
+    uint256 internal _nextProposalId;
+    EnumerableSet.UintSet internal _proposalIds;
+    mapping(uint256 => Proposal) internal _proposals;
 
-    function prepareCall(
-        address target_,
-        bytes calldata data_
-    ) external onlyOwner {
-        _prepareCall(target_, data_);
-    }
-
-    function prepareProposal(
-        Proposal calldata proposal
-    ) external onlyOwner returns (uint256[] memory) {
-        require(
-            proposal.targets.length == proposal.data.length,
-            "call targets and data are not of equal length"
-        );
-        uint256 count = proposal.targets.length;
-        uint256[] memory ids = new uint256[](count);
-        uint256 currentId;
-        for (uint256 i = 0; i < count; i++) {
-            currentId = _prepareCall(proposal.targets[i], proposal.data[i]);
-            ids[i] = currentId;
+    function createProposal(
+        Call[] calldata calls_
+    ) external override onlyOwner returns (uint256) {
+        uint256 id_ = _nextProposalId++;
+        _proposalIds.add(id_);
+        uint256 ready = uint256(block.timestamp) +
+            _validateCallsAndGetMaxDelay(calls_);
+        _proposals[id_].id = id_;
+        _proposals[id_].ready = ready;
+        for (uint256 i; i < calls_.length; i++) {
+            _proposals[id_].calls.push(calls_[i]);
         }
-        return ids;
+        emit ProposalCreated(id_, ready, calls_);
+        return id_;
     }
 
-    function executeMultiple(
-        uint256[] calldata ids
-    ) external onlyOwner returns (bytes[] memory) {
-        uint256 count = ids.length;
-        bytes[] memory returnData = new bytes[](count);
-        bytes memory currentReturnData;
-        for (uint256 i = 0; i < count; i++) {
-            currentReturnData = _executeCall(ids[i]);
-            returnData[i] = currentReturnData;
-        }
-        return returnData;
-    }
-
-    function executeCall(
-        uint256 id_
-    ) external onlyOwner returns (bytes memory) {
-        return _executeCall(id_);
-    }
-
-    function cancelCall(uint256 id_) external onlyOwner {
-        Call memory call_ = _calls[id_];
-        if (call_.target == address(0)) revert CallDoesNotExist(id_);
-        _deleteCall(id_);
-        emit CallCancelled(id_, call_.target, call_.data);
+    function cancelProposal(uint256 id_) external onlyOwner {
+        Proposal memory proposal_ = _proposals[id_];
+        if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
+        _deleteProposal(id_);
+        emit ProposalCancelled(id_);
     }
 
     function setDelay(bytes4 selector_, uint256 delay_) external {
@@ -71,39 +45,90 @@ contract Timelock is ITimelock, Ownable {
         emit DelaySet(selector_, delay_);
     }
 
-    function allCalls() external view returns (Call[] memory) {
-        uint256[] memory callIds_ = _callIds.values();
-        Call[] memory calls_ = new Call[](callIds_.length);
-        for (uint256 i; i < callIds_.length; i++) {
-            calls_[i] = _calls[callIds_[i]];
+    function executeProposal(uint256 id_) external override onlyOwner {
+        Proposal memory proposal_ = _proposals[id_];
+        if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
+        if (proposal_.ready > block.timestamp) revert ProposalNotReady(id_);
+
+        for (uint256 i; i < proposal_.calls.length; i++) {
+            Call memory call_ = proposal_.calls[i];
+            call_.target.functionCall(call_.data);
         }
-        return calls_;
+
+        _deleteProposal(id_);
+        emit ProposalExecuted(id_);
     }
 
-    function readyCalls() external view returns (Call[] memory) {
-        return _filterCalls(true);
+    function allProposals() external view returns (Proposal[] memory p) {
+        uint256[] memory proposalIds_ = _proposalIds.values();
+        Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
+        for (uint256 i; i < proposalIds_.length; i++) {
+            proposals_[i] = _proposals[proposalIds_[i]];
+        }
+        return proposals_;
     }
 
-    function pendingCalls() external view returns (Call[] memory) {
-        return _filterCalls(false);
+    function readyProposals()
+        external
+        view
+        override
+        returns (Proposal[] memory)
+    {
+        return _filterProposals(true);
+    }
+
+    function pendingProposals()
+        external
+        view
+        override
+        returns (Proposal[] memory)
+    {
+        return _filterProposals(false);
     }
 
     function delay(bytes4 selector) external view override returns (uint256) {
         return _delays[selector];
     }
 
-    function _deleteCall(uint256 id_) internal {
-        _callIds.remove(id_);
-        delete _calls[id_];
+    function _deleteProposal(uint256 id_) internal {
+        _proposalIds.remove(id_);
+        delete _proposals[id_];
     }
 
-    function _prepareCall(
-        address target_,
-        bytes calldata data_
-    ) internal returns (uint256) {
-        if (target_ == address(0)) revert InvalidTarget();
-        bytes4 selector_ = bytes4(data_[:4]);
+    function _filterProposals(
+        bool ready
+    ) internal view returns (Proposal[] memory) {
+        uint256[] memory proposalIds_ = _proposalIds.values();
+        Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
+        uint256 count_;
+        for (uint256 i; i < proposalIds_.length; i++) {
+            uint256 id_ = proposalIds_[i];
+            Proposal memory proposal_ = _proposals[id_];
+            if (ready == proposal_.ready > block.timestamp) continue;
+            proposals_[count_++] = proposal_;
+        }
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // Truncate the array by storing `count` in the first 32 bytes memory
+            mstore(proposals_, count_)
+        }
+        return proposals_;
+    }
 
+    function _validateCallsAndGetMaxDelay(
+        Call[] calldata calls_
+    ) internal view returns (uint256) {
+        uint256 maxDelay_;
+        for (uint256 i; i < calls_.length; i++) {
+            if (calls_[i].target == address(0)) revert InvalidTarget();
+            uint256 delay_ = _getDelay(calls_[i].data);
+            if (delay_ > maxDelay_) maxDelay_ = delay_;
+        }
+        return maxDelay_;
+    }
+
+    function _getDelay(bytes calldata data_) internal view returns (uint256) {
+        bytes4 selector_ = bytes4(data_[:4]);
         // Setting the delay for the setDelay function be the delay of the function it's setting
         if (selector_ == this.setDelay.selector) {
             bytes memory dataMemory_ = data_;
@@ -114,46 +139,6 @@ contract Timelock is ITimelock, Ownable {
             }
         }
 
-        uint256 id_ = _nextCallId++;
-        _callIds.add(id_);
-        _calls[id_] = (
-            Call({
-                id: id_,
-                ready: uint256(block.timestamp) + _delays[selector_],
-                target: target_,
-                data: data_
-            })
-        );
-        emit CallPrepared(id_, target_, data_);
-        return id_;
-    }
-
-    function _executeCall(uint256 id_) internal returns (bytes memory) {
-        Call memory call_ = _calls[id_];
-        if (call_.target == address(0)) revert CallDoesNotExist(id_);
-        if (call_.ready > block.timestamp) revert CallNotReady(id_);
-        // solhint-disable-next-line avoid-low-level-calls
-        bytes memory returnData_ = call_.target.functionCall(call_.data);
-        _deleteCall(id_);
-        emit CallExecuted(id_, call_.target, call_.data);
-        return returnData_;
-    }
-
-    function _filterCalls(bool ready) internal view returns (Call[] memory) {
-        uint256[] memory callIds_ = _callIds.values();
-        Call[] memory calls_ = new Call[](callIds_.length);
-        uint256 count_;
-        for (uint256 i; i < callIds_.length; i++) {
-            uint256 id_ = callIds_[i];
-            if (ready == _calls[id_].ready > block.timestamp) continue;
-            calls_[count_] = _calls[id_];
-            count_++;
-        }
-        // Truncate the array
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            mstore(calls_, count_)
-        }
-        return calls_;
+        return _delays[selector_];
     }
 }
