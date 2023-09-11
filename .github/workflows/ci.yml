@@ -16,7 +16,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     env:
-      RPC: ${{ secrets.RPC }}
+      OPTIMISM_RPC: ${{ secrets.OPTIMISM_RPC }}
     steps:
       - uses: actions/checkout@v3
         with:
