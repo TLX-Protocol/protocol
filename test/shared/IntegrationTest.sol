@@ -30,7 +30,6 @@ contract IntegrationTest is Test {
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
     address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
-    address public gmxVault = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
     address public treasury = makeAddr("treasury");
 
     // Contracts
