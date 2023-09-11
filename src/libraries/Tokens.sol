@@ -2,8 +2,9 @@
 pragma solidity ^0.8.13;
 
 library Tokens {
-    address public constant UNI = 0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0;
-    address public constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
-    address public constant WBTC = 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f;
-    address public constant CRV = 0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978;
+    address public constant UNI = 0x6fd9d7AD17242c41f7131d257212c54A0e816691;
+    address public constant USDC = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
+    address public constant WBTC = 0x68f180fcCe6836688e9084f035309E29Bf0A2095;
+    address public constant CRV = 0x0994206dfE8De6Ec6920FF4D779B0d950605Fb53;
+    address public constant CBETH = 0xadDb6A0412DE1BA0F936DCaeb8Aaa24578dcF3B2;
 }

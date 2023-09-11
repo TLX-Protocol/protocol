@@ -47,7 +47,7 @@ contract IntegrationTest is Test {
     MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
+        vm.selectFork(vm.createFork(vm.envString("RPC"), 108_419_524));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
@@ -98,7 +98,7 @@ contract IntegrationTest is Test {
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
-        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
+        chainlinkOracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
             address(chainlinkOracle)

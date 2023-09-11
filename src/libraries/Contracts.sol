@@ -4,11 +4,13 @@ pragma solidity ^0.8.13;
 library Contracts {
     // Chainlink
     address public constant UNI_USD_ORACLE =
-        0x9C917083fDb403ab5ADbEC26Ee294f6EcAda2720;
+        0x11429eE838cC01071402f21C219870cbAc0a59A0;
     address public constant ETH_USD_ORACLE =
-        0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612;
-    address public constant WBTC_ETH_ORACLE =
-        0xc5a90A6d7e4Af242dA238FFe279e9f2BA0c64B2e;
+        0x13e3Ee699D1909E989722E753853AE30b17e08c5;
+    address public constant WBTC_USD_ORACLE =
+        0x718A5788b89454aAE3A028AE9c111A29Be6c2a6F;
     address public constant USDC_USD_ORACLE =
-        0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3;
+        0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3;
+    address public constant CBETH_ETH_ORACLE =
+        0x138b809B8472fF09Cd3E075E6EcbB2e42D41d870;
 }
