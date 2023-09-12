@@ -66,8 +66,8 @@ contract Bonding is IBonding, Ownable {
 
         // Calculate the amount of TLX tokens to send to the user
         uint256 availableTlx_ = _availableTlxCache;
-        uint256 exchangeRate_ = _exchangeRate(leveragedToken_);
-        uint256 baseAmount_ = leveragedTokenAmount_.mul(exchangeRate_);
+        uint256 priceInBaseAsset_ = _priceInBaseAsset(leveragedToken_);
+        uint256 baseAmount_ = leveragedTokenAmount_.mul(priceInBaseAsset_);
         uint256 tlxAmount_ = baseAmount_.mul(_exchangeRate(availableTlx_));
         if (tlxAmount_ < minTlxTokensReceived_) revert MinTlxNotReached();
         if (tlxAmount_ > availableTlx_) revert ExceedsAvailable();
@@ -174,7 +174,7 @@ contract Bonding is IBonding, Ownable {
             ).isLeveragedToken(token_);
     }
 
-    function _exchangeRate(address token_) internal view returns (uint256) {
+    function _priceInBaseAsset(address token_) internal view returns (uint256) {
         return
             IPositionManager(
                 IPositionManagerFactory(
