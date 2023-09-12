@@ -11,11 +11,11 @@ import {IAirdrop} from "../src/interfaces/IAirdrop.sol";
 contract AirdropTest is IntegrationTest {
     bytes32 public constant MERKLE_ROOT =
         bytes32(
-            0x2918c390ed100321540bb32423c36c8c0586225e6430e5f33d2ddccf4d18f33f
+            0x16526358ccd8f5f19ae561bd6833bd2c469118bd5de43560991862d957e1e44f
         );
     bytes32 public constant BOB_PROOF =
         bytes32(
-            0x0193a26196144ade3707bf69bc3877126358fe50d9ab922fe7debf57f54633d5
+            0x6d46fe34616b99bc1ad4ff6216cd56c37ae712a3c7a699104f0d1197d16df529
         );
 
     function setUp() public {
@@ -42,7 +42,7 @@ contract AirdropTest is IntegrationTest {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.prank(bob);
-        airdrop.claim(0, 321, merklePr);
+        airdrop.claim(0, 321e18, merklePr);
         assertEq(airdrop.totalClaimed(), 321e18, "totalClaimed");
         assertEq(airdrop.hasClaimed(alice), false, "hasClaimed(alice)");
         assertEq(airdrop.hasClaimed(bob), true, "hasClaimed(bob)");
@@ -55,16 +55,16 @@ contract AirdropTest is IntegrationTest {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.startPrank(bob);
-        airdrop.claim(0, 321, merklePr);
+        airdrop.claim(0, 321e18, merklePr);
         vm.expectRevert(IAirdrop.AlreadyClaimed.selector);
-        airdrop.claim(0, 321, merklePr);
+        airdrop.claim(0, 321e18, merklePr);
     }
 
     function testRevertsForInvalidProof() public {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.expectRevert(IAirdrop.InvalidMerkleProof.selector);
-        airdrop.claim(0, 321, merklePr);
+        airdrop.claim(0, 321e18, merklePr);
     }
 
     function testUpdateMerkleRootRevertsForNonOwner() public {

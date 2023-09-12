@@ -45,7 +45,6 @@ contract Airdrop is IAirdrop, Ownable {
         if (completed_) revert AirdropCompleted();
 
         // Minting tokens
-        amount_ *= 1e18;
         if (totalClaimed_ + amount_ > _airdropAmount) {
             amount_ = _airdropAmount - totalClaimed_;
         }
