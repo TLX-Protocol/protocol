@@ -43,10 +43,7 @@ contract Locker is ILocker {
     function lockFor(uint256 amount_, address account_) public override {
         if (amount_ == 0) revert ZeroAmount();
         if (account_ == address(0)) revert ZeroAddress();
-        require(
-            _unlockTimes[msg.sender] == 0,
-            "Cannot lock while unlock prepared"
-        );
+        if (_unlockTimes[msg.sender] != 0) revert UnlockPrepared();
 
         _checkpoint(msg.sender);
         _tlx().transferFrom(msg.sender, address(this), amount_);

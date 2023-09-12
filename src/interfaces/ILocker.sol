@@ -23,6 +23,7 @@ interface ILocker {
     error AlreadyPreparedUnlock();
     error NoUnlockPrepared();
     error NotUnlocked();
+    error UnlockPrepared();
 
     /**
      * @notice Locks TLX tokens for the caller.
