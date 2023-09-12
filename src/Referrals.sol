@@ -109,7 +109,6 @@ contract Referrals is IReferrals, Ownable {
 
     function setEarnings(uint256 earnings_) external override onlyOwner {
         if (earnings_ == earnings) revert NotChanged();
-        if (earnings_ > 1e18) revert InvalidAmount();
         if (earnings_ + rebate > 1e18) revert InvalidAmount();
         earnings = earnings_;
         emit EarningsSet(earnings_);
