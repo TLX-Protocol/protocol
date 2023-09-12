@@ -50,11 +50,11 @@ contract Airdrop is IAirdrop, Ownable {
             amount_ = _airdropAmount - totalClaimed_;
         }
         ITlxToken tlx_ = ITlxToken(IAddressProvider(_addressProvider).tlx());
-        tlx_.transfer(account_, amount_);
 
         // Updating state
         hasClaimed[account_] = true;
         totalClaimed += amount_;
+        tlx_.transfer(account_, amount_);
         emit Claimed(account_, amount_);
     }
 
