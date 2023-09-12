@@ -43,7 +43,6 @@ contract IntegrationTest is Test {
     Locker public locker;
     Bonding public bonding;
     Vesting public vesting;
-    Vesting public treasuryVesting;
     MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
@@ -69,16 +68,7 @@ contract IntegrationTest is Test {
         IVesting.VestingAmount[]
             memory treasuryAmount_ = new Vesting.VestingAmount[](1);
         treasuryAmount_[0] = IVesting.VestingAmount(address(treasury), 500e18);
-        treasuryVesting = new Vesting(
-            address(addressProvider),
-            Config.VESTING_DURATION,
-            treasuryAmount_
-        );
         addressProvider.updateAddress(AddressKeys.VESTING, address(vesting));
-        addressProvider.updateAddress(
-            AddressKeys.TREASURY_VESTING,
-            address(treasuryVesting)
-        );
 
         // Bonding Setup
         bonding = new Bonding(

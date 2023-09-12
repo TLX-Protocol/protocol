@@ -51,10 +51,6 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return _addresses[AddressKeys.VESTING];
     }
 
-    function treasuryVesting() external view override returns (address) {
-        return _addresses[AddressKeys.TREASURY_VESTING];
-    }
-
     function tlx() external view override returns (address) {
         return _addresses[AddressKeys.TLX];
     }

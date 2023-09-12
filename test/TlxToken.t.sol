@@ -35,16 +35,6 @@ contract TlxTokenTest is IntegrationTest {
         assertEq(tlx.balanceOf(address(this)), 123e18);
     }
 
-    function testTreasuryVestingMint() public {
-        addressProvider.updateAddress(
-            AddressKeys.TREASURY_VESTING,
-            address(this)
-        );
-        tlx.mint(address(this), 123e18);
-        assertEq(tlx.totalSupply(), 123e18);
-        assertEq(tlx.balanceOf(address(this)), 123e18);
-    }
-
     function testVestingMint() public {
         addressProvider.updateAddress(AddressKeys.VESTING, address(this));
         tlx.mint(address(this), 123e18);

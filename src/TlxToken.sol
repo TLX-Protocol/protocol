@@ -13,8 +13,6 @@ contract TlxToken is ITlxToken, ERC20 {
         if (
             msg.sender != IAddressProvider(_addressProvider).airdrop() &&
             msg.sender != IAddressProvider(_addressProvider).bonding() &&
-            msg.sender !=
-            IAddressProvider(_addressProvider).treasuryVesting() &&
             msg.sender != IAddressProvider(_addressProvider).vesting()
         ) revert NotAuthorized();
         _;

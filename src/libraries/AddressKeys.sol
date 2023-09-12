@@ -8,7 +8,6 @@ library AddressKeys {
     bytes32 public constant AIRDROP = "airdrop";
     bytes32 public constant BONDING = "bonding";
     bytes32 public constant TREASURY = "treasury";
-    bytes32 public constant TREASURY_VESTING = "treasuryVesting";
     bytes32 public constant VESTING = "vesting";
     bytes32 public constant TLX = "tlx";
     bytes32 public constant LOCKER = "locker";
