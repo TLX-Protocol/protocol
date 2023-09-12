@@ -75,7 +75,7 @@ contract Bonding is IBonding, Ownable {
 
         // Transfer the TLX tokens to the user
         address tlx_ = IAddressProvider(_addressProvider).tlx();
-        ITlxToken(tlx_).mint(address(this), tlxAmount_);
+        ITlxToken(tlx_).transfer(address(this), tlxAmount_);
         address locker_ = IAddressProvider(_addressProvider).locker();
         IERC20(tlx_).approve(locker_, tlxAmount_);
         ILocker(locker_).lockFor(tlxAmount_, msg.sender);

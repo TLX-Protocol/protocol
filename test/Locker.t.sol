@@ -26,7 +26,7 @@ contract LockerTest is IntegrationTest {
     }
 
     function testInit() public {
-        assertEq(locker.name(), "Staked TLX Token", "name");
+        assertEq(locker.name(), "Staked TLX DAO Token", "name");
         assertEq(locker.symbol(), "stTLX", "symbol");
         assertEq(locker.decimals(), 18, "decimals");
         assertEq(locker.balanceOf(address(this)), 0, "balanceOf");

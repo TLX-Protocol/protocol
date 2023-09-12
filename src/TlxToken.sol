@@ -7,25 +7,16 @@ import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 contract TlxToken is ITlxToken, ERC20 {
-    address internal immutable _addressProvider;
-
-    modifier onlyAuthorized() {
-        if (
-            msg.sender != IAddressProvider(_addressProvider).airdrop() &&
-            msg.sender != IAddressProvider(_addressProvider).bonding() &&
-            msg.sender != IAddressProvider(_addressProvider).vesting()
-        ) revert NotAuthorized();
-        _;
-    }
-
-    constructor(address addressProvider_) ERC20("TLX Token", "TLX") {
-        _addressProvider = addressProvider_;
-    }
-
-    function mint(
-        address to_,
-        uint256 amount_
-    ) external override onlyAuthorized {
-        _mint(to_, amount_);
+    constructor(
+        address addressProvider_,
+        uint256 airdropAmount_,
+        uint256 bondingAmount_,
+        uint256 treasuryAmount_,
+        uint256 vestingAmount_
+    ) ERC20("TLX DAO Token", "TLX") {
+        _mint(IAddressProvider(addressProvider_).airdrop(), airdropAmount_);
+        _mint(IAddressProvider(addressProvider_).bonding(), bondingAmount_);
+        _mint(IAddressProvider(addressProvider_).treasury(), treasuryAmount_);
+        _mint(IAddressProvider(addressProvider_).vesting(), vestingAmount_);
     }
 }

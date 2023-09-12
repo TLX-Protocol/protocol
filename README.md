@@ -111,7 +111,7 @@ It will:
 
 - Extend the `IERC20Metadata` interface with standard functionality.
 - Have 18 decimals
-- Have the name: "TLX Token"
+- Have the name: "TLX DAO Token"
 - Have the symbol "TLX"
 - Mint an amount of TLX tokens to the deployer for the treasury and team
 

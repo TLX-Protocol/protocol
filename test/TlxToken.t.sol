@@ -4,41 +4,26 @@ pragma solidity ^0.8.13;
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {AddressKeys} from "../src/libraries/AddressKeys.sol";
+import {Config} from "../src/libraries/Config.sol";
 
 import {ITlxToken} from "../src/interfaces/ITlxToken.sol";
 
 contract TlxTokenTest is IntegrationTest {
     function testInit() public {
-        assertEq(tlx.name(), "TLX Token");
+        assertEq(tlx.name(), "TLX DAO Token");
         assertEq(tlx.symbol(), "TLX");
         assertEq(tlx.decimals(), 18);
-        assertEq(tlx.totalSupply(), 0);
+        assertEq(
+            tlx.totalSupply(),
+            Config.AIRDROP_AMOUNT +
+                Config.TREASURY_AMOUNT +
+                Config.BONDING_AMOUNT +
+                Config.VESTING_AMOUNT
+        );
         assertEq(tlx.balanceOf(address(this)), 0);
-    }
-
-    function testMintRevertsForNonAuthorized() public {
-        vm.expectRevert(ITlxToken.NotAuthorized.selector);
-        tlx.mint(address(this), 1);
-    }
-
-    function testAirdropMint() public {
-        addressProvider.updateAddress(AddressKeys.AIRDROP, address(this));
-        tlx.mint(address(this), 123e18);
-        assertEq(tlx.totalSupply(), 123e18);
-        assertEq(tlx.balanceOf(address(this)), 123e18);
-    }
-
-    function testBondingMint() public {
-        addressProvider.updateAddress(AddressKeys.BONDING, address(this));
-        tlx.mint(address(this), 123e18);
-        assertEq(tlx.totalSupply(), 123e18);
-        assertEq(tlx.balanceOf(address(this)), 123e18);
-    }
-
-    function testVestingMint() public {
-        addressProvider.updateAddress(AddressKeys.VESTING, address(this));
-        tlx.mint(address(this), 123e18);
-        assertEq(tlx.totalSupply(), 123e18);
-        assertEq(tlx.balanceOf(address(this)), 123e18);
+        assertEq(tlx.balanceOf(address(treasury)), Config.TREASURY_AMOUNT);
+        assertEq(tlx.balanceOf(address(airdrop)), Config.AIRDROP_AMOUNT);
+        assertEq(tlx.balanceOf(address(bonding)), Config.BONDING_AMOUNT);
+        assertEq(tlx.balanceOf(address(vesting)), Config.VESTING_AMOUNT);
     }
 }

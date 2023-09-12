@@ -37,7 +37,7 @@ contract Vesting is IVesting {
         uint256 claimable_ = claimable(msg.sender);
         if (claimable_ == 0) revert NothingToClaim();
         _claimed[msg.sender] += claimable_;
-        _tlx().mint(msg.sender, claimable_);
+        _tlx().transfer(msg.sender, claimable_);
         emit Claimed(msg.sender, claimable_);
     }
 

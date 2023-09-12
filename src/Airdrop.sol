@@ -50,7 +50,7 @@ contract Airdrop is IAirdrop, Ownable {
             amount_ = _airdropAmount - totalClaimed_;
         }
         ITlxToken tlx_ = ITlxToken(IAddressProvider(_addressProvider).tlx());
-        tlx_.mint(account_, amount_);
+        tlx_.transfer(account_, amount_);
 
         // Updating state
         hasClaimed[account_] = true;
@@ -71,7 +71,7 @@ contract Airdrop is IAirdrop, Ownable {
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         ITlxToken tlx_ = ITlxToken(addressProvider_.tlx());
-        tlx_.mint(treasury_, unclaimed_);
+        tlx_.transfer(treasury_, unclaimed_);
         emit UnclaimedMinted(unclaimed_);
     }
 

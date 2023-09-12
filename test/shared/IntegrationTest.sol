@@ -64,10 +64,6 @@ contract IntegrationTest is Test {
             Config.VESTING_DURATION,
             amounts_
         );
-
-        IVesting.VestingAmount[]
-            memory treasuryAmount_ = new Vesting.VestingAmount[](1);
-        treasuryAmount_[0] = IVesting.VestingAmount(address(treasury), 500e18);
         addressProvider.updateAddress(AddressKeys.VESTING, address(vesting));
 
         // Bonding Setup
@@ -113,10 +109,6 @@ contract IntegrationTest is Test {
             address(positionManagerFactory)
         );
 
-        // TLX Token Setup
-        tlx = new TlxToken(address(addressProvider));
-        addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
-
         // Airdrop Setup
         bytes32[] memory leaves = new bytes32[](2);
         leaves[0] = keccak256(abi.encodePacked(alice, uint256(100e18)));
@@ -125,7 +117,7 @@ contract IntegrationTest is Test {
             address(addressProvider),
             bytes32(0),
             block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
-            Config.AIRDRIP_AMOUNT
+            Config.AIRDROP_AMOUNT
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 
@@ -160,6 +152,16 @@ contract IntegrationTest is Test {
             AddressKeys.DERIVATIVES_HANDLER,
             address(mockDerivativesHandler)
         );
+
+        // TLX Token Setup
+        tlx = new TlxToken(
+            address(addressProvider),
+            Config.AIRDROP_AMOUNT,
+            Config.BONDING_AMOUNT,
+            Config.TREASURY_AMOUNT,
+            Config.VESTING_AMOUNT
+        );
+        addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
     }
 
     function _mintTokensFor(
