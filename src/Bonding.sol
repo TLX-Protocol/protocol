@@ -158,7 +158,7 @@ contract Bonding is IBonding, Ownable {
                 time_ *
                 tlxPerSecond_ +
                 _tlxInRange(
-                    rangeStart_ + time_,
+                    nextDecay_,
                     rangeEnd_,
                     tlxPerSecond_.mul(_periodDecayMultiplier),
                     nextDecay_ + _periodDuration
