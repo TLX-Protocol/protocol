@@ -132,7 +132,7 @@ contract PositionManager is IPositionManager {
         return
             ILeveragedTokenFactory(
                 IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).tokenExists(leveragedToken_);
+            ).isLeveragedToken(leveragedToken_);
     }
 
     function _isPositionManager(

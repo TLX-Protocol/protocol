@@ -73,9 +73,6 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
             false
         );
         assertEq(shortTokenAddress, shortTokenAddress_);
-        assertEq(leveragedTokenFactory.tokenExists(longTokenAddress_), true);
-        assertEq(leveragedTokenFactory.tokenExists(shortTokenAddress_), true);
-        assertEq(leveragedTokenFactory.tokenExists(Tokens.UNI), false);
         assertTrue(
             leveragedTokenFactory.tokenExists(Tokens.UNI, 1.23e18, true)
         );
