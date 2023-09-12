@@ -43,7 +43,7 @@ contract Locker is ILocker {
     function lockFor(uint256 amount_, address account_) public override {
         if (amount_ == 0) revert ZeroAmount();
         if (account_ == address(0)) revert ZeroAddress();
-        if (_unlockTimes[msg.sender] != 0) revert UnlockPrepared();
+        if (_hasPreparedUnlock(account_)) revert UnlockPrepared();
 
         _checkpoint(msg.sender);
         _tlx().transferFrom(msg.sender, address(this), amount_);
@@ -56,7 +56,7 @@ contract Locker is ILocker {
     function prepareUnlock() public override {
         uint256 balance_ = _balances[msg.sender];
         if (balance_ == 0) revert ZeroBalance();
-        if (_unlockTimes[msg.sender] != 0) revert AlreadyPreparedUnlock();
+        if (_hasPreparedUnlock(msg.sender)) revert AlreadyPreparedUnlock();
 
         _checkpoint(msg.sender);
         _unlockTimes[msg.sender] = block.timestamp + unlockDelay;
@@ -70,7 +70,7 @@ contract Locker is ILocker {
     }
 
     function relock() public override {
-        if (_unlockTimes[msg.sender] == 0) revert NoUnlockPrepared();
+        if (!_hasPreparedUnlock(msg.sender)) revert NoUnlockPrepared();
 
         _checkpoint(msg.sender);
         delete _unlockTimes[msg.sender];
@@ -138,7 +138,7 @@ contract Locker is ILocker {
     }
 
     function isUnlocked(address account) public view override returns (bool) {
-        if (_unlockTimes[account] == 0) return false;
+        if (!_hasPreparedUnlock(account)) return false;
         return _unlockTimes[account] <= block.timestamp;
     }
 
@@ -160,12 +160,16 @@ contract Locker is ILocker {
     }
 
     function _newRewards(address account_) internal view returns (uint256) {
-        if (_unlockTimes[account_] != 0) return 0;
+        if (_hasPreparedUnlock(account_)) return 0;
         uint256 integral_ = _rewardIntegral - _usersRewardIntegral[account_];
         return integral_.mul(_balances[account_]);
     }
 
     function _tlx() internal view returns (IERC20Metadata) {
         return IERC20Metadata(IAddressProvider(_addressProvider).tlx());
+    }
+
+    function _hasPreparedUnlock(address account_) internal view returns (bool) {
+        return _unlockTimes[account_] != 0;
     }
 }

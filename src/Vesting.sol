@@ -11,11 +11,11 @@ contract Vesting is IVesting {
     using ScaledNumber for uint256;
 
     mapping(address => uint256) internal _amounts;
-    mapping(address => uint256) internal _claimed;
-
     address internal immutable _addressProvider;
     uint256 internal immutable _start;
     uint256 internal immutable _duration;
+
+    mapping(address => uint256) public override claimed;
 
     constructor(
         address addressProvider_,
@@ -36,7 +36,7 @@ contract Vesting is IVesting {
     function claim() external override {
         uint256 claimable_ = claimable(msg.sender);
         if (claimable_ == 0) revert NothingToClaim();
-        _claimed[msg.sender] += claimable_;
+        claimed[msg.sender] += claimable_;
         _tlx().transfer(msg.sender, claimable_);
         emit Claimed(msg.sender, claimable_);
     }
@@ -44,7 +44,7 @@ contract Vesting is IVesting {
     function claimable(
         address account_
     ) public view override returns (uint256) {
-        return vested(account_) - claimed(account_);
+        return vested(account_) - claimed[account_];
     }
 
     function vesting(address account_) public view override returns (uint256) {
@@ -55,10 +55,6 @@ contract Vesting is IVesting {
         uint256 percent_ = (block.timestamp - _start).div(_duration);
         if (percent_ > 1e18) percent_ = 1e18;
         return _amounts[account_].mul(percent_);
-    }
-
-    function claimed(address account_) public view override returns (uint256) {
-        return _claimed[account_];
     }
 
     function _tlx() internal view returns (ITlxToken) {
