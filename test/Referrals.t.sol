@@ -14,8 +14,8 @@ contract ReferralsTest is IntegrationTest {
     bytes32 public constant ALT = bytes32(bytes("alt"));
 
     function testInit() public {
-        assertEq(referrals.rebate(), 0.5e18);
-        assertEq(referrals.earnings(), 0.5e18);
+        assertEq(referrals.rebatePercent(), 0.5e18);
+        assertEq(referrals.rebatePercent(), 0.5e18);
 
         assertEq(referrals.codeRebate(CODE), 0);
         assertEq(referrals.userRebate(alice), 0);
@@ -97,38 +97,38 @@ contract ReferralsTest is IntegrationTest {
         referrals.updateReferral(CODE);
     }
 
-    function testSetRebate() public {
-        referrals.setRebate(0.3e18);
-        assertEq(referrals.rebate(), 0.3e18);
+    function testSetRebatePercent() public {
+        referrals.setRebatePercent(0.3e18);
+        assertEq(referrals.rebatePercent(), 0.3e18);
     }
 
-    function testSetRebateRevertsWhenNotChanged() public {
+    function testSetRebatePercentRevertsWhenNotChanged() public {
         vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setRebate(0.5e18);
+        referrals.setRebatePercent(0.5e18);
     }
 
-    function testSetRebateRevertsForInvalidAmount() public {
+    function testSetRebatePercentRevertsForInvalidAmount() public {
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setRebate(1.1e18);
+        referrals.setRebatePercent(1.1e18);
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setRebate(0.9e18);
+        referrals.setRebatePercent(0.9e18);
     }
 
-    function testSetEarnings() public {
-        referrals.setEarnings(0.3e18);
-        assertEq(referrals.earnings(), 0.3e18);
+    function testSetEarningsPercent() public {
+        referrals.setEarningsPercent(0.3e18);
+        assertEq(referrals.earningsPercent(), 0.3e18);
     }
 
-    function testSetEarningsRevertsWhenNotChanged() public {
+    function testSetEarningsPercentRevertsWhenNotChanged() public {
         vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setEarnings(0.5e18);
+        referrals.setEarningsPercent(0.5e18);
     }
 
     function testSetEarningsRevertsForInvalidAmount() public {
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setEarnings(1.1e18);
+        referrals.setEarningsPercent(1.1e18);
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setEarnings(0.9e18);
+        referrals.setEarningsPercent(0.9e18);
     }
 
     function testUpdateReferralFor() public {

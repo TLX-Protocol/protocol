@@ -54,18 +54,18 @@ interface IReferrals {
     function updateReferralFor(address user, bytes32 code) external;
 
     /**
-     * @notice Sets the rebate.
+     * @notice Sets the rebate percent.
      * @dev Can only be called by the owner.
-     * @param rebate The rebate to set.
+     * @param rebatePercent The rebate percent to set.
      */
-    function setRebate(uint256 rebate) external;
+    function setRebatePercent(uint256 rebatePercent) external;
 
     /**
-     * @notice Sets the earnings.
+     * @notice Sets the earnings percent.
      * @dev Can only be called by the owner.
-     * @param earnings The earnings to set.
+     * @param earningsPercent The earnings percent to set.
      */
-    function setEarnings(uint256 earnings) external;
+    function setEarningsPercent(uint256 earningsPercent) external;
 
     /**
      * @notice Returns the reabate for the given code.
@@ -110,16 +110,16 @@ interface IReferrals {
     function earned(address referrer) external view returns (uint256 earned);
 
     /**
-     * @notice Returns the rebate.
+     * @notice Returns the rebate percent.
      * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return rebate The rebate.
+     * @return rebatePercent The rebate percent.
      */
-    function rebate() external view returns (uint256 rebate);
+    function rebatePercent() external view returns (uint256 rebatePercent);
 
     /**
-     * @notice Returns the earnings.
+     * @notice Returns the earnings percent.
      * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return earnings The earnings.
+     * @return earningsPercent The earnings percent.
      */
-    function earnings() external view returns (uint256 earnings);
+    function earningsPercent() external view returns (uint256 earningsPercent);
 }

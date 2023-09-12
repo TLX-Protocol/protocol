@@ -21,8 +21,8 @@ contract Referrals is IReferrals, Ownable {
     // Earnings contains both referrer earnings and rebates
     mapping(address => uint256) internal _earnings;
 
-    uint256 public override rebate;
-    uint256 public override earnings;
+    uint256 public override rebatePercent;
+    uint256 public override earningsPercent;
 
     modifier onlyPositionManager() {
         address positionManagerFactory_ = IAddressProvider(_addressProvider)
@@ -35,10 +35,14 @@ contract Referrals is IReferrals, Ownable {
         _;
     }
 
-    constructor(address addressProvider_, uint256 rebate_, uint256 earnings_) {
+    constructor(
+        address addressProvider_,
+        uint256 rebatePercent_,
+        uint256 earningsPercent_
+    ) {
         _addressProvider = addressProvider_;
-        rebate = rebate_;
-        earnings = earnings_;
+        rebatePercent = rebatePercent_;
+        earningsPercent = earningsPercent_;
     }
 
     function takeEarnings(
@@ -52,8 +56,8 @@ contract Referrals is IReferrals, Ownable {
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
 
-        uint256 earningsAmount_ = fees_.mul(earnings);
-        uint256 rebateAmount_ = fees_.mul(rebate);
+        uint256 earningsAmount_ = fees_.mul(earningsPercent);
+        uint256 rebateAmount_ = fees_.mul(rebatePercent);
         if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
         address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
         uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
@@ -99,19 +103,23 @@ contract Referrals is IReferrals, Ownable {
         _updateCodeFor(code_, user_);
     }
 
-    function setRebate(uint256 rebate_) external override onlyOwner {
-        if (rebate_ == rebate) revert NotChanged();
-        if (rebate_ > 1e18) revert InvalidAmount();
-        if (rebate_ + earnings > 1e18) revert InvalidAmount();
-        rebate = rebate_;
-        emit RebateSet(rebate_);
+    function setRebatePercent(
+        uint256 rebatePercent_
+    ) external override onlyOwner {
+        if (rebatePercent_ == rebatePercent) revert NotChanged();
+        if (rebatePercent_ > 1e18) revert InvalidAmount();
+        if (rebatePercent_ + earningsPercent > 1e18) revert InvalidAmount();
+        rebatePercent = rebatePercent_;
+        emit RebateSet(rebatePercent_);
     }
 
-    function setEarnings(uint256 earnings_) external override onlyOwner {
-        if (earnings_ == earnings) revert NotChanged();
-        if (earnings_ + rebate > 1e18) revert InvalidAmount();
-        earnings = earnings_;
-        emit EarningsSet(earnings_);
+    function setEarningsPercent(
+        uint256 earningsPercent_
+    ) external override onlyOwner {
+        if (earningsPercent_ == earningsPercent) revert NotChanged();
+        if (earningsPercent_ + rebatePercent > 1e18) revert InvalidAmount();
+        earningsPercent = earningsPercent_;
+        emit EarningsSet(earningsPercent_);
     }
 
     function codeRebate(
@@ -156,6 +164,6 @@ contract Referrals is IReferrals, Ownable {
     function _codeRebate(bytes32 code_) internal view returns (uint256) {
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
-        return rebate;
+        return rebatePercent;
     }
 }
