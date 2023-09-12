@@ -143,11 +143,11 @@ contract Locker is ILocker {
     }
 
     function symbol() public view override returns (string memory) {
-        return string(abi.encodePacked("st", _tlx().symbol()));
+        return string.concat("st", _tlx().symbol());
     }
 
     function name() public view override returns (string memory) {
-        return string(abi.encodePacked("Staked ", _tlx().name()));
+        return string.concat("Staked ", _tlx().name());
     }
 
     function decimals() public view override returns (uint8) {
