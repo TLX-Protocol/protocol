@@ -38,8 +38,9 @@ contract Airdrop is IAirdrop, Ownable {
         address account_ = msg.sender;
         if (block.timestamp > deadline) revert ClaimPeriodOver();
         if (hasClaimed[account_]) revert AlreadyClaimed();
-        bool isValid_ = _isValid(index_, account_, amount_, merkleProof_);
-        if (!isValid_) revert InvalidMerkleProof();
+        if (!_isValid(index_, account_, amount_, merkleProof_)) {
+            revert InvalidMerkleProof();
+        }
         uint256 totalClaimed_ = totalClaimed;
         bool completed_ = totalClaimed_ == _airdropAmount;
         if (completed_) revert AirdropCompleted();
