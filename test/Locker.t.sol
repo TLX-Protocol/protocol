@@ -97,6 +97,15 @@ contract LockerTest is IntegrationTest {
         assertEq(locker.isUnlocked(address(this)), false, "isUnlocked");
     }
 
+    function testLockFailsWhenUnlockPrepared() public {
+        _mintTokensFor(address(tlx), address(this), 100e18);
+        tlx.approve(address(locker), 100e18);
+        locker.lock(50e18);
+        locker.prepareUnlock();
+        vm.expectRevert(ILocker.UnlockPrepared.selector);
+        locker.lock(50e18);
+    }
+
     function testUnlockFailsWithZeroBalance() public {
         vm.expectRevert(ILocker.ZeroBalance.selector);
         locker.unlock();
