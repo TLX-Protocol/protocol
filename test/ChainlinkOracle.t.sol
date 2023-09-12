@@ -16,10 +16,10 @@ contract ChainlinkOracleTest is IntegrationTest {
     }
 
     function testPriceThroughEth() public {
-        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
-        uint256 price_ = chainlinkOracle.getUsdPrice(Tokens.WBTC);
-        assertGt(price_, 5000e18);
-        assertLt(price_, 100000e18);
+        chainlinkOracle.setEthOracle(Tokens.CBETH, Contracts.CBETH_ETH_ORACLE);
+        uint256 price_ = chainlinkOracle.getUsdPrice(Tokens.CBETH);
+        assertGt(price_, 500e18);
+        assertLt(price_, 10_000e18);
     }
 
     function testUpdateStalePriceDelay() public {

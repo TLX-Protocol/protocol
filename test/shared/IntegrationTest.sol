@@ -30,7 +30,6 @@ contract IntegrationTest is Test {
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
     address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
-    address public gmxVault = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
     address public treasury = makeAddr("treasury");
 
     // Contracts
@@ -48,7 +47,7 @@ contract IntegrationTest is Test {
     MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 108_419_524));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
@@ -99,7 +98,7 @@ contract IntegrationTest is Test {
         chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
-        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
+        chainlinkOracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
             address(chainlinkOracle)
