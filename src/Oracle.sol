@@ -28,16 +28,6 @@ interface IChainlink {
 }
 
 contract Oracle is IOracle, Ownable {
-    event UsdOracleUpdated(address indexed token, address oracle);
-    event EthOracleUpdated(address indexed token, address oracle);
-    event StalePriceDelayUpdated(uint256 delay);
-
-    error RoundNotComplete();
-    error StalePrice();
-    error ZeroPrice();
-    error RoundExpired();
-    error NoOracle();
-
     using ScaledNumber for uint256;
 
     address internal immutable _ethUsdOracle;
@@ -48,23 +38,27 @@ contract Oracle is IOracle, Ownable {
 
     uint256 public stalePriceDelay = 1 days;
 
+    event UsdOracleUpdated(address indexed token, address oracle);
+    event EthOracleUpdated(address indexed token, address oracle);
+    event StalePriceDelayUpdated(uint256 delay);
+
+    error RoundNotComplete();
+    error StalePrice();
+    error ZeroPrice();
+    error RoundExpired();
+    error NoOracle();
+
     constructor(address addressProvider_, address ethUsdOracle_) {
         _ethUsdOracle = ethUsdOracle_;
         _addressProvider = addressProvider_;
     }
 
-    function setUsdOracle(
-        address token_,
-        address oracle_
-    ) external onlyOwner {
+    function setUsdOracle(address token_, address oracle_) external onlyOwner {
         _usdOracles[token_] = oracle_;
         emit UsdOracleUpdated(token_, oracle_);
     }
 
-    function setEthOracle(
-        address token_,
-        address oracle_
-    ) external onlyOwner {
+    function setEthOracle(address token_, address oracle_) external onlyOwner {
         _ethOracles[token_] = oracle_;
         emit EthOracleUpdated(token_, oracle_);
     }
