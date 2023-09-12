@@ -90,6 +90,13 @@ contract Bonding is IBonding, Ownable {
         return tlxAmount_;
     }
 
+    function setBaseForAllTlx(
+        uint256 baseForAllTlx_
+    ) external override onlyOwner {
+        _updateCache();
+        _baseForAllTlx = baseForAllTlx_;
+    }
+
     function availableTlx() public view override returns (uint256) {
         uint256 nextDecay_ = _lastDecayTimestamp + _periodDuration;
         return

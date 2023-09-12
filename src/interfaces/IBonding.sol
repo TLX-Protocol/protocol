@@ -27,6 +27,13 @@ interface IBonding {
     ) external returns (uint256 tlxTokensReceived);
 
     /**
+     * @notice Sets the base for all TLX.
+     * @dev Reverts if the caller is not the owner.
+     * @param baseForAllTlx The new base for all TLX.
+     */
+    function setBaseForAllTlx(uint256 baseForAllTlx) external;
+
+    /**
      * @notice Returns the exchange rate between leveraged tokens USDC value and TLX.
      * @return exchangeRate The exchange rate between leveraged tokens USDC value and TLX.
      */
