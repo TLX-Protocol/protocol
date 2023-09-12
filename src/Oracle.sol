@@ -5,7 +5,7 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
-import {IChainlinkOracle} from "./interfaces/IChainlinkOracle.sol";
+import {IOracle} from "./interfaces/IOracle.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
@@ -27,7 +27,17 @@ interface IChainlink {
     function decimals() external view returns (uint8);
 }
 
-contract ChainlinkOracle is IChainlinkOracle, Ownable {
+contract Oracle is IOracle, Ownable {
+    event UsdOracleUpdated(address indexed token, address oracle);
+    event EthOracleUpdated(address indexed token, address oracle);
+    event StalePriceDelayUpdated(uint256 delay);
+
+    error RoundNotComplete();
+    error StalePrice();
+    error ZeroPrice();
+    error RoundExpired();
+    error NoOracle();
+
     using ScaledNumber for uint256;
 
     address internal immutable _ethUsdOracle;
@@ -36,7 +46,7 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     mapping(address => address) internal _usdOracles;
     mapping(address => address) internal _ethOracles;
 
-    uint256 public override stalePriceDelay = 1 days;
+    uint256 public stalePriceDelay = 1 days;
 
     constructor(address addressProvider_, address ethUsdOracle_) {
         _ethUsdOracle = ethUsdOracle_;
@@ -46,7 +56,7 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     function setUsdOracle(
         address token_,
         address oracle_
-    ) external override onlyOwner {
+    ) external onlyOwner {
         _usdOracles[token_] = oracle_;
         emit UsdOracleUpdated(token_, oracle_);
     }
@@ -54,12 +64,12 @@ contract ChainlinkOracle is IChainlinkOracle, Ownable {
     function setEthOracle(
         address token_,
         address oracle_
-    ) external override onlyOwner {
+    ) external onlyOwner {
         _ethOracles[token_] = oracle_;
         emit EthOracleUpdated(token_, oracle_);
     }
 
-    function setStalePriceDelay(uint256 delay_) external override onlyOwner {
+    function setStalePriceDelay(uint256 delay_) external onlyOwner {
         stalePriceDelay = delay_;
         emit StalePriceDelayUpdated(delay_);
     }

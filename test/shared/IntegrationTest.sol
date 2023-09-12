@@ -12,7 +12,7 @@ import {Config} from "../../src/libraries/Config.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
 
-import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
+import {Oracle} from "../../src/Oracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
@@ -33,7 +33,7 @@ contract IntegrationTest is Test {
     address public treasury = makeAddr("treasury");
 
     // Contracts
-    ChainlinkOracle public chainlinkOracle;
+    Oracle public oracle;
     MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
@@ -76,18 +76,18 @@ contract IntegrationTest is Test {
         );
         addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
 
-        // Chainlink Oracle Setup
-        chainlinkOracle = new ChainlinkOracle(
+        // Oracle Setup
+        oracle = new Oracle(
             address(addressProvider),
             Contracts.ETH_USD_ORACLE
         );
-        chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
+        oracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
-            address(chainlinkOracle)
+            address(oracle)
         );
 
         // LeveragedTokenFactory Setup
@@ -131,11 +131,11 @@ contract IntegrationTest is Test {
 
         // Mock Oracle Setup
         mockOracle = new MockOracle();
-        uint256 uniPrice_ = chainlinkOracle.getUsdPrice(Tokens.UNI);
+        uint256 uniPrice_ = oracle.getUsdPrice(Tokens.UNI);
         mockOracle.setPrice(Tokens.UNI, uniPrice_);
-        uint256 ethPrice_ = chainlinkOracle.getUsdPrice(address(0));
+        uint256 ethPrice_ = oracle.getUsdPrice(address(0));
         mockOracle.setPrice(address(0), ethPrice_);
-        uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
+        uint256 usdcPrice_ = oracle.getUsdPrice(Tokens.USDC);
         mockOracle.setPrice(Tokens.USDC, usdcPrice_);
 
         // MockDerivativesHandler Setup
