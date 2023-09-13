@@ -10,7 +10,6 @@ import {Tokens} from "./libraries/Tokens.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
@@ -52,12 +51,9 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
-        IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(
-                _addressProvider.positionManagerFactory()
-            );
-        address positionManager_ = positionManagerFactory_.positionManager(
-            targetAsset_
-        );
+        address positionManager_ = _addressProvider
+            .positionManagerFactory()
+            .positionManager(targetAsset_);
         if (positionManager_ == address(0)) revert NoPositionManager();
 
         // Deploying tokens

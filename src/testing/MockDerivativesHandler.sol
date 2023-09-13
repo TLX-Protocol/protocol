@@ -7,7 +7,6 @@ import {ScaledNumber} from "../libraries/ScaledNumber.sol";
 
 import {IDerivativesHandler} from "../interfaces/IDerivativesHandler.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
-import {IOracle} from "../interfaces/IOracle.sol";
 
 contract BaseProtocol {
     using ScaledNumber for uint256;
@@ -81,7 +80,7 @@ contract BaseProtocol {
     }
 
     function _usdPrice(address token_) internal view returns (uint256) {
-        return IOracle(_addressProvider.oracle()).getUsdPrice(token_);
+        return _addressProvider.oracle().getUsdPrice(token_);
     }
 
     function _profit(

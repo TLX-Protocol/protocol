@@ -8,9 +8,7 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {IOracle} from "./interfaces/IOracle.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
-import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
 interface IChainlink {
     function latestRoundData()
@@ -84,8 +82,10 @@ contract Oracle is IOracle, Ownable {
     function _priceLeveragedToken(
         address token_
     ) internal view returns (uint256) {
-        address baseAsset_ = _addressProvider.baseAsset();
-        return getUsdPrice(baseAsset_).mul(_exchangeRate(token_));
+        return
+            getUsdPrice(address(_addressProvider.baseAsset())).mul(
+                _exchangeRate(token_)
+            );
     }
 
     function _getChainlinkPrice(
@@ -107,16 +107,15 @@ contract Oracle is IOracle, Ownable {
 
     function _isLeveragedToken(address token_) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(_addressProvider.leveragedTokenFactory())
-                .isLeveragedToken(token_);
+            _addressProvider.leveragedTokenFactory().isLeveragedToken(token_);
     }
 
     function _exchangeRate(address token_) internal view returns (uint256) {
         return
             IPositionManager(
-                IPositionManagerFactory(
-                    _addressProvider.positionManagerFactory()
-                ).positionManager(ILeveragedToken(token_).targetAsset())
+                _addressProvider.positionManagerFactory().positionManager(
+                    ILeveragedToken(token_).targetAsset()
+                )
             ).exchangeRate(token_);
     }
 }

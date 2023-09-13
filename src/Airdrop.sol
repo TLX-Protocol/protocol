@@ -5,7 +5,6 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
 
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
-import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 contract Airdrop is IAirdrop, Ownable {
@@ -48,12 +47,11 @@ contract Airdrop is IAirdrop, Ownable {
         if (totalClaimed_ + amount_ > _airdropAmount) {
             amount_ = _airdropAmount - totalClaimed_;
         }
-        ITlxToken tlx_ = ITlxToken(_addressProvider.tlx());
 
         // Updating state
         hasClaimed[account_] = true;
         totalClaimed += amount_;
-        tlx_.transfer(account_, amount_);
+        _addressProvider.tlx().transfer(account_, amount_);
         emit Claimed(account_, amount_);
     }
 
@@ -68,8 +66,7 @@ contract Airdrop is IAirdrop, Ownable {
         if (treasury_ == address(0)) revert InvalidTreasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
-        ITlxToken tlx_ = ITlxToken(_addressProvider.tlx());
-        tlx_.transfer(treasury_, unclaimed_);
+        _addressProvider.tlx().transfer(treasury_, unclaimed_);
         emit UnclaimedMinted(unclaimed_);
     }
 

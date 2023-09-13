@@ -2,13 +2,11 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 
 contract Referrals is IReferrals, Ownable {
     using ScaledNumber for uint256;
@@ -25,13 +23,11 @@ contract Referrals is IReferrals, Ownable {
     uint256 public override earningsPercent;
 
     modifier onlyPositionManager() {
-        address positionManagerFactory_ = IAddressProvider(_addressProvider)
-            .positionManagerFactory();
-        bool isPositionManager_ = IPositionManagerFactory(
-            positionManagerFactory_
-        ).isPositionManager(msg.sender);
-
-        if (!isPositionManager_) revert NotPositionManager();
+        if (
+            !_addressProvider.positionManagerFactory().isPositionManager(
+                msg.sender
+            )
+        ) revert NotPositionManager();
         _;
     }
 
@@ -60,7 +56,7 @@ contract Referrals is IReferrals, Ownable {
         uint256 rebateAmount_ = fees_.mul(rebatePercent);
         if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
         uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
-        IERC20(_addressProvider.baseAsset()).transferFrom(
+        _addressProvider.baseAsset().transferFrom(
             msg.sender,
             address(this),
             totalAmount_
@@ -74,7 +70,7 @@ contract Referrals is IReferrals, Ownable {
         uint256 amount_ = _earnings[msg.sender];
         if (amount_ == 0) return 0;
         delete _earnings[msg.sender];
-        IERC20(_addressProvider.baseAsset()).transfer(msg.sender, amount_);
+        _addressProvider.baseAsset().transfer(msg.sender, amount_);
         return amount_;
     }
 

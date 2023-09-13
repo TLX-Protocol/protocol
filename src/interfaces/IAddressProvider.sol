@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+import {ILeveragedTokenFactory} from "./ILeveragedTokenFactory.sol";
+import {IPositionManagerFactory} from "./IPositionManagerFactory.sol";
+import {IOracle} from "./IOracle.sol";
+import {IReferrals} from "./IReferrals.sol";
+import {IAirdrop} from "./IAirdrop.sol";
+import {IBonding} from "./IBonding.sol";
+import {IVesting} from "./IVesting.sol";
+import {ITlxToken} from "./ITlxToken.sol";
+import {ILocker} from "./ILocker.sol";
+import {IDerivativesHandler} from "./IDerivativesHandler.sol";
+
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
 
@@ -19,46 +32,46 @@ interface IAddressProvider {
     function addressOf(bytes32 key) external view returns (address value);
 
     /**
-     * @notice Returns the address for the LeveragedTokenFactory contract.
-     * @return leveragedTokenFactory The address of the LeveragedTokenFactory contract.
+     * @notice Returns the LeveragedTokenFactory contract.
+     * @return leveragedTokenFactory The LeveragedTokenFactory contract.
      */
     function leveragedTokenFactory()
         external
         view
-        returns (address leveragedTokenFactory);
+        returns (ILeveragedTokenFactory leveragedTokenFactory);
 
     /**
-     * @notice Returns the address for the PositionManagerFactory contract.
-     * @return positionManagerFactory The address of the PositionManagerFactory contract.
+     * @notice Returns the PositionManagerFactory contract.
+     * @return positionManagerFactory The PositionManagerFactory contract.
      */
     function positionManagerFactory()
         external
         view
-        returns (address positionManagerFactory);
+        returns (IPositionManagerFactory positionManagerFactory);
 
     /**
-     * @notice Returns the address for the Oracle contract.
-     * @return oracle The address of the Oracle contract.
+     * @notice Returns the Oracle contract.
+     * @return oracle The Oracle contract.
      */
-    function oracle() external view returns (address oracle);
+    function oracle() external view returns (IOracle oracle);
 
     /**
-     * @notice Returns the address for the Referrals contract.
-     * @return referrals The address of the Referrals contract.
+     * @notice Returns the Referrals contract.
+     * @return referrals The Referrals contract.
      */
-    function referrals() external view returns (address referrals);
+    function referrals() external view returns (IReferrals referrals);
 
     /**
-     * @notice Returns the address for the Airdrop contract.
-     * @return airdrop The address of the Airdrop contract.
+     * @notice Returns the Airdrop contract.
+     * @return airdrop The Airdrop contract.
      */
-    function airdrop() external view returns (address airdrop);
+    function airdrop() external view returns (IAirdrop airdrop);
 
     /**
-     * @notice Returns the address for the Bonding contract.
-     * @return bonding The address of the Bonding contract.
+     * @notice Returns the Bonding contract.
+     * @return bonding The Bonding contract.
      */
-    function bonding() external view returns (address bonding);
+    function bonding() external view returns (IBonding bonding);
 
     /**
      * @notice Returns the address for the Treasury contract.
@@ -67,28 +80,28 @@ interface IAddressProvider {
     function treasury() external view returns (address treasury);
 
     /**
-     * @notice Returns the address for the Vesting contract.
-     * @return vesting The address of the Vesting contract.
+     * @notice Returns the Vesting contract.
+     * @return vesting The Vesting contract.
      */
-    function vesting() external view returns (address vesting);
+    function vesting() external view returns (IVesting vesting);
 
     /**
-     * @notice Returns the address for the TLX contract.
-     * @return tlx The address of the TLX contract.
+     * @notice Returns the TLX contract.
+     * @return tlx The TLX contract.
      */
-    function tlx() external view returns (address tlx);
+    function tlx() external view returns (ITlxToken tlx);
 
     /**
-     * @notice Returns the address for the Locker contract.
-     * @return locker The address of the Locker contract.
+     * @notice Returns the Locker contract.
+     * @return locker The Locker contract.
      */
-    function locker() external view returns (address locker);
+    function locker() external view returns (ILocker locker);
 
     /**
-     * @notice Returns the address for the base asset.
-     * @return baseAsset The address of the base asset.
+     * @notice Returns the base asset.
+     * @return baseAsset The base asset.
      */
-    function baseAsset() external view returns (address baseAsset);
+    function baseAsset() external view returns (IERC20Metadata baseAsset);
 
     /**
      * @notice Returns the address for the PositionEqualizer contract.
@@ -100,11 +113,11 @@ interface IAddressProvider {
         returns (address positionEqualizer);
 
     /**
-     * @notice Returns the address for the DerivativesHandler contract.
-     * @return derivativesHandler The address of the DerivativesHandler contract.
+     * @notice Returns the DerivativesHandler contract.
+     * @return derivativesHandler The DerivativesHandler contract.
      */
     function derivativesHandler()
         external
         view
-        returns (address derivativesHandler);
+        returns (IDerivativesHandler derivativesHandler);
 }

@@ -5,7 +5,6 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IVesting} from "./interfaces/IVesting.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {ITlxToken} from "./interfaces/ITlxToken.sol";
 
 contract Vesting is IVesting {
     using ScaledNumber for uint256;
@@ -37,7 +36,7 @@ contract Vesting is IVesting {
         uint256 claimable_ = claimable(msg.sender);
         if (claimable_ == 0) revert NothingToClaim();
         claimed[msg.sender] += claimable_;
-        _tlx().transfer(msg.sender, claimable_);
+        _addressProvider.tlx().transfer(msg.sender, claimable_);
         emit Claimed(msg.sender, claimable_);
     }
 
@@ -55,9 +54,5 @@ contract Vesting is IVesting {
         uint256 percent_ = (block.timestamp - _start).div(_duration);
         if (percent_ > 1e18) percent_ = 1e18;
         return _amounts[account_].mul(percent_);
-    }
-
-    function _tlx() internal view returns (ITlxToken) {
-        return ITlxToken(_addressProvider.tlx());
     }
 }

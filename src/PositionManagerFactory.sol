@@ -8,7 +8,6 @@ import {Tokens} from "./libraries/Tokens.sol";
 
 import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IOracle} from "./interfaces/IOracle.sol";
 import {PositionManager} from "./PositionManager.sol";
 
 contract PositionManagerFactory is IPositionManagerFactory, Ownable {
@@ -28,8 +27,8 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         // Checks
         if (_positionManager[targetAsset_] != address(0))
             revert AlreadyExists();
-        IOracle oracle_ = IOracle(_addressProvider.oracle());
-        if (oracle_.getUsdPrice(targetAsset_) == 0) revert NoOracle();
+        if (_addressProvider.oracle().getUsdPrice(targetAsset_) == 0)
+            revert NoOracle();
 
         // Deploying position manager
         address positionManager_ = address(

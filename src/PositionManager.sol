@@ -7,8 +7,6 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/exten
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
-import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
@@ -23,7 +21,7 @@ contract PositionManager is IPositionManager {
     constructor(address addressProvider_, address targetAsset_) {
         _addressProvider = IAddressProvider(addressProvider_);
         targetAsset = targetAsset_;
-        _baseAsset = IERC20Metadata(_addressProvider.baseAsset());
+        _baseAsset = _addressProvider.baseAsset();
         _baseDecimals = _baseAsset.decimals();
     }
 
@@ -130,21 +128,17 @@ contract PositionManager is IPositionManager {
         return 2e18;
     }
 
-    function _isLeveragedToken(
-        address leveragedToken_
-    ) internal view returns (bool) {
+    function _isLeveragedToken(address token_) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(_addressProvider.leveragedTokenFactory())
-                .isLeveragedToken(leveragedToken_);
+            _addressProvider.leveragedTokenFactory().isLeveragedToken(token_);
     }
 
     function _isPositionManager(
         address leveragedToken_
     ) internal view returns (bool) {
         return
-            IPositionManagerFactory(_addressProvider.positionManagerFactory())
-                .positionManager(
-                    ILeveragedToken(leveragedToken_).targetAsset()
-                ) == address(this);
+            _addressProvider.positionManagerFactory().positionManager(
+                ILeveragedToken(leveragedToken_).targetAsset()
+            ) == address(this);
     }
 }
