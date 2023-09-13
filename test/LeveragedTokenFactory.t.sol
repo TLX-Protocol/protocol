@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
+import {Errors} from "../../src/libraries/Errors.sol";
+
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
@@ -104,7 +106,7 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
     }
 
     function testRevertsZeroAddress() public {
-        vm.expectRevert(ILeveragedTokenFactory.ZeroAddress.selector);
+        vm.expectRevert(Errors.ZeroAddress.selector);
         leveragedTokenFactory.createLeveragedTokens(address(0), 1.23e18);
     }
 
@@ -120,7 +122,7 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
 
     function testRevertsTokenExists() public {
         leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
-        vm.expectRevert(ILeveragedTokenFactory.TokenExists.selector);
+        vm.expectRevert(Errors.AlreadyExists.selector);
         leveragedTokenFactory.createLeveragedTokens(Tokens.UNI, 1.23e18);
     }
 }

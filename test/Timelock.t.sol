@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
 
+import {Errors} from "../src/libraries/Errors.sol";
+
 import {Timelock} from "../src/Timelock.sol";
 import {ITimelock} from "../src/interfaces/ITimelock.sol";
 
@@ -14,7 +16,7 @@ contract DummyContract {
     }
 
     function autoRevert() public pure {
-        revert ITimelock.NotAuthorized();
+        revert Errors.NotAuthorized();
     }
 }
 
@@ -153,7 +155,7 @@ contract TimelockTest is Test {
     }
 
     function testSetDelayRevertsForDirectCall() public {
-        vm.expectRevert(ITimelock.NotAuthorized.selector);
+        vm.expectRevert(Errors.NotAuthorized.selector);
         timelock.setDelay(dummySelector, 100);
     }
 

@@ -5,6 +5,7 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 import {Tokens} from "./libraries/Tokens.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
@@ -26,7 +27,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     ) external override onlyOwner returns (address) {
         // Checks
         if (_positionManager[targetAsset_] != address(0))
-            revert AlreadyExists();
+            revert Errors.AlreadyExists();
         if (_addressProvider.oracle().getUsdPrice(targetAsset_) == 0)
             revert NoOracle();
 

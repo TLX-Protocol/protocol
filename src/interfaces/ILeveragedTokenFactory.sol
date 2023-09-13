@@ -4,8 +4,6 @@ pragma solidity ^0.8.13;
 interface ILeveragedTokenFactory {
     event NewLeveragedToken(address indexed token);
 
-    error TokenExists();
-    error ZeroAddress();
     error ZeroLeverage();
     error MaxLeverage();
     error NoPositionManager();

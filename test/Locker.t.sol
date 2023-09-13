@@ -6,6 +6,7 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/exten
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Config} from "../src/libraries/Config.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {ILocker} from "../src/interfaces/ILocker.sol";
 
@@ -58,7 +59,7 @@ contract LockerTest is IntegrationTest {
     }
 
     function testLockRevertsWithZeroAddress() public {
-        vm.expectRevert(ILocker.ZeroAddress.selector);
+        vm.expectRevert(Errors.ZeroAddress.selector);
         locker.lockFor(100e18, address(0));
     }
 

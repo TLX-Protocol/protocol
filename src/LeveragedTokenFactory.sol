@@ -6,6 +6,7 @@ import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {Tokens} from "./libraries/Tokens.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
@@ -46,11 +47,11 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         uint256 truncatedToTwoDecimals_ = (leveragePartOfWhole_ / 1e16) * 1e16;
         bool hasTwoDecimals_ = leveragePartOfWhole_ == truncatedToTwoDecimals_;
         if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
-        if (targetAsset_ == address(0)) revert ZeroAddress();
+        if (targetAsset_ == address(0)) revert Errors.ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
-            revert TokenExists();
+            revert Errors.AlreadyExists();
         address positionManager_ = _addressProvider
             .positionManagerFactory()
             .positionManager(targetAsset_);
