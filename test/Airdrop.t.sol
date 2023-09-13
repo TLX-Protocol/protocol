@@ -11,11 +11,11 @@ import {IAirdrop} from "../src/interfaces/IAirdrop.sol";
 contract AirdropTest is IntegrationTest {
     bytes32 public constant MERKLE_ROOT =
         bytes32(
-            0x16526358ccd8f5f19ae561bd6833bd2c469118bd5de43560991862d957e1e44f
+            0x468a9099f57f82cbafabb8f3f00efa98e5f6d0edd1a937b2aaec7293e6b9156f
         );
     bytes32 public constant BOB_PROOF =
         bytes32(
-            0x6d46fe34616b99bc1ad4ff6216cd56c37ae712a3c7a699104f0d1197d16df529
+            0x805205e4cf7a5e483078d8f80da53ff73f9830b97b11bfcffe69d5423490c794
         );
 
     function setUp() public {
@@ -35,14 +35,14 @@ contract AirdropTest is IntegrationTest {
     function testClaimingAfterDeadlineReverts() public {
         skip(200 days);
         vm.expectRevert(IAirdrop.ClaimPeriodOver.selector);
-        airdrop.claim(1, 1, new bytes32[](0));
+        airdrop.claim(1, new bytes32[](0));
     }
 
     function testClaim() public {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.prank(bob);
-        airdrop.claim(0, 321e18, merklePr);
+        airdrop.claim(321e18, merklePr);
         assertEq(airdrop.totalClaimed(), 321e18, "totalClaimed");
         assertEq(airdrop.hasClaimed(alice), false, "hasClaimed(alice)");
         assertEq(airdrop.hasClaimed(bob), true, "hasClaimed(bob)");
@@ -59,16 +59,16 @@ contract AirdropTest is IntegrationTest {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.startPrank(bob);
-        airdrop.claim(0, 321e18, merklePr);
+        airdrop.claim(321e18, merklePr);
         vm.expectRevert(IAirdrop.AlreadyClaimed.selector);
-        airdrop.claim(0, 321e18, merklePr);
+        airdrop.claim(321e18, merklePr);
     }
 
     function testRevertsForInvalidProof() public {
         bytes32[] memory merklePr = new bytes32[](1);
         merklePr[0] = BOB_PROOF;
         vm.expectRevert(IAirdrop.InvalidMerkleProof.selector);
-        airdrop.claim(0, 321e18, merklePr);
+        airdrop.claim(321e18, merklePr);
     }
 
     function testUpdateMerkleRootRevertsForNonOwner() public {

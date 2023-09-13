@@ -30,7 +30,6 @@ contract Airdrop is IAirdrop, Ownable {
     }
 
     function claim(
-        uint256 index_,
         uint256 amount_,
         bytes32[] calldata merkleProof_
     ) external override {
@@ -38,7 +37,7 @@ contract Airdrop is IAirdrop, Ownable {
         address account_ = msg.sender;
         if (block.timestamp > deadline) revert ClaimPeriodOver();
         if (hasClaimed[account_]) revert AlreadyClaimed();
-        if (!_isValid(index_, account_, amount_, merkleProof_)) {
+        if (!_isValid(account_, amount_, merkleProof_)) {
             revert InvalidMerkleProof();
         }
         uint256 totalClaimed_ = totalClaimed;
@@ -76,12 +75,11 @@ contract Airdrop is IAirdrop, Ownable {
     }
 
     function _isValid(
-        uint256 index_,
         address account_,
         uint256 amount_,
         bytes32[] calldata merkleProof_
     ) internal view returns (bool) {
-        bytes32 node_ = keccak256(abi.encodePacked(index_, account_, amount_));
+        bytes32 node_ = keccak256(abi.encodePacked(account_, amount_));
         return MerkleProof.verify(merkleProof_, merkleRoot, node_);
     }
 }

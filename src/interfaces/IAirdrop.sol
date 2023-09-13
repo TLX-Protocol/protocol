@@ -16,15 +16,10 @@ interface IAirdrop {
 
     /**
      * @notice Claim tokens from the airdrop.
-     * @param index The index of the account in the merkle tree.
      * @param amount The amount of tokens to claim.
      * @param merkleProof The merkle proof for the account.
      */
-    function claim(
-        uint256 index,
-        uint256 amount,
-        bytes32[] calldata merkleProof
-    ) external;
+    function claim(uint256 amount, bytes32[] calldata merkleProof) external;
 
     /**
      * @notice Update the merkle root for the airdrop.
