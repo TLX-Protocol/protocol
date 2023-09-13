@@ -16,18 +16,15 @@ contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
 
     address internal immutable _addressProvider;
-    // TODO Move this to AddressProvider and query from there (need to merge prs first)
-    address public immutable override baseAsset;
     address public immutable override targetAsset;
+    address internal immutable _baseAsset;
+    uint8 internal immutable _baseDecimals;
 
-    constructor(
-        address addressProvider_,
-        address baseAsset_,
-        address targetAsset_
-    ) {
+    constructor(address addressProvider_, address targetAsset_) {
         _addressProvider = addressProvider_;
-        baseAsset = baseAsset_;
         targetAsset = targetAsset_;
+        _baseAsset = IAddressProvider(addressProvider_).baseAsset();
+        _baseDecimals = IERC20Metadata(_baseAsset).decimals();
     }
 
     function mintAmountIn(
@@ -40,14 +37,14 @@ contract PositionManager is IPositionManager {
 
         if (baseAmountIn_ == 0) return 0;
 
-        IERC20(baseAsset).transferFrom(
+        IERC20(_baseAsset).transferFrom(
             msg.sender,
             address(this),
             baseAmountIn_
         );
         uint256 exchangeRate_ = exchangeRate(leveragedToken_);
         uint256 leveragedTokenAmount_ = baseAmountIn_
-            .scaleFrom(_baseDecimals())
+            .scaleFrom(_baseDecimals)
             .div(exchangeRate_);
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
         if (!sufficient_) revert InsufficientAmount();
@@ -77,10 +74,10 @@ contract PositionManager is IPositionManager {
         uint256 exchangeRate_ = exchangeRate(leveragedToken_);
         uint256 baseAmountIn_ = leveragedTokenAmountOut_
             .mul(exchangeRate_)
-            .scaleTo(_baseDecimals());
+            .scaleTo(_baseDecimals);
         bool sufficient_ = baseAmountIn_ <= maxBaseAmountIn_;
         if (!sufficient_) revert InsufficientAmount();
-        IERC20(baseAsset).transferFrom(
+        IERC20(_baseAsset).transferFrom(
             msg.sender,
             address(this),
             baseAmountIn_
@@ -111,14 +108,14 @@ contract PositionManager is IPositionManager {
         uint256 exchangeRate_ = exchangeRate(leveragedToken_);
         uint256 baseAmountReceived_ = leveragedTokenAmount_
             .mul(exchangeRate_)
-            .scaleTo(_baseDecimals());
+            .scaleTo(_baseDecimals);
         bool sufficient_ = baseAmountReceived_ >= minBaseAmountReceived_;
         if (!sufficient_) revert InsufficientAmount();
         ILeveragedToken(leveragedToken_).burn(
             msg.sender,
             leveragedTokenAmount_
         );
-        IERC20(baseAsset).transfer(msg.sender, baseAmountReceived_);
+        IERC20(_baseAsset).transfer(msg.sender, baseAmountReceived_);
 
         emit Redeemed(
             leveragedToken_,
@@ -147,7 +144,7 @@ contract PositionManager is IPositionManager {
         return
             ILeveragedTokenFactory(
                 IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).tokenExists(leveragedToken_);
+            ).isLeveragedToken(leveragedToken_);
     }
 
     function _isPositionManager(
@@ -158,9 +155,5 @@ contract PositionManager is IPositionManager {
                 IAddressProvider(_addressProvider).positionManagerFactory()
             ).positionManager(ILeveragedToken(leveragedToken_).targetAsset()) ==
             address(this);
-    }
-
-    function _baseDecimals() internal view returns (uint8) {
-        return IERC20Metadata(baseAsset).decimals();
     }
 }

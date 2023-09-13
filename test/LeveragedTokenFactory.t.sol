@@ -73,9 +73,6 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
             false
         );
         assertEq(shortTokenAddress, shortTokenAddress_);
-        assertEq(leveragedTokenFactory.tokenExists(longTokenAddress_), true);
-        assertEq(leveragedTokenFactory.tokenExists(shortTokenAddress_), true);
-        assertEq(leveragedTokenFactory.tokenExists(Tokens.UNI), false);
         assertTrue(
             leveragedTokenFactory.tokenExists(Tokens.UNI, 1.23e18, true)
         );
@@ -90,11 +87,20 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
             leveragedTokenFactory.pair(shortTokenAddress_),
             longTokenAddress_
         );
+        assertEq(
+            leveragedTokenFactory.isLeveragedToken(longTokenAddress),
+            true
+        );
+        assertEq(
+            leveragedTokenFactory.isLeveragedToken(shortTokenAddress),
+            true
+        );
+        assertEq(leveragedTokenFactory.isLeveragedToken(Tokens.UNI), false);
     }
 
     function testRevertsNoPositionManager() public {
         vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
-        leveragedTokenFactory.createLeveragedTokens(Tokens.GMX, 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(Tokens.WBTC, 1.23e18);
     }
 
     function testRevertsZeroAddress() public {

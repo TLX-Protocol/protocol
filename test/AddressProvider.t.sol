@@ -13,7 +13,7 @@ contract AddressProviderTest is IntegrationTest {
             addressProvider.leveragedTokenFactory(),
             address(leveragedTokenFactory)
         );
-        assertEq(addressProvider.oracle(), address(chainlinkOracle));
+        assertEq(addressProvider.oracle(), address(oracle));
     }
 
     function testUpdateAddress() public {
@@ -24,7 +24,7 @@ contract AddressProviderTest is IntegrationTest {
     function testQueryAddress() public {
         assertEq(
             addressProvider.addressOf(AddressKeys.ORACLE),
-            address(chainlinkOracle)
+            address(oracle)
         );
     }
 }

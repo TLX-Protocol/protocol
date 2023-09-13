@@ -7,5 +7,12 @@ library AddressKeys {
     bytes32 public constant ORACLE = "oracle";
     bytes32 public constant REFERRALS = "referrals";
     bytes32 public constant BASE_ASSET = "baseAsset";
+    bytes32 public constant AIRDROP = "airdrop";
+    bytes32 public constant BONDING = "bonding";
+    bytes32 public constant TREASURY = "treasury";
+    bytes32 public constant VESTING = "vesting";
+    bytes32 public constant TLX = "tlx";
+    bytes32 public constant LOCKER = "locker";
+    bytes32 public constant POSITION_EQUALIZER = "positionEqualizer";
     bytes32 public constant DERIVATIVES_HANDLER = "derivativesHandler";
 }

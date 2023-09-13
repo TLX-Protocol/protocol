@@ -39,8 +39,36 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return _addresses[AddressKeys.REFERRALS];
     }
 
+    function airdrop() external view override returns (address) {
+        return _addresses[AddressKeys.AIRDROP];
+    }
+
+    function bonding() external view override returns (address) {
+        return _addresses[AddressKeys.BONDING];
+    }
+
+    function treasury() external view override returns (address) {
+        return _addresses[AddressKeys.TREASURY];
+    }
+
+    function vesting() external view override returns (address) {
+        return _addresses[AddressKeys.VESTING];
+    }
+
+    function tlx() external view override returns (address) {
+        return _addresses[AddressKeys.TLX];
+    }
+
+    function locker() external view override returns (address) {
+        return _addresses[AddressKeys.LOCKER];
+    }
+
     function baseAsset() external view override returns (address) {
         return _addresses[AddressKeys.BASE_ASSET];
+    }
+
+    function positionEqualizer() external view override returns (address) {
+        return _addresses[AddressKeys.POSITION_EQUALIZER];
     }
 
     function derivativesHandler() external view override returns (address) {
