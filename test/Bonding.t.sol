@@ -24,11 +24,8 @@ contract BondingTest is IntegrationTest {
         _mintTokensFor(leveragedToken, address(this), 100_000e18);
         IERC20(leveragedToken).approve(address(bonding), 100_000e18);
 
-        // Setting up a dummy Position Equalizer
-        addressProvider.updateAddress(
-            AddressKeys.POSITION_EQUALIZER,
-            Tokens.UNI
-        );
+        // Setting up a dummy POL
+        addressProvider.updateAddress(AddressKeys.POL, Tokens.UNI);
     }
 
     function testInit() public {
