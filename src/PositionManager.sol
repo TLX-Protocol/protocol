@@ -15,16 +15,16 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
     address public immutable override targetAsset;
-    address internal immutable _baseAsset;
+    IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
 
     constructor(address addressProvider_, address targetAsset_) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         targetAsset = targetAsset_;
-        _baseAsset = IAddressProvider(addressProvider_).baseAsset();
-        _baseDecimals = IERC20Metadata(_baseAsset).decimals();
+        _baseAsset = IERC20Metadata(_addressProvider.baseAsset());
+        _baseDecimals = _baseAsset.decimals();
     }
 
     function mintAmountIn(
@@ -37,11 +37,7 @@ contract PositionManager is IPositionManager {
 
         if (baseAmountIn_ == 0) return 0;
 
-        IERC20(_baseAsset).transferFrom(
-            msg.sender,
-            address(this),
-            baseAmountIn_
-        );
+        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         uint256 exchangeRate_ = exchangeRate(leveragedToken_);
         uint256 leveragedTokenAmount_ = baseAmountIn_
             .scaleFrom(_baseDecimals)
@@ -77,11 +73,7 @@ contract PositionManager is IPositionManager {
             .scaleTo(_baseDecimals);
         bool sufficient_ = baseAmountIn_ <= maxBaseAmountIn_;
         if (!sufficient_) revert InsufficientAmount();
-        IERC20(_baseAsset).transferFrom(
-            msg.sender,
-            address(this),
-            baseAmountIn_
-        );
+        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         ILeveragedToken(leveragedToken_).mint(
             msg.sender,
             leveragedTokenAmountOut_
@@ -115,7 +107,7 @@ contract PositionManager is IPositionManager {
             msg.sender,
             leveragedTokenAmount_
         );
-        IERC20(_baseAsset).transfer(msg.sender, baseAmountReceived_);
+        _baseAsset.transfer(msg.sender, baseAmountReceived_);
 
         emit Redeemed(
             leveragedToken_,
@@ -142,18 +134,17 @@ contract PositionManager is IPositionManager {
         address leveragedToken_
     ) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(
-                IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).isLeveragedToken(leveragedToken_);
+            ILeveragedTokenFactory(_addressProvider.leveragedTokenFactory())
+                .isLeveragedToken(leveragedToken_);
     }
 
     function _isPositionManager(
         address leveragedToken_
     ) internal view returns (bool) {
         return
-            IPositionManagerFactory(
-                IAddressProvider(_addressProvider).positionManagerFactory()
-            ).positionManager(ILeveragedToken(leveragedToken_).targetAsset()) ==
-            address(this);
+            IPositionManagerFactory(_addressProvider.positionManagerFactory())
+                .positionManager(
+                    ILeveragedToken(leveragedToken_).targetAsset()
+                ) == address(this);
     }
 }

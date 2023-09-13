@@ -11,7 +11,7 @@ contract Vesting is IVesting {
     using ScaledNumber for uint256;
 
     mapping(address => uint256) internal _amounts;
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _start;
     uint256 internal immutable _duration;
 
@@ -24,7 +24,7 @@ contract Vesting is IVesting {
     ) {
         if (duration_ == 0) revert InvalidDuration();
 
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         _start = block.timestamp;
         _duration = duration_;
 
@@ -58,6 +58,6 @@ contract Vesting is IVesting {
     }
 
     function _tlx() internal view returns (ITlxToken) {
-        return ITlxToken(IAddressProvider(_addressProvider).tlx());
+        return ITlxToken(_addressProvider.tlx());
     }
 }

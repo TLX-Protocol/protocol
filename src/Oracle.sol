@@ -31,7 +31,7 @@ contract Oracle is IOracle, Ownable {
     using ScaledNumber for uint256;
 
     address internal immutable _ethUsdOracle;
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
 
     mapping(address => address) internal _usdOracles;
     mapping(address => address) internal _ethOracles;
@@ -50,7 +50,7 @@ contract Oracle is IOracle, Ownable {
 
     constructor(address addressProvider_, address ethUsdOracle_) {
         _ethUsdOracle = ethUsdOracle_;
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
     }
 
     function setUsdOracle(address token_, address oracle_) external onlyOwner {
@@ -84,7 +84,7 @@ contract Oracle is IOracle, Ownable {
     function _priceLeveragedToken(
         address token_
     ) internal view returns (uint256) {
-        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
+        address baseAsset_ = _addressProvider.baseAsset();
         return getUsdPrice(baseAsset_).mul(_exchangeRate(token_));
     }
 
@@ -107,16 +107,15 @@ contract Oracle is IOracle, Ownable {
 
     function _isLeveragedToken(address token_) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(
-                IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).isLeveragedToken(token_);
+            ILeveragedTokenFactory(_addressProvider.leveragedTokenFactory())
+                .isLeveragedToken(token_);
     }
 
     function _exchangeRate(address token_) internal view returns (uint256) {
         return
             IPositionManager(
                 IPositionManagerFactory(
-                    IAddressProvider(_addressProvider).positionManagerFactory()
+                    _addressProvider.positionManagerFactory()
                 ).positionManager(ILeveragedToken(token_).targetAsset())
             ).exchangeRate(token_);
     }

@@ -9,7 +9,7 @@ import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 contract Airdrop is IAirdrop, Ownable {
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _airdropAmount;
 
     bytes32 public override merkleRoot;
@@ -23,7 +23,7 @@ contract Airdrop is IAirdrop, Ownable {
         uint256 deadline_,
         uint256 airdropAmount_
     ) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         merkleRoot = merkleRoot_;
         deadline = deadline_;
         _airdropAmount = airdropAmount_;
@@ -48,7 +48,7 @@ contract Airdrop is IAirdrop, Ownable {
         if (totalClaimed_ + amount_ > _airdropAmount) {
             amount_ = _airdropAmount - totalClaimed_;
         }
-        ITlxToken tlx_ = ITlxToken(IAddressProvider(_addressProvider).tlx());
+        ITlxToken tlx_ = ITlxToken(_addressProvider.tlx());
 
         // Updating state
         hasClaimed[account_] = true;
@@ -64,12 +64,11 @@ contract Airdrop is IAirdrop, Ownable {
 
     function mintUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
-        IAddressProvider addressProvider_ = IAddressProvider(_addressProvider);
-        address treasury_ = addressProvider_.treasury();
+        address treasury_ = _addressProvider.treasury();
         if (treasury_ == address(0)) revert InvalidTreasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
-        ITlxToken tlx_ = ITlxToken(addressProvider_.tlx());
+        ITlxToken tlx_ = ITlxToken(_addressProvider.tlx());
         tlx_.transfer(treasury_, unclaimed_);
         emit UnclaimedMinted(unclaimed_);
     }

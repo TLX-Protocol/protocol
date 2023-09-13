@@ -20,7 +20,7 @@ contract Bonding is IBonding, Ownable {
 
     uint256 public override totalTlxBonded;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _periodDecayMultiplier;
     uint256 internal immutable _periodDuration;
 
@@ -37,7 +37,7 @@ contract Bonding is IBonding, Ownable {
         uint256 periodDuration_,
         uint256 baseForAllTlx_
     ) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         _tlxPerSecond = initialTlxPerSecond_;
         _periodDecayMultiplier = periodDecayMultiplier_;
         _periodDuration = periodDuration_;
@@ -57,7 +57,7 @@ contract Bonding is IBonding, Ownable {
         // Transfer the leveraged token from the user to the position equalizer
         IERC20(leveragedToken_).transferFrom(
             msg.sender,
-            IAddressProvider(_addressProvider).positionEqualizer(),
+            _addressProvider.positionEqualizer(),
             leveragedTokenAmount_
         );
 
@@ -74,9 +74,9 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        address tlx_ = IAddressProvider(_addressProvider).tlx();
+        address tlx_ = _addressProvider.tlx();
         ITlxToken(tlx_).transfer(address(this), tlxAmount_);
-        address locker_ = IAddressProvider(_addressProvider).locker();
+        address locker_ = _addressProvider.locker();
         IERC20(tlx_).approve(locker_, tlxAmount_);
         ILocker(locker_).lockFor(tlxAmount_, msg.sender);
 
@@ -169,16 +169,15 @@ contract Bonding is IBonding, Ownable {
 
     function _isLeveragedToken(address token_) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(
-                IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).isLeveragedToken(token_);
+            ILeveragedTokenFactory(_addressProvider.leveragedTokenFactory())
+                .isLeveragedToken(token_);
     }
 
     function _priceInBaseAsset(address token_) internal view returns (uint256) {
         return
             IPositionManager(
                 IPositionManagerFactory(
-                    IAddressProvider(_addressProvider).positionManagerFactory()
+                    _addressProvider.positionManagerFactory()
                 ).positionManager(ILeveragedToken(token_).targetAsset())
             ).exchangeRate(token_);
     }

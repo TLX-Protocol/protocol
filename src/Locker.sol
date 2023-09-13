@@ -12,7 +12,7 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 contract Locker is ILocker {
     using ScaledNumber for uint256;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
 
     uint256 internal _rewardIntegral;
     mapping(address => uint256) internal _balances;
@@ -31,7 +31,7 @@ contract Locker is ILocker {
         uint256 unlockDelay_,
         address rewardToken_
     ) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         unlockDelay = unlockDelay_;
         rewardToken = rewardToken_;
     }
@@ -166,7 +166,7 @@ contract Locker is ILocker {
     }
 
     function _tlx() internal view returns (IERC20Metadata) {
-        return IERC20Metadata(IAddressProvider(_addressProvider).tlx());
+        return IERC20Metadata(_addressProvider.tlx());
     }
 
     function _hasPreparedUnlock(address account_) internal view returns (bool) {

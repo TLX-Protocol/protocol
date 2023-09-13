@@ -13,7 +13,7 @@ import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol"
 contract Referrals is IReferrals, Ownable {
     using ScaledNumber for uint256;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
 
     mapping(address => bytes32) internal _codes;
     mapping(bytes32 => address) internal _referrers;
@@ -40,7 +40,7 @@ contract Referrals is IReferrals, Ownable {
         uint256 rebatePercent_,
         uint256 earningsPercent_
     ) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         rebatePercent = rebatePercent_;
         earningsPercent = earningsPercent_;
     }
@@ -59,9 +59,8 @@ contract Referrals is IReferrals, Ownable {
         uint256 earningsAmount_ = fees_.mul(earningsPercent);
         uint256 rebateAmount_ = fees_.mul(rebatePercent);
         if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
-        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
         uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
-        IERC20(baseAsset_).transferFrom(
+        IERC20(_addressProvider.baseAsset()).transferFrom(
             msg.sender,
             address(this),
             totalAmount_
@@ -74,9 +73,8 @@ contract Referrals is IReferrals, Ownable {
     function claimEarnings() external override returns (uint256) {
         uint256 amount_ = _earnings[msg.sender];
         if (amount_ == 0) return 0;
-        address baseAsset_ = IAddressProvider(_addressProvider).baseAsset();
         delete _earnings[msg.sender];
-        IERC20(baseAsset_).transfer(msg.sender, amount_);
+        IERC20(_addressProvider.baseAsset()).transfer(msg.sender, amount_);
         return amount_;
     }
 
