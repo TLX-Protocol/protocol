@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {ILocker} from "./interfaces/ILocker.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
@@ -41,7 +42,7 @@ contract Locker is ILocker {
 
     function lockFor(uint256 amount_, address account_) public override {
         if (amount_ == 0) revert ZeroAmount();
-        if (account_ == address(0)) revert ZeroAddress();
+        if (account_ == address(0)) revert Errors.ZeroAddress();
         if (_hasPreparedUnlock(account_)) revert UnlockPrepared();
 
         _checkpoint(msg.sender);

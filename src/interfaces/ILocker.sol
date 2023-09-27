@@ -17,7 +17,6 @@ interface ILocker {
     event Claimed(address indexed account, uint256 amount);
     event DonatedRewards(address indexed account, uint256 amount);
 
-    error ZeroAddress();
     error ZeroAmount();
     error ZeroBalance();
     error AlreadyPreparedUnlock();

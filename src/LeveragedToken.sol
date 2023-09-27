@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+import {Errors} from "./libraries/Errors.sol";
+
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract LeveragedToken is ILeveragedToken, ERC20 {
@@ -14,7 +16,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
     address internal immutable _positionManager;
 
     modifier onlyPositionManager() {
-        if (msg.sender != _positionManager) revert NotAuthorized();
+        if (msg.sender != _positionManager) revert Errors.NotAuthorized();
         _;
     }
 

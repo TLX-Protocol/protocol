@@ -4,8 +4,6 @@ pragma solidity ^0.8.13;
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface ILeveragedToken is IERC20Metadata {
-    error NotAuthorized();
-
     /**
      * @notice Mint leveraged tokens to the specified account.
      * @param account The account to mint to.

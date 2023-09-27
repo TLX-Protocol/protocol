@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 interface IPositionManagerFactory {
     event PositionManagerCreated(address indexed positionManager);
 
-    error AlreadyExists();
     error NoOracle();
 
     /**

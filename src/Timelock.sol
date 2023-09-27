@@ -5,6 +5,8 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
+import {Errors} from "./libraries/Errors.sol";
+
 import {ITimelock} from "./interfaces/ITimelock.sol";
 
 contract Timelock is ITimelock, Ownable {
@@ -40,7 +42,7 @@ contract Timelock is ITimelock, Ownable {
     }
 
     function setDelay(bytes4 selector_, uint256 delay_) external {
-        if (msg.sender != address(this)) revert NotAuthorized();
+        if (msg.sender != address(this)) revert Errors.NotAuthorized();
         _delays[selector_] = delay_;
         emit DelaySet(selector_, delay_);
     }

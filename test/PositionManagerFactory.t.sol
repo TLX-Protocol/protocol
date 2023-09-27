@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {IPositionManagerFactory} from "../src/interfaces/IPositionManagerFactory.sol";
 
@@ -35,7 +36,7 @@ contract PositionManagerFactoryTest is IntegrationTest {
 
     function testRevertsWhenAlreadyExists() public {
         positionManagerFactory.createPositionManager(Tokens.UNI);
-        vm.expectRevert(IPositionManagerFactory.AlreadyExists.selector);
+        vm.expectRevert(Errors.AlreadyExists.selector);
         positionManagerFactory.createPositionManager(Tokens.UNI);
     }
 

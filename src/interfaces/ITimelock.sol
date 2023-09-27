@@ -19,7 +19,6 @@ interface ITimelock {
     event DelaySet(bytes4 indexed selector, uint256 delay);
 
     error ProposalNotReady(uint256 id);
-    error NotAuthorized();
     error InvalidTarget();
     error ProposalDoesNotExist(uint256 id);
 
