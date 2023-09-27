@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 import {Tokens} from "./libraries/Tokens.sol";
 
@@ -11,7 +12,9 @@ import {IOracle} from "./interfaces/IOracle.sol";
 import {PositionManager} from "./PositionManager.sol";
 
 contract PositionManagerFactory is IPositionManagerFactory, Ownable {
-    address[] internal _positionManagers;
+    using EnumerableSet for EnumerableSet.AddressSet;
+
+    EnumerableSet.AddressSet internal _positionManagers;
     mapping(address => address) internal _positionManager;
     address internal immutable _addressProvider;
 
@@ -35,7 +38,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         );
 
         // Updating state
-        _positionManagers.push(positionManager_);
+        _positionManagers.add(positionManager_);
         _positionManager[targetAsset_] = positionManager_;
         emit PositionManagerCreated(positionManager_);
         return positionManager_;
@@ -47,12 +50,18 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         override
         returns (address[] memory)
     {
-        return _positionManagers;
+        return _positionManagers.values();
     }
 
     function positionManager(
         address targetAsset_
     ) external view override returns (address) {
         return _positionManager[targetAsset_];
+    }
+
+    function isPositionManager(
+        address positionManager_
+    ) external view override returns (bool) {
+        return _positionManagers.contains(positionManager_);
     }
 }

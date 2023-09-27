@@ -35,6 +35,10 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return _addresses[AddressKeys.ORACLE];
     }
 
+    function referrals() external view override returns (address) {
+        return _addresses[AddressKeys.REFERRALS];
+    }
+
     function airdrop() external view override returns (address) {
         return _addresses[AddressKeys.AIRDROP];
     }

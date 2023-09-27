@@ -34,4 +34,13 @@ interface IPositionManagerFactory {
     function positionManager(
         address targetAsset
     ) external view returns (address positionManager);
+
+    /**
+     * @notice Returns whether the given address is a position manager.
+     * @param positionManager The address to check.
+     * @return isPositionManager Whether the given address is a position manager.
+     */
+    function isPositionManager(
+        address positionManager
+    ) external view returns (bool isPositionManager);
 }

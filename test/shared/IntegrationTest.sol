@@ -17,6 +17,7 @@ import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
+import {Referrals} from "../../src/Referrals.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
@@ -38,6 +39,7 @@ contract IntegrationTest is Test {
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
+    Referrals public referrals;
     TlxToken public tlx;
     Airdrop public airdrop;
     Locker public locker;
@@ -77,18 +79,12 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
 
         // Oracle Setup
-        oracle = new Oracle(
-            address(addressProvider),
-            Contracts.ETH_USD_ORACLE
-        );
+        oracle = new Oracle(address(addressProvider), Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         oracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
         oracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
-        addressProvider.updateAddress(
-            AddressKeys.ORACLE,
-            address(oracle)
-        );
+        addressProvider.updateAddress(AddressKeys.ORACLE, address(oracle));
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
@@ -107,6 +103,17 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(
             AddressKeys.POSITION_MANAGER_FACTORY,
             address(positionManagerFactory)
+        );
+
+        // Referrals Setup
+        referrals = new Referrals(
+            address(addressProvider),
+            Config.REBATE_PERCENT,
+            Config.EARNINGS_PERCENT
+        );
+        addressProvider.updateAddress(
+            AddressKeys.REFERRALS,
+            address(referrals)
         );
 
         // Airdrop Setup
