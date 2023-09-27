@@ -104,15 +104,6 @@ interface IAddressProvider {
     function baseAsset() external view returns (IERC20Metadata baseAsset);
 
     /**
-     * @notice Returns the address for the PositionEqualizer contract.
-     * @return positionEqualizer The address of the PositionEqualizer contract.
-     */
-    function positionEqualizer()
-        external
-        view
-        returns (address positionEqualizer);
-
-    /**
      * @notice Returns the DerivativesHandler contract.
      * @return derivativesHandler The DerivativesHandler contract.
      */
@@ -120,4 +111,10 @@ interface IAddressProvider {
         external
         view
         returns (IDerivativesHandler derivativesHandler);
+
+    /**
+     * @notice Returns the address for the POL token.
+     * @return pol The address of the POL token.
+     */
+    function pol() external view returns (address pol);
 }

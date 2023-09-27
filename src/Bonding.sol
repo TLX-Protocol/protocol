@@ -51,10 +51,10 @@ contract Bonding is IBonding, Ownable {
         // Check that the leveraged token is valid
         if (!_isLeveragedToken(leveragedToken_)) revert NotLeveragedToken();
 
-        // Transfer the leveraged token from the user to the position equalizer
+        // Transfer the leveraged token from the user to the POL
         IERC20(leveragedToken_).transferFrom(
             msg.sender,
-            _addressProvider.positionEqualizer(),
+            _addressProvider.pol(),
             leveragedTokenAmount_
         );
 

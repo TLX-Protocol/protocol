@@ -94,10 +94,6 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return IERC20Metadata(_addresses[AddressKeys.BASE_ASSET]);
     }
 
-    function positionEqualizer() external view override returns (address) {
-        return _addresses[AddressKeys.POSITION_EQUALIZER];
-    }
-
     function derivativesHandler()
         external
         view
@@ -105,5 +101,9 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         returns (IDerivativesHandler)
     {
         return IDerivativesHandler(_addresses[AddressKeys.DERIVATIVES_HANDLER]);
+    }
+
+    function pol() external view override returns (address) {
+        return _addresses[AddressKeys.POL];
     }
 }
