@@ -81,7 +81,7 @@ It will:
 
 ### Derivatives Handler
 
-The `DerivativesHandler` is responsible for taking out positions on external protocols (e.g. GMX) to cover unmatched liquidity.
+The `DerivativesHandler` is responsible for taking out positions on external protocols (e.g. Synthetix) to cover unmatched liquidity.
 It will:
 
 - Be a generic wrapper for these protocols, allowing us to update the protocol we use for these external positions by creating a new `DerivativesHandler` for a new source of liquidity and updating to that.
@@ -92,7 +92,7 @@ It will:
 The `PositionEqualizer` contract accepts donations of `LeveragedTokens`.
 It will hold the collateral for these `LeveragedToken`s indefinitely, and can be considered POL (Protocol Owned Liquidity).
 It will have a function `equalize` which will move the collateral between different `LeveragedTokens` and around from Long to Short or visa versa with the goal of creating the most balanced state for the Positions.
-This reduces needed exposure on GMX, therefore reducing fees for users.
+This reduces needed exposure on Synthetix, therefore reducing fees for users.
 
 ### Timelock
 
@@ -111,7 +111,7 @@ It will:
 
 - Extend the `IERC20Metadata` interface with standard functionality.
 - Have 18 decimals
-- Have the name: "TLX Token"
+- Have the name: "TLX DAO Token"
 - Have the symbol "TLX"
 - Mint an amount of TLX tokens to the deployer for the treasury and team
 
@@ -119,7 +119,7 @@ It will have two minters, the `Airdrop` and `Bonding` contracts
 
 ### Airdrop
 
-The `Airdrop` contract will be responsible for the initial airdrop of TLX tokens (currently planned for GMX holders).
+The `Airdrop` contract will be responsible for the initial airdrop of TLX tokens (currently planned for Synthetix holders).
 It will:
 
 - Mint `TLX` as needed and distributed to users based on their claimable amount via a `claim` function.

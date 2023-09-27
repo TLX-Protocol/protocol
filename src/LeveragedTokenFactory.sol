@@ -15,20 +15,22 @@ import {LeveragedToken} from "./LeveragedToken.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     address internal immutable _addressProvider;
+    uint256 internal immutable _maxLeverage;
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
     mapping(address => address[]) internal _allTargetTokens;
     mapping(address => address[]) internal _longTargetTokens;
     mapping(address => address[]) internal _shortTargetTokens;
-    mapping(address => bool) internal _isLeveragedToken;
     mapping(address => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
     mapping(address => address) public override pair;
+    mapping(address => bool) public override isLeveragedToken;
 
-    constructor(address addressProvider_) {
+    constructor(address addressProvider_, uint256 maxLeverage_) {
         _addressProvider = addressProvider_;
+        _maxLeverage = maxLeverage_;
     }
 
     function createLeveragedTokens(
@@ -47,7 +49,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
         if (targetAsset_ == address(0)) revert ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
-        if (targetLeverage_ > 100e18) revert MaxLeverage();
+        if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert TokenExists();
         IPositionManagerFactory positionManagerFactory_ = IPositionManagerFactory(
@@ -123,12 +125,6 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _tokens[targetAsset_][targetLeverage_][isLong_] != address(0);
     }
 
-    function tokenExists(
-        address leveragedToken_
-    ) public view override returns (bool exists) {
-        return _isLeveragedToken[leveragedToken_];
-    }
-
     function _deployToken(
         address positionManager_,
         address targetAsset_,
@@ -139,17 +135,16 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             new LeveragedToken(
                 _getName(targetAsset_, targetLeverage_, isLong_),
                 _getSymbol(targetAsset_, targetLeverage_, isLong_),
-                Tokens.USDC,
                 targetAsset_,
                 targetLeverage_,
                 isLong_,
                 positionManager_
             )
         );
+        isLeveragedToken[token_] = true;
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
         _allTargetTokens[targetAsset_].push(token_);
-        _isLeveragedToken[token_] = true;
         if (isLong_) {
             _longTokens.push(token_);
             _longTargetTokens[targetAsset_].push(token_);

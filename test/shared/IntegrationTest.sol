@@ -8,53 +8,92 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
+import {Config} from "../../src/libraries/Config.sol";
 
-import {ChainlinkOracle} from "../../src/ChainlinkOracle.sol";
+import {IVesting} from "../../src/interfaces/IVesting.sol";
+
+import {Oracle} from "../../src/Oracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
+import {TlxToken} from "../../src/TlxToken.sol";
+import {Airdrop} from "../../src/Airdrop.sol";
+import {Locker} from "../../src/Locker.sol";
+import {Bonding} from "../../src/Bonding.sol";
+import {Vesting} from "../../src/Vesting.sol";
 import {MockDerivativesHandler} from "../../src/testing/MockDerivativesHandler.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
 
-    ChainlinkOracle public chainlinkOracle;
+    // Users
+    address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
+    address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
+    address public treasury = makeAddr("treasury");
+
+    // Contracts
+    Oracle public oracle;
     MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
+    TlxToken public tlx;
+    Airdrop public airdrop;
+    Locker public locker;
+    Bonding public bonding;
+    Vesting public vesting;
     MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("RPC"), 17_491_596));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 108_419_524));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
+        addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
+        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
 
-        // Chainlink Oracle Setup
-        chainlinkOracle = new ChainlinkOracle(Contracts.ETH_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
-        chainlinkOracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
-        chainlinkOracle.setEthOracle(Tokens.WBTC, Contracts.WBTC_ETH_ORACLE);
+        // Vesting Setup
+        IVesting.VestingAmount[] memory amounts_ = new Vesting.VestingAmount[](
+            2
+        );
+        amounts_[0] = IVesting.VestingAmount(alice, 100e18);
+        amounts_[1] = IVesting.VestingAmount(bob, 200e18);
+        vesting = new Vesting(
+            address(addressProvider),
+            Config.VESTING_DURATION,
+            amounts_
+        );
+        addressProvider.updateAddress(AddressKeys.VESTING, address(vesting));
+
+        // Bonding Setup
+        bonding = new Bonding(
+            address(addressProvider),
+            Config.INITIAL_TLX_PER_SECOND,
+            Config.PERIOD_DECAY_MULTIPLIER,
+            Config.PERIOD_DURATION,
+            Config.BASE_FOR_ALL_TLX
+        );
+        addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
+
+        // Oracle Setup
+        oracle = new Oracle(
+            address(addressProvider),
+            Contracts.ETH_USD_ORACLE
+        );
+        oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
+        oracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(
             AddressKeys.ORACLE,
-            address(chainlinkOracle)
+            address(oracle)
         );
-
-        // Mock Oracle Setup
-        mockOracle = new MockOracle();
-        uint256 uniPrice_ = chainlinkOracle.getUsdPrice(Tokens.UNI);
-        mockOracle.setPrice(Tokens.UNI, uniPrice_);
-        uint256 ethPrice_ = chainlinkOracle.getUsdPrice(address(0));
-        mockOracle.setPrice(address(0), ethPrice_);
-        uint256 usdcPrice_ = chainlinkOracle.getUsdPrice(Tokens.USDC);
-        mockOracle.setPrice(Tokens.USDC, usdcPrice_);
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
-            address(addressProvider)
+            address(addressProvider),
+            Config.MAX_LEVERAGE
         );
         addressProvider.updateAddress(
             AddressKeys.LEVERAGED_TOKEN_FACTORY,
@@ -70,6 +109,35 @@ contract IntegrationTest is Test {
             address(positionManagerFactory)
         );
 
+        // Airdrop Setup
+        bytes32[] memory leaves = new bytes32[](2);
+        leaves[0] = keccak256(abi.encodePacked(alice, uint256(100e18)));
+        leaves[1] = keccak256(abi.encodePacked(bob, uint256(200e18)));
+        airdrop = new Airdrop(
+            address(addressProvider),
+            bytes32(0),
+            block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
+            Config.AIRDROP_AMOUNT
+        );
+        addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
+
+        // Locker Setup
+        locker = new Locker(
+            address(addressProvider),
+            Config.LOCKER_UNLOCK_DELAY,
+            Config.REWARD_TOKEN
+        );
+        addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
+
+        // Mock Oracle Setup
+        mockOracle = new MockOracle();
+        uint256 uniPrice_ = oracle.getUsdPrice(Tokens.UNI);
+        mockOracle.setPrice(Tokens.UNI, uniPrice_);
+        uint256 ethPrice_ = oracle.getUsdPrice(address(0));
+        mockOracle.setPrice(address(0), ethPrice_);
+        uint256 usdcPrice_ = oracle.getUsdPrice(Tokens.USDC);
+        mockOracle.setPrice(Tokens.USDC, usdcPrice_);
+
         // MockDerivativesHandler Setup
         mockDerivativesHandler = new MockDerivativesHandler(
             address(addressProvider),
@@ -84,6 +152,16 @@ contract IntegrationTest is Test {
             AddressKeys.DERIVATIVES_HANDLER,
             address(mockDerivativesHandler)
         );
+
+        // TLX Token Setup
+        tlx = new TlxToken(
+            address(addressProvider),
+            Config.AIRDROP_AMOUNT,
+            Config.BONDING_AMOUNT,
+            Config.TREASURY_AMOUNT,
+            Config.VESTING_AMOUNT
+        );
+        addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
     }
 
     function _mintTokensFor(

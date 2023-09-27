@@ -37,6 +37,6 @@ contract PositionManagerFactoryTest is IntegrationTest {
 
     function testRevertsWithNoOracle() public {
         vm.expectRevert(IPositionManagerFactory.NoOracle.selector);
-        positionManagerFactory.createPositionManager(Tokens.GMX);
+        positionManagerFactory.createPositionManager(Tokens.CRV);
     }
 }
