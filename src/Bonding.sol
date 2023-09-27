@@ -8,11 +8,8 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IBonding} from "./interfaces/IBonding.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
-import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
-import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 
 contract Bonding is IBonding, Ownable {
@@ -20,7 +17,7 @@ contract Bonding is IBonding, Ownable {
 
     uint256 public override totalTlxBonded;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _periodDecayMultiplier;
     uint256 internal immutable _periodDuration;
 
@@ -37,7 +34,7 @@ contract Bonding is IBonding, Ownable {
         uint256 periodDuration_,
         uint256 baseForAllTlx_
     ) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         _tlxPerSecond = initialTlxPerSecond_;
         _periodDecayMultiplier = periodDecayMultiplier_;
         _periodDuration = periodDuration_;
@@ -57,7 +54,7 @@ contract Bonding is IBonding, Ownable {
         // Transfer the leveraged token from the user to the position equalizer
         IERC20(leveragedToken_).transferFrom(
             msg.sender,
-            IAddressProvider(_addressProvider).positionEqualizer(),
+            _addressProvider.positionEqualizer(),
             leveragedTokenAmount_
         );
 
@@ -74,10 +71,9 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        address tlx_ = IAddressProvider(_addressProvider).tlx();
-        ITlxToken(tlx_).transfer(address(this), tlxAmount_);
-        address locker_ = IAddressProvider(_addressProvider).locker();
-        IERC20(tlx_).approve(locker_, tlxAmount_);
+        _addressProvider.tlx().transfer(address(this), tlxAmount_);
+        ILocker locker_ = _addressProvider.locker();
+        _addressProvider.tlx().approve(address(locker_), tlxAmount_);
         ILocker(locker_).lockFor(tlxAmount_, msg.sender);
 
         // Emit the event
@@ -169,17 +165,15 @@ contract Bonding is IBonding, Ownable {
 
     function _isLeveragedToken(address token_) internal view returns (bool) {
         return
-            ILeveragedTokenFactory(
-                IAddressProvider(_addressProvider).leveragedTokenFactory()
-            ).isLeveragedToken(token_);
+            _addressProvider.leveragedTokenFactory().isLeveragedToken(token_);
     }
 
     function _priceInBaseAsset(address token_) internal view returns (uint256) {
         return
             IPositionManager(
-                IPositionManagerFactory(
-                    IAddressProvider(_addressProvider).positionManagerFactory()
-                ).positionManager(ILeveragedToken(token_).targetAsset())
+                _addressProvider.positionManagerFactory().positionManager(
+                    ILeveragedToken(token_).targetAsset()
+                )
             ).exchangeRate(token_);
     }
 }

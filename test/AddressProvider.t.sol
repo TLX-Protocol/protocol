@@ -10,15 +10,15 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 contract AddressProviderTest is IntegrationTest {
     function testInit() public {
         assertEq(
-            addressProvider.leveragedTokenFactory(),
+            address(addressProvider.leveragedTokenFactory()),
             address(leveragedTokenFactory)
         );
-        assertEq(addressProvider.oracle(), address(oracle));
+        assertEq(address(addressProvider.oracle()), address(oracle));
     }
 
     function testUpdateAddress() public {
         addressProvider.updateAddress(AddressKeys.ORACLE, Tokens.UNI);
-        assertEq(addressProvider.oracle(), Tokens.UNI);
+        assertEq(address(addressProvider.oracle()), Tokens.UNI);
     }
 
     function testQueryAddress() public {

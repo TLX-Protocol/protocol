@@ -7,12 +7,11 @@ import {ScaledNumber} from "../libraries/ScaledNumber.sol";
 
 import {IDerivativesHandler} from "../interfaces/IDerivativesHandler.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
-import {IOracle} from "../interfaces/IOracle.sol";
 
 contract BaseProtocol {
     using ScaledNumber for uint256;
 
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
 
     uint256 internal _annualFeePercent;
 
@@ -21,7 +20,7 @@ contract BaseProtocol {
     mapping(address => uint256) public entryPrices;
 
     constructor(address addressProvider_, uint256 annualFeePercent_) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
         _annualFeePercent = annualFeePercent_;
     }
 
@@ -81,10 +80,7 @@ contract BaseProtocol {
     }
 
     function _usdPrice(address token_) internal view returns (uint256) {
-        return
-            IOracle(IAddressProvider(_addressProvider).oracle()).getUsdPrice(
-                token_
-            );
+        return _addressProvider.oracle().getUsdPrice(token_);
     }
 
     function _profit(
@@ -126,12 +122,10 @@ contract BaseProtocol {
 contract MockDerivativesHandler is IDerivativesHandler {
     using ScaledNumber for uint256;
 
-    address internal immutable _baseProtocol;
+    BaseProtocol internal immutable _baseProtocol;
 
     constructor(address addressProvider_, uint256 annualFeePercent_) {
-        _baseProtocol = address(
-            new BaseProtocol(addressProvider_, annualFeePercent_)
-        );
+        _baseProtocol = new BaseProtocol(addressProvider_, annualFeePercent_);
     }
 
     function createPosition(
@@ -141,7 +135,7 @@ contract MockDerivativesHandler is IDerivativesHandler {
         uint256 leverage,
         bool isLong
     ) external override {
-        BaseProtocol(_baseProtocol).createPosition(
+        _baseProtocol.createPosition(
             baseToken,
             targetToken,
             baseAmount,
@@ -151,22 +145,22 @@ contract MockDerivativesHandler is IDerivativesHandler {
     }
 
     function closePosition() external override returns (uint256) {
-        return BaseProtocol(_baseProtocol).closePosition();
+        return _baseProtocol.closePosition();
     }
 
     function updateFeePercent(uint256 annualFeePercent_) external {
-        BaseProtocol(_baseProtocol).updateFeePercent(annualFeePercent_);
+        _baseProtocol.updateFeePercent(annualFeePercent_);
     }
 
     function position() external view override returns (Position memory) {
-        return BaseProtocol(_baseProtocol).position(msg.sender);
+        return _baseProtocol.position(msg.sender);
     }
 
     function hasPosition() external view override returns (bool) {
-        return BaseProtocol(_baseProtocol).hasPosition(msg.sender);
+        return _baseProtocol.hasPosition(msg.sender);
     }
 
     function approveAddress() external view override returns (address) {
-        return _baseProtocol;
+        return address(_baseProtocol);
     }
 }

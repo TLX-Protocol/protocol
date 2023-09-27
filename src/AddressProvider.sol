@@ -3,10 +3,21 @@ pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Initializable} from "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
 
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
+import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
+import {IOracle} from "./interfaces/IOracle.sol";
+import {IReferrals} from "./interfaces/IReferrals.sol";
+import {IAirdrop} from "./interfaces/IAirdrop.sol";
+import {IBonding} from "./interfaces/IBonding.sol";
+import {IVesting} from "./interfaces/IVesting.sol";
+import {ITlxToken} from "./interfaces/ITlxToken.sol";
+import {ILocker} from "./interfaces/ILocker.sol";
+import {IDerivativesHandler} from "./interfaces/IDerivativesHandler.sol";
 
 contract AddressProvider is IAddressProvider, Ownable, Initializable {
     mapping(bytes32 => address) internal _addresses;
@@ -23,55 +34,76 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return _addresses[key_];
     }
 
-    function leveragedTokenFactory() external view override returns (address) {
-        return _addresses[AddressKeys.LEVERAGED_TOKEN_FACTORY];
+    function leveragedTokenFactory()
+        external
+        view
+        override
+        returns (ILeveragedTokenFactory)
+    {
+        return
+            ILeveragedTokenFactory(
+                _addresses[AddressKeys.LEVERAGED_TOKEN_FACTORY]
+            );
     }
 
-    function positionManagerFactory() external view override returns (address) {
-        return _addresses[AddressKeys.POSITION_MANAGER_FACTORY];
+    function positionManagerFactory()
+        external
+        view
+        override
+        returns (IPositionManagerFactory)
+    {
+        return
+            IPositionManagerFactory(
+                _addresses[AddressKeys.POSITION_MANAGER_FACTORY]
+            );
     }
 
-    function oracle() external view override returns (address) {
-        return _addresses[AddressKeys.ORACLE];
+    function oracle() external view override returns (IOracle) {
+        return IOracle(_addresses[AddressKeys.ORACLE]);
     }
 
-    function referrals() external view override returns (address) {
-        return _addresses[AddressKeys.REFERRALS];
+    function referrals() external view override returns (IReferrals) {
+        return IReferrals(_addresses[AddressKeys.REFERRALS]);
     }
 
-    function airdrop() external view override returns (address) {
-        return _addresses[AddressKeys.AIRDROP];
+    function airdrop() external view override returns (IAirdrop) {
+        return IAirdrop(_addresses[AddressKeys.AIRDROP]);
     }
 
-    function bonding() external view override returns (address) {
-        return _addresses[AddressKeys.BONDING];
+    function bonding() external view override returns (IBonding) {
+        return IBonding(_addresses[AddressKeys.BONDING]);
     }
 
     function treasury() external view override returns (address) {
         return _addresses[AddressKeys.TREASURY];
     }
 
-    function vesting() external view override returns (address) {
-        return _addresses[AddressKeys.VESTING];
+    function vesting() external view override returns (IVesting) {
+        return IVesting(_addresses[AddressKeys.VESTING]);
     }
 
-    function tlx() external view override returns (address) {
-        return _addresses[AddressKeys.TLX];
+    function tlx() external view override returns (ITlxToken) {
+        return ITlxToken(_addresses[AddressKeys.TLX]);
     }
 
-    function locker() external view override returns (address) {
-        return _addresses[AddressKeys.LOCKER];
+    function locker() external view override returns (ILocker) {
+        return ILocker(_addresses[AddressKeys.LOCKER]);
     }
 
-    function baseAsset() external view override returns (address) {
-        return _addresses[AddressKeys.BASE_ASSET];
+    function baseAsset() external view override returns (IERC20Metadata) {
+        return IERC20Metadata(_addresses[AddressKeys.BASE_ASSET]);
     }
 
     function positionEqualizer() external view override returns (address) {
         return _addresses[AddressKeys.POSITION_EQUALIZER];
     }
 
-    function derivativesHandler() external view override returns (address) {
-        return _addresses[AddressKeys.DERIVATIVES_HANDLER];
+    function derivativesHandler()
+        external
+        view
+        override
+        returns (IDerivativesHandler)
+    {
+        return IDerivativesHandler(_addresses[AddressKeys.DERIVATIVES_HANDLER]);
     }
 }

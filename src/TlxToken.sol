@@ -14,9 +14,10 @@ contract TlxToken is ITlxToken, ERC20 {
         uint256 treasuryAmount_,
         uint256 vestingAmount_
     ) ERC20("TLX DAO Token", "TLX") {
-        _mint(IAddressProvider(addressProvider_).airdrop(), airdropAmount_);
-        _mint(IAddressProvider(addressProvider_).bonding(), bondingAmount_);
-        _mint(IAddressProvider(addressProvider_).treasury(), treasuryAmount_);
-        _mint(IAddressProvider(addressProvider_).vesting(), vestingAmount_);
+        IAddressProvider addressProvider = IAddressProvider(addressProvider_);
+        _mint(address(addressProvider.airdrop()), airdropAmount_);
+        _mint(address(addressProvider.bonding()), bondingAmount_);
+        _mint(addressProvider.treasury(), treasuryAmount_);
+        _mint(address(addressProvider.vesting()), vestingAmount_);
     }
 }

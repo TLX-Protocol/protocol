@@ -8,7 +8,6 @@ import {Tokens} from "./libraries/Tokens.sol";
 
 import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IOracle} from "./interfaces/IOracle.sol";
 import {PositionManager} from "./PositionManager.sol";
 
 contract PositionManagerFactory is IPositionManagerFactory, Ownable {
@@ -16,10 +15,10 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
 
     EnumerableSet.AddressSet internal _positionManagers;
     mapping(address => address) internal _positionManager;
-    address internal immutable _addressProvider;
+    IAddressProvider internal immutable _addressProvider;
 
     constructor(address addressProvider_) {
-        _addressProvider = addressProvider_;
+        _addressProvider = IAddressProvider(addressProvider_);
     }
 
     function createPositionManager(
@@ -28,13 +27,12 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         // Checks
         if (_positionManager[targetAsset_] != address(0))
             revert AlreadyExists();
-        IAddressProvider addressProvider_ = IAddressProvider(_addressProvider);
-        IOracle oracle_ = IOracle(addressProvider_.oracle());
-        if (oracle_.getUsdPrice(targetAsset_) == 0) revert NoOracle();
+        if (_addressProvider.oracle().getUsdPrice(targetAsset_) == 0)
+            revert NoOracle();
 
         // Deploying position manager
         address positionManager_ = address(
-            new PositionManager(_addressProvider, targetAsset_)
+            new PositionManager(address(_addressProvider), targetAsset_)
         );
 
         // Updating state
