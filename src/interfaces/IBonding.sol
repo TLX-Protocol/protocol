@@ -34,8 +34,8 @@ interface IBonding {
     function setBaseForAllTlx(uint256 baseForAllTlx) external;
 
     /**
-     * @notice Returns the exchange rate between leveraged tokens USDC value and TLX.
-     * @return exchangeRate The exchange rate between leveraged tokens USDC value and TLX.
+     * @notice Returns the exchange rate between leveraged tokens baseAsset value and TLX.
+     * @return exchangeRate The exchange rate between leveraged tokens baseAsset value and TLX.
      */
     function exchangeRate() external view returns (uint256 exchangeRate);
 

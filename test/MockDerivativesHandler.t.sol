@@ -18,12 +18,12 @@ contract MockDerivativesHandlerTest is IntegrationTest {
     using ScaledNumber for uint256;
     using Address for address;
 
-    uint256 internal constant _AMOUNT = 100_000e6;
+    uint256 internal constant _AMOUNT = 100_000e18;
 
     function setUp() public {
         addressProvider.updateAddress(AddressKeys.ORACLE, address(mockOracle));
-        _mintTokensFor(Tokens.USDC, address(this), _AMOUNT);
-        IERC20(Tokens.USDC).approve(
+        _mintTokensFor(Tokens.SUSD, address(this), _AMOUNT);
+        IERC20(Tokens.SUSD).approve(
             mockDerivativesHandler.approveAddress(),
             type(uint256).max
         );
@@ -44,7 +44,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -54,7 +54,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         assertEq(mockDerivativesHandler.hasPosition(), true, "hasPosition");
         IDerivativesHandler.Position memory position_ = mockDerivativesHandler
             .position();
-        assertEq(position_.baseToken, Tokens.USDC);
+        assertEq(position_.baseToken, Tokens.SUSD);
         assertEq(position_.targetToken, Tokens.UNI);
         assertEq(position_.baseAmount, _AMOUNT);
         assertEq(position_.leverage, 2e18);
@@ -68,7 +68,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -91,7 +91,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
         assertEq(owed_, _AMOUNT * 3);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), _AMOUNT * 3);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), _AMOUNT * 3);
     }
 
     function testLongProfitFee() public {
@@ -100,7 +100,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -126,7 +126,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         assertEq(owed_, expected_, "owed");
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
         assertEq(
-            IERC20(Tokens.USDC).balanceOf(address(this)),
+            IERC20(Tokens.SUSD).balanceOf(address(this)),
             expected_,
             "gained"
         );
@@ -137,7 +137,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -162,7 +162,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 
     function testLongLossFee() public {
@@ -171,7 +171,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -197,7 +197,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 
     function testShortProfitNoFee() public {
@@ -205,7 +205,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -230,7 +230,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT + expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 
     function testShortProfitFee() public {
@@ -238,7 +238,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -264,7 +264,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT + expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 
     function testShortLossNoFee() public {
@@ -272,7 +272,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -297,7 +297,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 
     function testShortLossFee() public {
@@ -305,7 +305,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         address(mockDerivativesHandler).functionDelegateCall(
             abi.encodeWithSignature(
                 "createPosition(address,address,uint256,uint256,bool)",
-                Tokens.USDC,
+                Tokens.SUSD,
                 Tokens.UNI,
                 _AMOUNT,
                 2e18,
@@ -331,6 +331,6 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         uint256 expected_ = _AMOUNT - expectedDelta_;
         assertEq(owed_, expected_);
         assertEq(mockDerivativesHandler.hasPosition(), false, "hasPosition");
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), expected_);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), expected_);
     }
 }

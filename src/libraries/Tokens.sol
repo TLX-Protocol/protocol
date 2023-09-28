@@ -7,4 +7,5 @@ library Tokens {
     address public constant WBTC = 0x68f180fcCe6836688e9084f035309E29Bf0A2095;
     address public constant CRV = 0x0994206dfE8De6Ec6920FF4D779B0d950605Fb53;
     address public constant CBETH = 0xadDb6A0412DE1BA0F936DCaeb8Aaa24578dcF3B2;
+    address public constant SUSD = 0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9;
 }

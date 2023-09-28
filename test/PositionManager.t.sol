@@ -35,9 +35,9 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountIn() public {
-        uint256 baseAmountIn = 100e6;
-        _mintTokensFor(Tokens.USDC, address(this), baseAmountIn);
-        IERC20(Tokens.USDC).approve(address(positionManager), baseAmountIn);
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
         uint256 minLeveragedTokenAmountOut = 45e18;
         uint256 leveragedTokenAmountOut = positionManager.mintAmountIn(
             address(leveragedToken),
@@ -48,10 +48,10 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(leveragedToken.totalSupply(), 50e18);
         assertEq(leveragedToken.balanceOf(address(this)), 50e18);
         assertEq(
-            IERC20(Tokens.USDC).balanceOf(address(positionManager)),
-            100e6
+            IERC20(Tokens.SUSD).balanceOf(address(positionManager)),
+            100e18
         );
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), 0);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 0);
     }
 
     function testMintAmountInRevertsForInvalidLeveragedToken() public {
@@ -68,9 +68,9 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountInRevertsForInsufficientAmount() public {
-        uint256 baseAmountIn = 100e6;
-        _mintTokensFor(Tokens.USDC, address(this), baseAmountIn);
-        IERC20(Tokens.USDC).approve(address(positionManager), baseAmountIn);
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
         uint256 minLeveragedTokenAmountOut = 55e18;
         vm.expectRevert(IPositionManager.InsufficientAmount.selector);
         positionManager.mintAmountIn(
@@ -82,22 +82,22 @@ contract PositionManagerTest is IntegrationTest {
 
     function testMintAmountOut() public {
         uint256 leveragedTokenAmountOut = 50e18;
-        uint256 maxBaseAmountIn = 110e6;
-        _mintTokensFor(Tokens.USDC, address(this), maxBaseAmountIn);
-        IERC20(Tokens.USDC).approve(address(positionManager), maxBaseAmountIn);
+        uint256 maxBaseAmountIn = 110e18;
+        _mintTokensFor(Tokens.SUSD, address(this), maxBaseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), maxBaseAmountIn);
         uint256 baseAmountIn = positionManager.mintAmountOut(
             address(leveragedToken),
             leveragedTokenAmountOut,
             maxBaseAmountIn
         );
-        assertEq(baseAmountIn, 100e6);
+        assertEq(baseAmountIn, 100e18);
         assertEq(leveragedToken.totalSupply(), 50e18);
         assertEq(leveragedToken.balanceOf(address(this)), 50e18);
         assertEq(
-            IERC20(Tokens.USDC).balanceOf(address(positionManager)),
-            100e6
+            IERC20(Tokens.SUSD).balanceOf(address(positionManager)),
+            100e18
         );
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), 10e6);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 10e18);
     }
 
     function testMintAmountOutRevertsForInvalidLeveragedToken() public {
@@ -116,9 +116,9 @@ contract PositionManagerTest is IntegrationTest {
 
     function testMintAmountOutRevertsForInsufficientAmount() public {
         uint256 leveragedTokenAmountOut = 50e18;
-        uint256 maxBaseAmountIn = 90e6;
-        _mintTokensFor(Tokens.USDC, address(this), maxBaseAmountIn);
-        IERC20(Tokens.USDC).approve(address(positionManager), maxBaseAmountIn);
+        uint256 maxBaseAmountIn = 90e18;
+        _mintTokensFor(Tokens.SUSD, address(this), maxBaseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), maxBaseAmountIn);
         vm.expectRevert(IPositionManager.InsufficientAmount.selector);
         positionManager.mintAmountOut(
             address(leveragedToken),
@@ -129,10 +129,10 @@ contract PositionManagerTest is IntegrationTest {
 
     function testRedeem() public {
         // Minting Leveraged Tokens
-        uint256 baseAmountIn = 100e6;
-        _mintTokensFor(Tokens.USDC, address(this), baseAmountIn);
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
         uint256 minLeveragedTokenAmountOut = 50e18;
-        IERC20(Tokens.USDC).approve(address(positionManager), baseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
         positionManager.mintAmountIn(
             address(leveragedToken),
             baseAmountIn,
@@ -142,17 +142,17 @@ contract PositionManagerTest is IntegrationTest {
 
         // Redeeming Leveraged Tokens
         uint256 leveragedTokenAmountIn = 50e18;
-        uint256 minBaseAmountOut = 90e6;
+        uint256 minBaseAmountOut = 90e18;
         uint256 baseAmountOut = positionManager.redeem(
             address(leveragedToken),
             leveragedTokenAmountIn,
             minBaseAmountOut
         );
 
-        assertEq(baseAmountOut, 100e6);
+        assertEq(baseAmountOut, 100e18);
         assertEq(leveragedToken.totalSupply(), 0);
         assertEq(leveragedToken.balanceOf(address(this)), 0);
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(positionManager)), 0);
-        assertEq(IERC20(Tokens.USDC).balanceOf(address(this)), 100e6);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(positionManager)), 0);
+        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 100e18);
     }
 }
