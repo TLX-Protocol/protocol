@@ -5,12 +5,13 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Contracts} from "../src/libraries/Contracts.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {Oracle} from "../src/Oracle.sol";
 
 contract OracleTest is IntegrationTest {
     function testPriceThroughUsd() public {
-        uint256 price_ = oracle.getPrice("UNI");
+        uint256 price_ = oracle.getPrice(Symbols.UNI);
         assertGt(price_, 1e18);
         assertLt(price_, 100e18);
     }

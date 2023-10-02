@@ -2,8 +2,11 @@
 pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
+
 import {LeveragedToken} from "../src/LeveragedToken.sol";
+
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 contract LeveragedTokenTest is Test {
     LeveragedToken public leveragedToken;
@@ -12,7 +15,7 @@ contract LeveragedTokenTest is Test {
         leveragedToken = new LeveragedToken(
             "UNI 2x Long",
             "UNI2L",
-            "UNI",
+            Symbols.UNI,
             2e18,
             true,
             address(this)
@@ -23,7 +26,7 @@ contract LeveragedTokenTest is Test {
         assertEq(leveragedToken.name(), "UNI 2x Long");
         assertEq(leveragedToken.symbol(), "UNI2L");
         assertEq(leveragedToken.decimals(), 18);
-        assertEq(leveragedToken.targetAsset(), "UNI");
+        assertEq(leveragedToken.targetAsset(), Symbols.UNI);
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());
     }

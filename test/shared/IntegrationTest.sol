@@ -9,6 +9,7 @@ import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
+import {Symbols} from "../../src/libraries/Symbols.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
 
@@ -80,11 +81,11 @@ contract IntegrationTest is Test {
 
         // Oracle Setup
         oracle = new Oracle(address(addressProvider), Contracts.ETH_USD_ORACLE);
-        oracle.setUsdOracle("UNI", Contracts.UNI_USD_ORACLE);
-        oracle.setUsdOracle("ETH", Contracts.ETH_USD_ORACLE);
+        oracle.setUsdOracle(Symbols.UNI, Contracts.UNI_USD_ORACLE);
+        oracle.setUsdOracle(Symbols.ETH, Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle("sUSD", Contracts.SUSD_USD_ORACLE);
-        oracle.setUsdOracle("USDC", Contracts.USDC_USD_ORACLE);
-        oracle.setUsdOracle("WBTC", Contracts.WBTC_USD_ORACLE);
+        oracle.setUsdOracle(Symbols.USDC, Contracts.USDC_USD_ORACLE);
+        oracle.setUsdOracle(Symbols.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(AddressKeys.ORACLE, address(oracle));
 
         // LeveragedTokenFactory Setup
@@ -139,12 +140,12 @@ contract IntegrationTest is Test {
 
         // Mock Oracle Setup
         mockOracle = new MockOracle();
-        uint256 uniPrice_ = oracle.getPrice("UNI");
-        mockOracle.setPrice("UNI", uniPrice_);
-        uint256 ethPrice_ = oracle.getPrice("ETH");
-        mockOracle.setPrice("ETH", ethPrice_);
-        uint256 usdcPrice_ = oracle.getPrice("USDC");
-        mockOracle.setPrice("USDC", usdcPrice_);
+        uint256 uniPrice_ = oracle.getPrice(Symbols.UNI);
+        mockOracle.setPrice(Symbols.UNI, uniPrice_);
+        uint256 ethPrice_ = oracle.getPrice(Symbols.ETH);
+        mockOracle.setPrice(Symbols.ETH, ethPrice_);
+        uint256 usdcPrice_ = oracle.getPrice(Symbols.USDC);
+        mockOracle.setPrice(Symbols.USDC, usdcPrice_);
         uint256 susdPrice_ = oracle.getPrice("sUSD");
         mockOracle.setPrice("sUSD", susdPrice_);
 

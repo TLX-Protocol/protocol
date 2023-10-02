@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Errors} from "../../src/libraries/Errors.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
@@ -11,26 +12,26 @@ import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
     function setUp() public {
-        positionManagerFactory.createPositionManager("UNI");
+        positionManagerFactory.createPositionManager(Symbols.UNI);
     }
 
     function testDeployTokens() public {
         (
             address longTokenAddress_,
             address shortTokenAddress_
-        ) = leveragedTokenFactory.createLeveragedTokens("UNI", 1.23e18);
+        ) = leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
         ILeveragedToken longToken = ILeveragedToken(longTokenAddress_);
         ILeveragedToken shortToken = ILeveragedToken(shortTokenAddress_);
         assertEq(longToken.name(), "UNI 1.23x Long");
         assertEq(longToken.symbol(), "UNI1.23L");
         assertEq(longToken.decimals(), 18);
-        assertEq(longToken.targetAsset(), "UNI");
+        assertEq(longToken.targetAsset(), Symbols.UNI);
         assertEq(longToken.targetLeverage(), 1.23e18);
         assertTrue(longToken.isLong());
         assertEq(shortToken.name(), "UNI 1.23x Short");
         assertEq(shortToken.symbol(), "UNI1.23S");
         assertEq(shortToken.decimals(), 18);
-        assertEq(shortToken.targetAsset(), "UNI");
+        assertEq(shortToken.targetAsset(), Symbols.UNI);
         assertEq(shortToken.targetLeverage(), 1.23e18);
         assertFalse(shortToken.isLong());
         address[] memory tokens = leveragedTokenFactory.allTokens();
@@ -44,37 +45,43 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
         assertEq(shortTokens.length, 1);
         assertEq(shortTokens[0], shortTokenAddress_);
         address[] memory allTargetTokens = leveragedTokenFactory.allTokens(
-            "UNI"
+            Symbols.UNI
         );
         assertEq(allTargetTokens.length, 2);
         assertEq(allTargetTokens[0], longTokenAddress_);
         assertEq(allTargetTokens[1], shortTokenAddress_);
-        address[] memory emptyTokens = leveragedTokenFactory.allTokens("USDC");
+        address[] memory emptyTokens = leveragedTokenFactory.allTokens(
+            Symbols.USDC
+        );
         assertEq(emptyTokens.length, 0);
         address[] memory longTargetTokens = leveragedTokenFactory.longTokens(
-            "UNI"
+            Symbols.UNI
         );
         assertEq(longTargetTokens.length, 1);
         assertEq(longTargetTokens[0], longTokenAddress_);
         address[] memory shortTargetTokens = leveragedTokenFactory.shortTokens(
-            "UNI"
+            Symbols.UNI
         );
         assertEq(shortTargetTokens.length, 1);
         assertEq(shortTargetTokens[0], shortTokenAddress_);
         address longTokenAddress = leveragedTokenFactory.token(
-            "UNI",
+            Symbols.UNI,
             1.23e18,
             true
         );
         assertEq(longTokenAddress, longTokenAddress_);
         address shortTokenAddress = leveragedTokenFactory.token(
-            "UNI",
+            Symbols.UNI,
             1.23e18,
             false
         );
         assertEq(shortTokenAddress, shortTokenAddress_);
-        assertTrue(leveragedTokenFactory.tokenExists("UNI", 1.23e18, true));
-        assertTrue(leveragedTokenFactory.tokenExists("UNI", 1.23e18, false));
+        assertTrue(
+            leveragedTokenFactory.tokenExists(Symbols.UNI, 1.23e18, true)
+        );
+        assertTrue(
+            leveragedTokenFactory.tokenExists(Symbols.UNI, 1.23e18, false)
+        );
         assertEq(
             leveragedTokenFactory.pair(longTokenAddress_),
             shortTokenAddress_
@@ -96,22 +103,22 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
 
     function testRevertsNoPositionManager() public {
         vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
-        leveragedTokenFactory.createLeveragedTokens("WBTC", 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.WBTC, 1.23e18);
     }
 
     function testRevertsZeroLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.ZeroLeverage.selector);
-        leveragedTokenFactory.createLeveragedTokens("UNI", 0);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 0);
     }
 
     function testRevertsMaxLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.MaxLeverage.selector);
-        leveragedTokenFactory.createLeveragedTokens("UNI", 101e18);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 101e18);
     }
 
     function testRevertsTokenExists() public {
-        leveragedTokenFactory.createLeveragedTokens("UNI", 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
         vm.expectRevert(Errors.AlreadyExists.selector);
-        leveragedTokenFactory.createLeveragedTokens("UNI", 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
     }
 }

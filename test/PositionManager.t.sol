@@ -6,6 +6,7 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {PositionManager} from "../src/PositionManager.sol";
 import {LeveragedToken} from "../src/LeveragedToken.sol";
@@ -17,19 +18,19 @@ contract PositionManagerTest is IntegrationTest {
     ILeveragedToken public leveragedToken;
 
     function setUp() public {
-        positionManagerFactory.createPositionManager("UNI");
+        positionManagerFactory.createPositionManager(Symbols.UNI);
         positionManager = PositionManager(
-            positionManagerFactory.positionManager("UNI")
+            positionManagerFactory.positionManager(Symbols.UNI)
         );
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens("UNI", 1.23e18);
+            .createLeveragedTokens(Symbols.UNI, 1.23e18);
         leveragedToken = LeveragedToken(longTokenAddress_);
     }
 
     function testInit() public {
-        assertEq(positionManager.targetAsset(), "UNI");
+        assertEq(positionManager.targetAsset(), Symbols.UNI);
         assertEq(
-            positionManagerFactory.positionManager("UNI"),
+            positionManagerFactory.positionManager(Symbols.UNI),
             address(positionManager)
         );
     }
@@ -60,7 +61,7 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountInRevertsForInvalidPositionManager() public {
-        positionManagerFactory.createPositionManager("WBTC");
+        positionManagerFactory.createPositionManager(Symbols.WBTC);
         // (address longTokenAddress_, ) = leveragedTokenFactory
         //     .createLeveragedTokens(Tokens.WBTC, 1.23e18);
         // vm.expectRevert(IPositionManager.NotPositionManager.selector);
@@ -106,9 +107,9 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountOutRevertsForInvalidPositionManager() public {
-        positionManagerFactory.createPositionManager("WBTC");
+        positionManagerFactory.createPositionManager(Symbols.WBTC);
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens("WBTC", 1.23e18);
+            .createLeveragedTokens(Symbols.WBTC, 1.23e18);
 
         vm.expectRevert(IPositionManager.NotPositionManager.selector);
         positionManager.mintAmountOut(longTokenAddress_, 1, 1);

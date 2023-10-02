@@ -9,6 +9,7 @@ import {Config} from "../src/libraries/Config.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {AddressKeys} from "../src/libraries/AddressKeys.sol";
 import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {IBonding} from "../src/interfaces/IBonding.sol";
 
@@ -18,9 +19,9 @@ contract BondingTest is IntegrationTest {
     address public leveragedToken;
 
     function setUp() public {
-        positionManagerFactory.createPositionManager("UNI");
-        leveragedTokenFactory.createLeveragedTokens("UNI", 2.12e18);
-        leveragedToken = leveragedTokenFactory.longTokens("UNI")[0];
+        positionManagerFactory.createPositionManager(Symbols.UNI);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        leveragedToken = leveragedTokenFactory.longTokens(Symbols.UNI)[0];
         _mintTokensFor(leveragedToken, address(this), 100_000e18);
         IERC20(leveragedToken).approve(address(bonding), 100_000e18);
 
