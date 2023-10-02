@@ -30,6 +30,11 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
             revert Errors.AlreadyExists();
         if (_addressProvider.oracle().getPrice(targetAsset_) == 0)
             revert NoOracle();
+        if (
+            !_addressProvider.derivativesHandler().isAssetSupported(
+                targetAsset_
+            )
+        ) revert AssetNotSupported();
 
         // Deploying position manager
         address positionManager_ = address(

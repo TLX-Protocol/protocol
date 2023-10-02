@@ -5,6 +5,7 @@ interface IPositionManagerFactory {
     event PositionManagerCreated(address indexed positionManager);
 
     error NoOracle();
+    error AssetNotSupported();
 
     /**
      * @notice Creates a new position manager for the given target asset.
