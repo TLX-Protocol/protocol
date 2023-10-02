@@ -5,7 +5,7 @@ interface IDerivativesHandler {
     struct Position {
         uint256 createdAt;
         address baseToken;
-        address targetToken;
+        string targetToken;
         uint256 baseAmount;
         uint256 leverage;
         bool isLong;
@@ -26,7 +26,7 @@ interface IDerivativesHandler {
      */
     function createPosition(
         address baseToken,
-        address targetToken,
+        string calldata targetToken,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong

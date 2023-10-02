@@ -17,19 +17,19 @@ contract PositionManagerTest is IntegrationTest {
     ILeveragedToken public leveragedToken;
 
     function setUp() public {
-        positionManagerFactory.createPositionManager(Tokens.UNI);
+        positionManagerFactory.createPositionManager("UNI");
         positionManager = PositionManager(
-            positionManagerFactory.positionManager(Tokens.UNI)
+            positionManagerFactory.positionManager("UNI")
         );
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Tokens.UNI, 1.23e18);
+            .createLeveragedTokens("UNI", 1.23e18);
         leveragedToken = LeveragedToken(longTokenAddress_);
     }
 
     function testInit() public {
-        assertEq(positionManager.targetAsset(), Tokens.UNI);
+        assertEq(positionManager.targetAsset(), "UNI");
         assertEq(
-            positionManagerFactory.positionManager(Tokens.UNI),
+            positionManagerFactory.positionManager("UNI"),
             address(positionManager)
         );
     }
@@ -60,7 +60,7 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountInRevertsForInvalidPositionManager() public {
-        positionManagerFactory.createPositionManager(Tokens.WBTC);
+        positionManagerFactory.createPositionManager("WBTC");
         // (address longTokenAddress_, ) = leveragedTokenFactory
         //     .createLeveragedTokens(Tokens.WBTC, 1.23e18);
         // vm.expectRevert(IPositionManager.NotPositionManager.selector);
@@ -106,9 +106,9 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testMintAmountOutRevertsForInvalidPositionManager() public {
-        positionManagerFactory.createPositionManager(Tokens.WBTC);
+        positionManagerFactory.createPositionManager("WBTC");
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Tokens.WBTC, 1.23e18);
+            .createLeveragedTokens("WBTC", 1.23e18);
 
         vm.expectRevert(IPositionManager.NotPositionManager.selector);
         positionManager.mintAmountOut(longTokenAddress_, 1, 1);

@@ -1,3 +1,8 @@
+- Validata that there is a matching syntehtix thing for the given targetAsset symbol
+- Move these `"UNI"` to some config or library
+- Move some redundant imports, maybe just the erc20 one where we used to query the symbol
+- Change WBTC to BTC
+
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`

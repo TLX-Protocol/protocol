@@ -26,7 +26,7 @@ contract BaseProtocol {
 
     function createPosition(
         address baseToken,
-        address targetToken,
+        string calldata targetToken,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
@@ -36,7 +36,7 @@ contract BaseProtocol {
 
         IERC20(baseToken).transferFrom(msg.sender, address(this), baseAmount);
         hasPosition[msg.sender] = true;
-        uint256 usdPrice_ = _usdPrice(targetToken);
+        uint256 usdPrice_ = _price(targetToken);
         entryPrices[msg.sender] = usdPrice_;
         positions[msg.sender] = IDerivativesHandler.Position({
             createdAt: block.timestamp,
@@ -79,15 +79,15 @@ contract BaseProtocol {
         return position_;
     }
 
-    function _usdPrice(address token_) internal view returns (uint256) {
-        return _addressProvider.oracle().getUsdPrice(token_);
+    function _price(string memory token_) internal view returns (uint256) {
+        return _addressProvider.oracle().getPrice(token_);
     }
 
     function _profit(
         IDerivativesHandler.Position memory position_,
         address user_
     ) internal view returns (uint256 delta_, bool hasProfit_) {
-        uint256 currentPrice_ = _usdPrice(position_.targetToken);
+        uint256 currentPrice_ = _price(position_.targetToken);
         uint256 entryPrice_ = entryPrices[user_];
         uint256 priceDelta_ = _absDiff(currentPrice_, entryPrice_);
         uint256 percentDelta_ = priceDelta_.div(entryPrice_);
@@ -130,7 +130,7 @@ contract MockDerivativesHandler is IDerivativesHandler {
 
     function createPosition(
         address baseToken,
-        address targetToken,
+        string calldata targetToken,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong

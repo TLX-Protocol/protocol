@@ -13,20 +13,17 @@ contract PositionManagerFactoryTest is IntegrationTest {
         address[] memory positionManagers_ = positionManagerFactory
             .positionManagers();
         assertEq(positionManagers_.length, 0);
-        assertEq(
-            positionManagerFactory.positionManager(Tokens.UNI),
-            address(0)
-        );
+        assertEq(positionManagerFactory.positionManager("UNI"), address(0));
         assertFalse(positionManagerFactory.isPositionManager(Tokens.UNI));
     }
 
     function testCreatePositionManager() public {
-        positionManagerFactory.createPositionManager(Tokens.UNI);
+        positionManagerFactory.createPositionManager("UNI");
         address[] memory positionManagers_ = positionManagerFactory
             .positionManagers();
         assertEq(positionManagers_.length, 1);
         assertEq(
-            positionManagerFactory.positionManager(Tokens.UNI),
+            positionManagerFactory.positionManager("UNI"),
             positionManagers_[0]
         );
         assertTrue(
@@ -35,13 +32,13 @@ contract PositionManagerFactoryTest is IntegrationTest {
     }
 
     function testRevertsWhenAlreadyExists() public {
-        positionManagerFactory.createPositionManager(Tokens.UNI);
+        positionManagerFactory.createPositionManager("UNI");
         vm.expectRevert(Errors.AlreadyExists.selector);
-        positionManagerFactory.createPositionManager(Tokens.UNI);
+        positionManagerFactory.createPositionManager("UNI");
     }
 
     function testRevertsWithNoOracle() public {
         vm.expectRevert(IPositionManagerFactory.NoOracle.selector);
-        positionManagerFactory.createPositionManager(Tokens.CRV);
+        positionManagerFactory.createPositionManager("CRV");
     }
 }

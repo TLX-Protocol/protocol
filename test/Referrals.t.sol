@@ -135,7 +135,7 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, CODE);
 
         address positionManager_ = positionManagerFactory.createPositionManager(
-            Tokens.UNI
+            "UNI"
         );
         vm.prank(positionManager_);
         referrals.updateReferralFor(bob, CODE);

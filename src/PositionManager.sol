@@ -14,11 +14,11 @@ contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
 
     IAddressProvider internal immutable _addressProvider;
-    address public immutable override targetAsset;
+    string public override targetAsset;
     IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
 
-    constructor(address addressProvider_, address targetAsset_) {
+    constructor(address addressProvider_, string memory targetAsset_) {
         _addressProvider = IAddressProvider(addressProvider_);
         targetAsset = targetAsset_;
         _baseAsset = _addressProvider.baseAsset();
