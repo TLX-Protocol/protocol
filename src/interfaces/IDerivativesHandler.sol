@@ -55,4 +55,13 @@ interface IDerivativesHandler {
      * @return approveAddress The address of the contract that the sender needs to approve spending for their base tokens.
      */
     function approveAddress() external view returns (address approveAddress);
+
+    /**
+     * @notice Returns if the target asset is supported.
+     * @param targetAsset The target asset to check.
+     * @return isSupported Whether the target asset is supported.
+     */
+    function isAssetSupported(
+        string calldata targetAsset
+    ) external view returns (bool isSupported);
 }
