@@ -7,7 +7,7 @@ library Contracts {
         0x11429eE838cC01071402f21C219870cbAc0a59A0;
     address public constant ETH_USD_ORACLE =
         0x13e3Ee699D1909E989722E753853AE30b17e08c5;
-    address public constant WBTC_USD_ORACLE =
+    address public constant BTC_USD_ORACLE =
         0x718A5788b89454aAE3A028AE9c111A29Be6c2a6F;
     address public constant USDC_USD_ORACLE =
         0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3;

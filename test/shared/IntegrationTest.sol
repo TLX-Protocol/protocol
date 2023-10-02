@@ -85,7 +85,7 @@ contract IntegrationTest is Test {
         oracle.setUsdOracle(Symbols.ETH, Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle("sUSD", Contracts.SUSD_USD_ORACLE);
         oracle.setUsdOracle(Symbols.USDC, Contracts.USDC_USD_ORACLE);
-        oracle.setUsdOracle(Symbols.WBTC, Contracts.WBTC_USD_ORACLE);
+        oracle.setUsdOracle(Symbols.BTC, Contracts.BTC_USD_ORACLE);
         addressProvider.updateAddress(AddressKeys.ORACLE, address(oracle));
 
         // LeveragedTokenFactory Setup

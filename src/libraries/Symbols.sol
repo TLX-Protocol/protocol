@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 library Symbols {
     string public constant UNI = "UNI";
     string public constant ETH = "ETH";
-    string public constant WBTC = "WBTC";
+    string public constant BTC = "BTC";
     string public constant USDC = "USDC";
     string public constant CRV = "CRV";
 }

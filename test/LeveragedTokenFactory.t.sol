@@ -103,7 +103,7 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
 
     function testRevertsNoPositionManager() public {
         vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
-        leveragedTokenFactory.createLeveragedTokens(Symbols.WBTC, 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(Symbols.BTC, 1.23e18);
     }
 
     function testRevertsZeroLeverage() public {

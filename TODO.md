@@ -1,6 +1,3 @@
-- Move some redundant imports, maybe just the erc20 one where we used to query the symbol
-- Change WBTC to BTC
-
 - Increase line length for prettier
 - Create `MockDerivativesHandler`
 - Add functionality to `PositionManager`

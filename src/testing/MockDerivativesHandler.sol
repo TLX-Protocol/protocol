@@ -170,7 +170,7 @@ contract MockDerivativesHandler is IDerivativesHandler {
         string[] memory supported_ = new string[](4);
         supported_[0] = "ETH";
         supported_[1] = "UNI";
-        supported_[2] = "WBTC";
+        supported_[2] = "BTC";
         supported_[3] = "CRV";
 
         for (uint256 i; i < supported_.length; i++) {
