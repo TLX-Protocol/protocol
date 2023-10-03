@@ -3,10 +3,10 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
-import {Errors} from "../../src/libraries/Errors.sol";
+import {Tokens} from "../src/libraries/Tokens.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
-import {Tokens} from "../src/libraries/Tokens.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
