@@ -62,10 +62,10 @@ contract PositionManagerTest is IntegrationTest {
 
     function testMintAmountInRevertsForInvalidPositionManager() public {
         positionManagerFactory.createPositionManager(Symbols.BTC);
-        // (address longTokenAddress_, ) = leveragedTokenFactory
-        //     .createLeveragedTokens(Tokens.BTC, 1.23e18);
-        // vm.expectRevert(IPositionManager.NotPositionManager.selector);
-        // positionManager.mintAmountIn(longTokenAddress_, 1, 1);
+        (address longTokenAddress_, ) = leveragedTokenFactory
+            .createLeveragedTokens(Symbols.BTC, 1.23e18);
+        vm.expectRevert(IPositionManager.NotPositionManager.selector);
+        positionManager.mintAmountIn(longTokenAddress_, 1, 1);
     }
 
     function testMintAmountInRevertsForInsufficientAmount() public {
