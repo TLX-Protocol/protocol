@@ -22,7 +22,7 @@ interface ILeveragedToken is IERC20Metadata {
      * @notice Returns the target asset of the leveraged token.
      * @return targetAsset The target asset of the leveraged token.
      */
-    function targetAsset() external view returns (address targetAsset);
+    function targetAsset() external view returns (string memory targetAsset);
 
     /**
      * @notice Returns the target leverage of the leveraged token.

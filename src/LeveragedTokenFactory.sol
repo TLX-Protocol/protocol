@@ -3,7 +3,6 @@ pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {Tokens} from "./libraries/Tokens.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -19,10 +18,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     address[] internal _allTokens;
     address[] internal _longTokens;
     address[] internal _shortTokens;
-    mapping(address => address[]) internal _allTargetTokens;
-    mapping(address => address[]) internal _longTargetTokens;
-    mapping(address => address[]) internal _shortTargetTokens;
-    mapping(address => mapping(uint256 => mapping(bool => address)))
+    mapping(string => address[]) internal _allTargetTokens;
+    mapping(string => address[]) internal _longTargetTokens;
+    mapping(string => address[]) internal _shortTargetTokens;
+    mapping(string => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
     mapping(address => address) public override pair;
@@ -34,7 +33,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function createLeveragedTokens(
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_
     )
         external
@@ -47,7 +46,6 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         uint256 truncatedToTwoDecimals_ = (leveragePartOfWhole_ / 1e16) * 1e16;
         bool hasTwoDecimals_ = leveragePartOfWhole_ == truncatedToTwoDecimals_;
         if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
-        if (targetAsset_ == address(0)) revert Errors.ZeroAddress();
         if (targetLeverage_ == 0) revert ZeroLeverage();
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
@@ -89,25 +87,25 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function allTokens(
-        address targetAsset_
+        string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _allTargetTokens[targetAsset_];
     }
 
     function longTokens(
-        address targetAsset_
+        string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _longTargetTokens[targetAsset_];
     }
 
     function shortTokens(
-        address targetAsset_
+        string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _shortTargetTokens[targetAsset_];
     }
 
     function token(
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) external view override returns (address) {
@@ -115,7 +113,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function tokenExists(
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) public view override returns (bool) {
@@ -124,7 +122,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
 
     function _deployToken(
         address positionManager_,
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal returns (address) {
@@ -154,26 +152,26 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     }
 
     function _getName(
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal view returns (string memory) {
         string memory direction_ = isLong_ ? "Long" : "Short";
-        string memory symbol_ = IERC20Metadata(targetAsset_).symbol();
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return
-            string(abi.encodePacked(symbol_, " ", leverage_, "x ", direction_));
+            string(
+                abi.encodePacked(targetAsset_, " ", leverage_, "x ", direction_)
+            );
     }
 
     function _getSymbol(
-        address targetAsset_,
+        string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal view returns (string memory) {
         string memory direction_ = isLong_ ? "L" : "S";
-        string memory symbol_ = IERC20Metadata(targetAsset_).symbol();
         string memory leverage_ = _getLeverageString(targetLeverage_);
-        return string(abi.encodePacked(symbol_, leverage_, direction_));
+        return string(abi.encodePacked(targetAsset_, leverage_, direction_));
     }
 
     function _getLeverageString(

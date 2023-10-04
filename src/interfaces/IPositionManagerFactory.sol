@@ -5,6 +5,7 @@ interface IPositionManagerFactory {
     event PositionManagerCreated(address indexed positionManager);
 
     error NoOracle();
+    error AssetNotSupported();
 
     /**
      * @notice Creates a new position manager for the given target asset.
@@ -13,7 +14,7 @@ interface IPositionManagerFactory {
      * @return positionManager The address of the newly created position manager.
      */
     function createPositionManager(
-        address targetAsset
+        string calldata targetAsset
     ) external returns (address positionManager);
 
     /**
@@ -31,7 +32,7 @@ interface IPositionManagerFactory {
      * @return positionManager The address of the position manager.
      */
     function positionManager(
-        address targetAsset
+        string calldata targetAsset
     ) external view returns (address positionManager);
 
     /**

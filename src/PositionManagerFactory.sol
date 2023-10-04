@@ -15,7 +15,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     EnumerableSet.AddressSet internal _positionManagers;
-    mapping(address => address) internal _positionManager;
+    mapping(string => address) internal _positionManager;
     IAddressProvider internal immutable _addressProvider;
 
     constructor(address addressProvider_) {
@@ -23,13 +23,18 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     }
 
     function createPositionManager(
-        address targetAsset_
+        string calldata targetAsset_
     ) external override onlyOwner returns (address) {
         // Checks
         if (_positionManager[targetAsset_] != address(0))
             revert Errors.AlreadyExists();
-        if (_addressProvider.oracle().getUsdPrice(targetAsset_) == 0)
+        if (_addressProvider.oracle().getPrice(targetAsset_) == 0)
             revert NoOracle();
+        if (
+            !_addressProvider.derivativesHandler().isAssetSupported(
+                targetAsset_
+            )
+        ) revert AssetNotSupported();
 
         // Deploying position manager
         address positionManager_ = address(
@@ -53,7 +58,7 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
     }
 
     function positionManager(
-        address targetAsset_
+        string calldata targetAsset_
     ) external view override returns (address) {
         return _positionManager[targetAsset_];
     }

@@ -5,7 +5,7 @@ interface IDerivativesHandler {
     struct Position {
         uint256 createdAt;
         address baseToken;
-        address targetToken;
+        string targetAsset;
         uint256 baseAmount;
         uint256 leverage;
         bool isLong;
@@ -19,14 +19,14 @@ interface IDerivativesHandler {
     /**
      * @notice Creates a new position.
      * @param baseToken The token to be used as collateral.
-     * @param targetToken The token to be traded.
+     * @param targetAsset The asset to be traded.
      * @param baseAmount The amount of baseToken to be used as collateral.
      * @param leverage The amount of leverage to be used.
      * @param isLong Whether the position is long or short.
      */
     function createPosition(
         address baseToken,
-        address targetToken,
+        string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
@@ -55,4 +55,13 @@ interface IDerivativesHandler {
      * @return approveAddress The address of the contract that the sender needs to approve spending for their base tokens.
      */
     function approveAddress() external view returns (address approveAddress);
+
+    /**
+     * @notice Returns if the target asset is supported.
+     * @param targetAsset The target asset to check.
+     * @return isSupported Whether the target asset is supported.
+     */
+    function isAssetSupported(
+        string calldata targetAsset
+    ) external view returns (bool isSupported);
 }

@@ -31,13 +31,13 @@ contract Oracle is IOracle, Ownable {
     address internal immutable _ethUsdOracle;
     IAddressProvider internal immutable _addressProvider;
 
-    mapping(address => address) internal _usdOracles;
-    mapping(address => address) internal _ethOracles;
+    mapping(string => address) internal _usdOracles;
+    mapping(string => address) internal _ethOracles;
 
     uint256 public stalePriceDelay = 1 days;
 
-    event UsdOracleUpdated(address indexed token, address oracle);
-    event EthOracleUpdated(address indexed token, address oracle);
+    event UsdOracleUpdated(string indexed asset, address oracle);
+    event EthOracleUpdated(string indexed asset, address oracle);
     event StalePriceDelayUpdated(uint256 delay);
 
     error RoundNotComplete();
@@ -51,14 +51,20 @@ contract Oracle is IOracle, Ownable {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
-    function setUsdOracle(address token_, address oracle_) external onlyOwner {
-        _usdOracles[token_] = oracle_;
-        emit UsdOracleUpdated(token_, oracle_);
+    function setUsdOracle(
+        string calldata asset_,
+        address oracle_
+    ) external onlyOwner {
+        _usdOracles[asset_] = oracle_;
+        emit UsdOracleUpdated(asset_, oracle_);
     }
 
-    function setEthOracle(address token_, address oracle_) external onlyOwner {
-        _ethOracles[token_] = oracle_;
-        emit EthOracleUpdated(token_, oracle_);
+    function setEthOracle(
+        string calldata asset_,
+        address oracle_
+    ) external onlyOwner {
+        _ethOracles[asset_] = oracle_;
+        emit EthOracleUpdated(asset_, oracle_);
     }
 
     function setStalePriceDelay(uint256 delay_) external onlyOwner {
@@ -66,26 +72,26 @@ contract Oracle is IOracle, Ownable {
         emit StalePriceDelayUpdated(delay_);
     }
 
-    function getUsdPrice(
-        address token_
+    function getPrice(
+        string calldata asset_
     ) public view override returns (uint256) {
-        if (_isLeveragedToken(token_)) return _priceLeveragedToken(token_);
-        address usdOracle_ = _usdOracles[token_];
+        uint256 usdPrice_ = _getUsdPrice(asset_);
+        uint256 baseAssetPrice_ = _getUsdPrice(
+            _addressProvider.baseAsset().symbol()
+        );
+        return usdPrice_.mul(1e18).div(baseAssetPrice_);
+    }
+
+    function _getUsdPrice(
+        string memory asset_
+    ) internal view returns (uint256) {
+        address usdOracle_ = _usdOracles[asset_];
         if (usdOracle_ != address(0)) return _getChainlinkPrice(usdOracle_);
-        address ethOracle_ = _ethOracles[token_];
+        address ethOracle_ = _ethOracles[asset_];
         if (ethOracle_ == address(0)) revert NoOracle();
         uint256 ethPrice_ = _getChainlinkPrice(ethOracle_);
         uint256 ethUsdPrice_ = _getChainlinkPrice(_ethUsdOracle);
         return ethPrice_.mul(ethUsdPrice_);
-    }
-
-    function _priceLeveragedToken(
-        address token_
-    ) internal view returns (uint256) {
-        return
-            getUsdPrice(address(_addressProvider.baseAsset())).mul(
-                _exchangeRate(token_)
-            );
     }
 
     function _getChainlinkPrice(

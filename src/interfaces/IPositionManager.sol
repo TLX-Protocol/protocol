@@ -67,7 +67,7 @@ interface IPositionManager {
      * @notice Returns the target asset of the position.
      * @return targetAsset The target asset of the position.
      */
-    function targetAsset() external view returns (address targetAsset);
+    function targetAsset() external view returns (string memory targetAsset);
 
     /**
      * @notice Returns the exchange rate from one leveraged token to one base asset.
