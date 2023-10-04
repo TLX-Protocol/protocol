@@ -13,4 +13,6 @@ library Contracts {
         0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3;
     address public constant CBETH_ETH_ORACLE =
         0x138b809B8472fF09Cd3E075E6EcbB2e42D41d870;
+    address public constant SUSD_USD_ORACLE =
+        0x7f99817d87baD03ea21E05112Ca799d715730efe;
 }

@@ -53,7 +53,7 @@ contract IntegrationTest is Test {
         // AddressProvider Setup
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
-        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.USDC);
+        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.SUSD);
 
         // Vesting Setup
         IVesting.VestingAmount[] memory amounts_ = new Vesting.VestingAmount[](
@@ -82,6 +82,7 @@ contract IntegrationTest is Test {
         oracle = new Oracle(address(addressProvider), Contracts.ETH_USD_ORACLE);
         oracle.setUsdOracle(Tokens.UNI, Contracts.UNI_USD_ORACLE);
         oracle.setUsdOracle(address(0), Contracts.ETH_USD_ORACLE);
+        oracle.setUsdOracle(Tokens.SUSD, Contracts.SUSD_USD_ORACLE);
         oracle.setUsdOracle(Tokens.USDC, Contracts.USDC_USD_ORACLE);
         oracle.setUsdOracle(Tokens.WBTC, Contracts.WBTC_USD_ORACLE);
         addressProvider.updateAddress(AddressKeys.ORACLE, address(oracle));
@@ -144,6 +145,8 @@ contract IntegrationTest is Test {
         mockOracle.setPrice(address(0), ethPrice_);
         uint256 usdcPrice_ = oracle.getUsdPrice(Tokens.USDC);
         mockOracle.setPrice(Tokens.USDC, usdcPrice_);
+        uint256 susdPrice_ = oracle.getUsdPrice(Tokens.SUSD);
+        mockOracle.setPrice(Tokens.SUSD, susdPrice_);
 
         // MockDerivativesHandler Setup
         mockDerivativesHandler = new MockDerivativesHandler(
@@ -151,9 +154,9 @@ contract IntegrationTest is Test {
             0.2e18
         );
         _mintTokensFor(
-            Tokens.USDC,
+            Tokens.SUSD,
             address(mockDerivativesHandler.approveAddress()),
-            10_000_000e6
+            10_000_000e18
         );
         addressProvider.updateAddress(
             AddressKeys.DERIVATIVES_HANDLER,
@@ -176,6 +179,11 @@ contract IntegrationTest is Test {
         address account_,
         uint256 amount_
     ) internal {
+        // sUSD is weird, this is a workaround to fix minting for it.
+        if (token_ == Tokens.SUSD) {
+            token_ = 0x92bAc115d89cA17fd02Ed9357CEcA32842ACB4c2;
+        }
+
         stdstore
             .target(token_)
             .sig(IERC20(token_).balanceOf.selector)
