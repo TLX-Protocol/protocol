@@ -6,6 +6,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {IReferrals} from "../src/interfaces/IReferrals.sol";
 
@@ -135,7 +136,7 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, CODE);
 
         address positionManager_ = positionManagerFactory.createPositionManager(
-            Tokens.UNI
+            Symbols.UNI
         );
         vm.prank(positionManager_);
         referrals.updateReferralFor(bob, CODE);

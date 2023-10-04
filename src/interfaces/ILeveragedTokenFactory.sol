@@ -18,7 +18,7 @@ interface ILeveragedTokenFactory {
      * @return shortToken The address of the Short Leveraged Token.
      */
     function createLeveragedTokens(
-        address targetAsset,
+        string calldata targetAsset,
         uint256 targetLeverage
     ) external returns (address longToken, address shortToken);
 
@@ -46,7 +46,7 @@ interface ILeveragedTokenFactory {
      * @return tokens The addresses of all Leveraged Tokens for the given target asset.
      */
     function allTokens(
-        address targetAsset
+        string calldata targetAsset
     ) external view returns (address[] memory tokens);
 
     /**
@@ -55,7 +55,7 @@ interface ILeveragedTokenFactory {
      * @return tokens The addresses of all Long Leveraged Tokens for the given target asset.
      */
     function longTokens(
-        address targetAsset
+        string calldata targetAsset
     ) external view returns (address[] memory tokens);
 
     /**
@@ -64,7 +64,7 @@ interface ILeveragedTokenFactory {
      * @return tokens The addresses of all Short Leveraged Tokens for the given target asset.
      */
     function shortTokens(
-        address targetAsset
+        string calldata targetAsset
     ) external view returns (address[] memory tokens);
 
     /**
@@ -75,7 +75,7 @@ interface ILeveragedTokenFactory {
      * @return token The address of the Leveraged Token.
      */
     function token(
-        address targetAsset,
+        string calldata targetAsset,
         uint256 targetLeverage,
         bool isLong
     ) external view returns (address token);
@@ -88,7 +88,7 @@ interface ILeveragedTokenFactory {
      * @return exists If the Leveraged Token exists.
      */
     function tokenExists(
-        address targetAsset,
+        string calldata targetAsset,
         uint256 targetLeverage,
         bool isLong
     ) external view returns (bool exists);

@@ -9,7 +9,7 @@ import {Errors} from "./libraries/Errors.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract LeveragedToken is ILeveragedToken, ERC20 {
-    address public immutable override targetAsset;
+    string public override targetAsset;
     uint256 public immutable override targetLeverage;
     bool public immutable override isLong;
 
@@ -23,7 +23,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
     constructor(
         string memory name_,
         string memory symbol_,
-        address targetAsset_,
+        string memory targetAsset_,
         uint256 targetLeverage_,
         bool isLong_,
         address positionManager_
