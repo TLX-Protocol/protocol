@@ -26,7 +26,7 @@ contract BaseProtocol {
 
     function createPosition(
         address baseToken,
-        string calldata targetToken,
+        string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
@@ -36,12 +36,12 @@ contract BaseProtocol {
 
         IERC20(baseToken).transferFrom(msg.sender, address(this), baseAmount);
         hasPosition[msg.sender] = true;
-        uint256 usdPrice_ = _price(targetToken);
+        uint256 usdPrice_ = _price(targetAsset);
         entryPrices[msg.sender] = usdPrice_;
         positions[msg.sender] = IDerivativesHandler.Position({
             createdAt: block.timestamp,
             baseToken: baseToken,
-            targetToken: targetToken,
+            targetAsset: targetAsset,
             baseAmount: baseAmount,
             leverage: leverage,
             isLong: isLong,
@@ -87,7 +87,7 @@ contract BaseProtocol {
         IDerivativesHandler.Position memory position_,
         address user_
     ) internal view returns (uint256 delta_, bool hasProfit_) {
-        uint256 currentPrice_ = _price(position_.targetToken);
+        uint256 currentPrice_ = _price(position_.targetAsset);
         uint256 entryPrice_ = entryPrices[user_];
         uint256 priceDelta_ = _absDiff(currentPrice_, entryPrice_);
         uint256 percentDelta_ = priceDelta_.div(entryPrice_);
@@ -130,14 +130,14 @@ contract MockDerivativesHandler is IDerivativesHandler {
 
     function createPosition(
         address baseToken,
-        string calldata targetToken,
+        string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
     ) external override {
         _baseProtocol.createPosition(
             baseToken,
-            targetToken,
+            targetAsset,
             baseAmount,
             leverage,
             isLong

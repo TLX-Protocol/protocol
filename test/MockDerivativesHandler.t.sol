@@ -47,7 +47,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
         IDerivativesHandler.Position memory position_ = mockDerivativesHandler
             .position();
         assertEq(position_.baseToken, Tokens.SUSD);
-        assertEq(position_.targetToken, Symbols.UNI);
+        assertEq(position_.targetAsset, Symbols.UNI);
         assertEq(position_.baseAmount, _AMOUNT);
         assertEq(position_.leverage, 2e18);
         assertEq(position_.isLong, true, "isLong");
@@ -266,7 +266,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
 
     function _createPosition(
         address baseToken_,
-        string memory targetToken_,
+        string memory targetAsset_,
         uint256 baseAmount_,
         uint256 leverage_,
         bool isLong_
@@ -275,7 +275,7 @@ contract MockDerivativesHandlerTest is IntegrationTest {
             abi.encodeWithSignature(
                 "createPosition(address,string,uint256,uint256,bool)",
                 baseToken_,
-                targetToken_,
+                targetAsset_,
                 baseAmount_,
                 leverage_,
                 isLong_

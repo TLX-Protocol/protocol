@@ -5,7 +5,7 @@ interface IDerivativesHandler {
     struct Position {
         uint256 createdAt;
         address baseToken;
-        string targetToken;
+        string targetAsset;
         uint256 baseAmount;
         uint256 leverage;
         bool isLong;
@@ -19,14 +19,14 @@ interface IDerivativesHandler {
     /**
      * @notice Creates a new position.
      * @param baseToken The token to be used as collateral.
-     * @param targetToken The token to be traded.
+     * @param targetAsset The asset to be traded.
      * @param baseAmount The amount of baseToken to be used as collateral.
      * @param leverage The amount of leverage to be used.
      * @param isLong Whether the position is long or short.
      */
     function createPosition(
         address baseToken,
-        string calldata targetToken,
+        string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
