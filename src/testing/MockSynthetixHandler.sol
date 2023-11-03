@@ -25,7 +25,6 @@ contract BaseProtocol {
     }
 
     function createPosition(
-        address baseToken,
         string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
@@ -34,13 +33,16 @@ contract BaseProtocol {
         if (hasPosition[msg.sender])
             revert ISynthetixHandler.PositionAlreadyExists();
 
-        IERC20(baseToken).transferFrom(msg.sender, address(this), baseAmount);
+        _addressProvider.baseAsset().transferFrom(
+            msg.sender,
+            address(this),
+            baseAmount
+        );
         hasPosition[msg.sender] = true;
         uint256 usdPrice_ = _price(targetAsset);
         entryPrices[msg.sender] = usdPrice_;
         positions[msg.sender] = ISynthetixHandler.Position({
             createdAt: block.timestamp,
-            baseToken: baseToken,
             targetAsset: targetAsset,
             baseAmount: baseAmount,
             leverage: leverage,
@@ -63,7 +65,7 @@ contract BaseProtocol {
         delete hasPosition[msg.sender];
         delete positions[msg.sender];
         delete entryPrices[msg.sender];
-        IERC20(position_.baseToken).transfer(msg.sender, owed_);
+        _addressProvider.baseAsset().transfer(msg.sender, owed_);
         return owed_;
     }
 
@@ -129,19 +131,12 @@ contract MockSynthetixHandler is ISynthetixHandler {
     }
 
     function createPosition(
-        address baseToken,
         string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
     ) external override {
-        _baseProtocol.createPosition(
-            baseToken,
-            targetAsset,
-            baseAmount,
-            leverage,
-            isLong
-        );
+        _baseProtocol.createPosition(targetAsset, baseAmount, leverage, isLong);
     }
 
     function closePosition() external override returns (uint256) {

@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 interface ISynthetixHandler {
     struct Position {
         uint256 createdAt;
-        address baseToken;
         string targetAsset;
         uint256 baseAmount;
         uint256 leverage;
@@ -18,14 +17,12 @@ interface ISynthetixHandler {
 
     /**
      * @notice Creates a new position.
-     * @param baseToken The token to be used as collateral.
      * @param targetAsset The asset to be traded.
      * @param baseAmount The amount of baseToken to be used as collateral.
      * @param leverage The amount of leverage to be used.
      * @param isLong Whether the position is long or short.
      */
     function createPosition(
-        address baseToken,
         string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,

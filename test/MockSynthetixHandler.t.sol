@@ -42,11 +42,10 @@ contract MockSynthetixHandlerTest is IntegrationTest {
     }
 
     function testCreatePosition() public {
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, true);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, true);
         assertEq(mockSynthetixHandler.hasPosition(), true, "hasPosition");
         ISynthetixHandler.Position memory position_ = mockSynthetixHandler
             .position();
-        assertEq(position_.baseToken, Tokens.SUSD);
         assertEq(position_.targetAsset, Symbols.UNI);
         assertEq(position_.baseAmount, _AMOUNT);
         assertEq(position_.leverage, 2e18);
@@ -57,7 +56,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testLongProfitNoFee() public {
         mockSynthetixHandler.updateFeePercent(0);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, true);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, true);
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, uniPrice_ * 2);
         ISynthetixHandler.Position memory position_ = mockSynthetixHandler
@@ -80,7 +79,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
     function testLongProfitFee() public {
         uint256 fee_ = 0.1e18;
         mockSynthetixHandler.updateFeePercent(fee_);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, true);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, true);
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, uniPrice_ * 2);
         skip(365 days); // Incurring a year of fees
@@ -108,7 +107,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testLongLossNoFee() public {
         mockSynthetixHandler.updateFeePercent(0);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, true);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, true);
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 8) / 10);
         ISynthetixHandler.Position memory position_ = mockSynthetixHandler
@@ -133,7 +132,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
     function testLongLossFee() public {
         uint256 fee_ = 0.05e18;
         mockSynthetixHandler.updateFeePercent(fee_);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, true);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, true);
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 8) / 10);
@@ -158,7 +157,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testShortProfitNoFee() public {
         mockSynthetixHandler.updateFeePercent(0);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, false);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, false);
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 8) / 10);
         ISynthetixHandler.Position memory position_ = mockSynthetixHandler
@@ -182,7 +181,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testShortProfitFee() public {
         mockSynthetixHandler.updateFeePercent(0.1e18);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, false);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, false);
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 8) / 10);
@@ -207,7 +206,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testShortLossNoFee() public {
         mockSynthetixHandler.updateFeePercent(0);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, false);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, false);
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 12) / 10);
         ISynthetixHandler.Position memory position_ = mockSynthetixHandler
@@ -236,7 +235,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
 
     function testShortLossFee() public {
         mockSynthetixHandler.updateFeePercent(0.1e18);
-        _createPosition(Tokens.SUSD, Symbols.UNI, _AMOUNT, 2e18, false);
+        _createPosition(Symbols.UNI, _AMOUNT, 2e18, false);
         skip(365 days); // Incurring a year of fees
         uint256 uniPrice_ = mockOracle.getPrice(Symbols.UNI);
         mockOracle.setPrice(Symbols.UNI, (uniPrice_ * 12) / 10);
@@ -265,7 +264,6 @@ contract MockSynthetixHandlerTest is IntegrationTest {
     }
 
     function _createPosition(
-        address baseToken_,
         string memory targetAsset_,
         uint256 baseAmount_,
         uint256 leverage_,
@@ -273,8 +271,7 @@ contract MockSynthetixHandlerTest is IntegrationTest {
     ) internal {
         address(mockSynthetixHandler).functionDelegateCall(
             abi.encodeWithSignature(
-                "createPosition(address,string,uint256,uint256,bool)",
-                baseToken_,
+                "createPosition(string,uint256,uint256,bool)",
                 targetAsset_,
                 baseAmount_,
                 leverage_,
