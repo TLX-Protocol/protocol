@@ -49,7 +49,7 @@ contract IntegrationTest is Test {
     MockDerivativesHandler public mockDerivativesHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 108_419_524));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 111_702_139));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
