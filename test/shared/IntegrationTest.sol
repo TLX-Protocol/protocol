@@ -24,7 +24,7 @@ import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
-import {MockDerivativesHandler} from "../../src/testing/MockDerivativesHandler.sol";
+import {MockSynthetixHandler} from "../../src/testing/MockSynthetixHandler.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -46,7 +46,7 @@ contract IntegrationTest is Test {
     Locker public locker;
     Bonding public bonding;
     Vesting public vesting;
-    MockDerivativesHandler public mockDerivativesHandler;
+    MockSynthetixHandler public mockSynthetixHandler;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 111_702_139));
@@ -149,19 +149,19 @@ contract IntegrationTest is Test {
         uint256 susdPrice_ = oracle.getPrice("sUSD");
         mockOracle.setPrice("sUSD", susdPrice_);
 
-        // MockDerivativesHandler Setup
-        mockDerivativesHandler = new MockDerivativesHandler(
+        // MockSynthetixHandler Setup
+        mockSynthetixHandler = new MockSynthetixHandler(
             address(addressProvider),
             0.2e18
         );
         _mintTokensFor(
             Tokens.SUSD,
-            address(mockDerivativesHandler.approveAddress()),
+            address(mockSynthetixHandler.approveAddress()),
             10_000_000e18
         );
         addressProvider.updateAddress(
-            AddressKeys.DERIVATIVES_HANDLER,
-            address(mockDerivativesHandler)
+            AddressKeys.SYNTHETIX_HANDLER,
+            address(mockSynthetixHandler)
         );
 
         // TLX Token Setup

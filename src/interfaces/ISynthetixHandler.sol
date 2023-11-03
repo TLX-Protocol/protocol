@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-interface IDerivativesHandler {
+interface ISynthetixHandler {
     struct Position {
         uint256 createdAt;
         address baseToken;
