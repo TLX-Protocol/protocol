@@ -38,8 +38,29 @@ contract SynthetixHandlerTest is IntegrationTest {
         assertEq(balanceAfter - balanceBefore, 50e18);
     }
 
-    function testCreatePosition() public {
-        synthetixHandler.modifyPosition(Symbols.ETH, 0, 0, true);
+    function testHasOpenPosition() public {
+        assertFalse(synthetixHandler.hasOpenPosition(Symbols.ETH));
+    }
+
+    function testRemainingMargin() public {
+        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 0);
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 100e18);
+    }
+
+    function testTotalValue() public {
+        assertEq(synthetixHandler.totalValue(Symbols.ETH), 0);
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertEq(synthetixHandler.totalValue(Symbols.ETH), 100e18);
+    }
+
+    function testNotional() public {
+        assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
     }
 
     function _depositMargin(uint256 amount_) internal {
