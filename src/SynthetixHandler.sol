@@ -15,6 +15,8 @@ contract SynthetixHandler {
     error ErrorGettingPnl();
     error ErrorGettingOrderFee();
     error ErrorGettingIsLong();
+    error ErrorGettingFillPrice();
+    error ErrorGettingAssetPrice();
     error NoMargin();
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
@@ -41,20 +43,20 @@ contract SynthetixHandler {
         _market(targetAsset_).transferMargin(-int256(amount_));
     }
 
-    // TODO Test
     function submitLeverageUpdate(
         string calldata targetAsset_,
         uint256 leverage_,
-        bool isLong_,
-        uint256 desiredFillPrice_
+        bool isLong_
     ) external {
         uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
         uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
-        uint256 targetNotional_ = marginAmount_.mul(leverage_);
+        uint256 assetPrice_ = assetPrice(targetAsset_);
+        uint256 targetNotional_ = marginAmount_.mul(leverage_).div(assetPrice_);
         int256 sizeDelta_ = int256(targetNotional_) - int256(notionalValue_);
         if (!isLong_) sizeDelta_ = -sizeDelta_;
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
+        uint256 desiredFillPrice_ = fillPrice(targetAsset_, sizeDelta_);
         market_.submitOffchainDelayedOrder(sizeDelta_, desiredFillPrice_);
     }
 
@@ -136,7 +138,6 @@ contract SynthetixHandler {
         return notionalValue_ > 0;
     }
 
-    // TODO Test
     function remainingMargin(
         string calldata targetAsset_
     ) external view returns (uint256) {
@@ -151,6 +152,26 @@ contract SynthetixHandler {
             .remainingMargin(account_);
         if (invalid_) return 0;
         return marginRemaining_;
+    }
+
+    function fillPrice(
+        string calldata targetAsset_,
+        int256 sizeDelta_
+    ) public view returns (uint256) {
+        (uint256 fillPrice_, bool invalid_) = _market(targetAsset_).fillPrice(
+            sizeDelta_
+        );
+        if (invalid_) revert ErrorGettingFillPrice();
+        return fillPrice_;
+    }
+
+    function assetPrice(
+        string calldata targetAsset_
+    ) public view returns (uint256) {
+        (uint256 assetPrice_, bool invalid_) = _market(targetAsset_)
+            .assetPrice();
+        if (invalid_) revert ErrorGettingAssetPrice();
+        return assetPrice_;
     }
 
     function _pnl(
