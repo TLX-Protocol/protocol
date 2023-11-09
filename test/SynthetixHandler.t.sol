@@ -3,6 +3,9 @@ pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
+
+import {Surl} from "surl/src/Surl.sol";
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
@@ -12,8 +15,22 @@ import {Contracts} from "../src/libraries/Contracts.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 
+import "forge-std/console.sol";
+import "forge-std/StdJson.sol";
+
 contract SynthetixHandlerTest is IntegrationTest {
     using Address for address;
+    using Surl for *;
+    using stdJson for string;
+
+    string constant PYTH_URL = "https://xc-mainnet.pyth.network/api/get_vaa";
+    string constant PYTH_ID =
+        "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace";
+
+    struct PythResponse {
+        string vaa;
+        uint256 publishTime;
+    }
 
     SynthetixHandler public synthetixHandler;
 
@@ -22,6 +39,10 @@ contract SynthetixHandlerTest is IntegrationTest {
             address(addressProvider),
             address(Contracts.PERPS_V2_MARKET_DATA)
         );
+    }
+
+    function testSurl() public {
+        console.log(_getVaa(1699471703));
     }
 
     function testDepositMargin() public {
@@ -101,5 +122,18 @@ contract SynthetixHandlerTest is IntegrationTest {
                 isLong_
             )
         );
+    }
+
+    function _getVaa(uint256 publishTime) internal returns (string memory) {
+        string memory url = string.concat(
+            PYTH_URL,
+            "?id=",
+            PYTH_ID,
+            "&publish_time=",
+            Strings.toString(publishTime)
+        );
+        (uint256 status, bytes memory data) = url.get();
+        assertEq(status, 200);
+        return abi.decode(string(data).parseRaw(".vaa"), (string));
     }
 }
