@@ -156,7 +156,7 @@ contract IntegrationTest is Test {
         );
         _mintTokensFor(
             Tokens.SUSD,
-            address(mockSynthetixHandler.approveAddress()),
+            address(mockSynthetixHandler.baseProtocol()),
             10_000_000e18
         );
         addressProvider.updateAddress(
