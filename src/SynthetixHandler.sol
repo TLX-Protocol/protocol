@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IPerpsV2MarketData} from "./interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "./interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
@@ -8,7 +9,7 @@ import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBase
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
-contract SynthetixHandler {
+contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
     error NoMarket();
@@ -30,7 +31,7 @@ contract SynthetixHandler {
     function depositMargin(
         string calldata targetAsset_,
         uint256 amount_
-    ) external {
+    ) external override {
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
         _addressProvider.baseAsset().approve(address(market_), amount_);
         market_.transferMargin(int256(amount_));
@@ -39,7 +40,7 @@ contract SynthetixHandler {
     function withdrawMargin(
         string calldata targetAsset_,
         uint256 amount_
-    ) external {
+    ) external override {
         _market(targetAsset_).transferMargin(-int256(amount_));
     }
 
@@ -47,7 +48,7 @@ contract SynthetixHandler {
         string calldata targetAsset_,
         uint256 leverage_,
         bool isLong_
-    ) external {
+    ) external override {
         uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
         uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
@@ -62,27 +63,27 @@ contract SynthetixHandler {
 
     function hasOpenPosition(
         string calldata targetAsset_
-    ) external view returns (bool) {
+    ) external view override returns (bool) {
         return hasOpenPosition(targetAsset_, msg.sender);
     }
 
     function hasOpenPosition(
         string calldata targetAsset_,
         address account_
-    ) public view returns (bool) {
+    ) public view override returns (bool) {
         return notionalValue(targetAsset_, account_) != 0;
     }
 
     function totalValue(
         string calldata targetAsset_
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return totalValue(targetAsset_, msg.sender);
     }
 
     function totalValue(
         string calldata targetAsset_,
         address account_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         uint256 remainingMargin_ = remainingMargin(targetAsset_, account_);
         uint256 notionalValue_ = notionalValue(targetAsset_, account_);
         int256 pnl_ = _pnl(targetAsset_, account_);
@@ -92,14 +93,14 @@ contract SynthetixHandler {
 
     function leverage(
         string calldata targetAsset_
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return leverage(targetAsset_, msg.sender);
     }
 
     function leverage(
         string calldata targetAsset_,
         address account_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         uint256 notionalValue_ = notionalValue(targetAsset_, account_);
         uint256 marginRemaining_ = remainingMargin(targetAsset_, account_);
         if (marginRemaining_ == 0) revert NoMargin();
@@ -108,14 +109,14 @@ contract SynthetixHandler {
 
     function notionalValue(
         string calldata targetAsset_
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return notionalValue(targetAsset_, msg.sender);
     }
 
     function notionalValue(
         string calldata targetAsset_,
         address account_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         (int256 notionalValue_, bool invalid_) = _market(targetAsset_)
             .notionalValue(account_);
         if (invalid_) return 0;
@@ -123,14 +124,16 @@ contract SynthetixHandler {
         return uint256(notionalValue_);
     }
 
-    function isLong(string calldata targetAsset_) external view returns (bool) {
+    function isLong(
+        string calldata targetAsset_
+    ) external view override returns (bool) {
         return isLong(targetAsset_, msg.sender);
     }
 
     function isLong(
         string calldata targetAsset_,
         address account_
-    ) public view returns (bool) {
+    ) public view override returns (bool) {
         (int256 notionalValue_, bool invalid_) = _market(targetAsset_)
             .notionalValue(account_);
         if (invalid_) revert ErrorGettingIsLong();
@@ -140,14 +143,14 @@ contract SynthetixHandler {
 
     function remainingMargin(
         string calldata targetAsset_
-    ) external view returns (uint256) {
+    ) external view override returns (uint256) {
         return remainingMargin(targetAsset_, msg.sender);
     }
 
     function remainingMargin(
         string calldata targetAsset_,
         address account_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         (uint256 marginRemaining_, bool invalid_) = _market(targetAsset_)
             .remainingMargin(account_);
         if (invalid_) return 0;
@@ -157,7 +160,7 @@ contract SynthetixHandler {
     function fillPrice(
         string calldata targetAsset_,
         int256 sizeDelta_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         (uint256 fillPrice_, bool invalid_) = _market(targetAsset_).fillPrice(
             sizeDelta_
         );
@@ -165,9 +168,21 @@ contract SynthetixHandler {
         return fillPrice_;
     }
 
+    function isAssetSupported(
+        string calldata targetAsset_
+    ) external view override returns (bool) {
+        try _perpsV2MarketData.marketDetailsForKey(_key(targetAsset_)) returns (
+            IPerpsV2MarketData.MarketData memory
+        ) {
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     function assetPrice(
         string calldata targetAsset_
-    ) public view returns (uint256) {
+    ) public view override returns (uint256) {
         (uint256 assetPrice_, bool invalid_) = _market(targetAsset_)
             .assetPrice();
         if (invalid_) revert ErrorGettingAssetPrice();
