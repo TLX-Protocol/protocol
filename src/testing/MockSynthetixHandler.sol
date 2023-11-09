@@ -11,37 +11,71 @@ import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 contract BaseProtocol {
     using ScaledNumber for uint256;
 
+    error NoPositionExists();
+    error PositionAlreadyExists();
+
+    struct Position {
+        uint256 createdAt;
+        string targetAsset;
+        uint256 baseAmount;
+        uint256 leverage;
+        bool isLong;
+        bool hasProfit;
+        uint256 delta;
+    }
+
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal _annualFeePercent;
 
-    mapping(address => bool) public hasPosition;
-    mapping(address => ISynthetixHandler.Position) public positions;
-    mapping(address => uint256) public entryPrices;
+    mapping(address => mapping(string => uint256)) public margin;
+    mapping(address => mapping(string => bool)) public hasPosition;
+    mapping(address => mapping(string => Position)) public positions;
+    mapping(address => mapping(string => uint256)) public entryPrices;
 
     constructor(address addressProvider_, uint256 annualFeePercent_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _annualFeePercent = annualFeePercent_;
     }
 
+    function depositMargin(
+        string calldata targetAsset_,
+        uint256 amount_
+    ) external {
+        margin[msg.sender][targetAsset_] += amount_;
+        _addressProvider.baseAsset().transferFrom(
+            msg.sender,
+            address(this),
+            amount_
+        );
+    }
+
+    function withdrawMargin(
+        string calldata targetAsset_,
+        uint256 amount_
+    ) external {
+        require(
+            margin[msg.sender][targetAsset_] >= amount_,
+            "Not enough margin"
+        );
+        margin[msg.sender][targetAsset_] -= amount_;
+        _addressProvider.baseAsset().transfer(msg.sender, amount_);
+    }
+
+    // TODO Revise
     function createPosition(
         string calldata targetAsset,
         uint256 baseAmount,
         uint256 leverage,
         bool isLong
     ) external {
-        if (hasPosition[msg.sender])
-            revert ISynthetixHandler.PositionAlreadyExists();
+        if (hasPosition[msg.sender][targetAsset])
+            revert PositionAlreadyExists();
 
-        _addressProvider.baseAsset().transferFrom(
-            msg.sender,
-            address(this),
-            baseAmount
-        );
-        hasPosition[msg.sender] = true;
+        hasPosition[msg.sender][targetAsset] = true;
         uint256 usdPrice_ = _price(targetAsset);
-        entryPrices[msg.sender] = usdPrice_;
-        positions[msg.sender] = ISynthetixHandler.Position({
+        entryPrices[msg.sender][targetAsset] = usdPrice_;
+        positions[msg.sender][targetAsset] = Position({
             createdAt: block.timestamp,
             targetAsset: targetAsset,
             baseAmount: baseAmount,
@@ -52,45 +86,67 @@ contract BaseProtocol {
         });
     }
 
-    function closePosition() external returns (uint256) {
-        if (!hasPosition[msg.sender])
-            revert ISynthetixHandler.NoPositionExists();
+    // TODO Revise
+    function closePosition(
+        string calldata targetAsset
+    ) external returns (uint256) {
+        if (!hasPosition[msg.sender][targetAsset]) revert NoPositionExists();
 
-        ISynthetixHandler.Position memory position_ = positions[msg.sender];
+        Position memory position_ = positions[msg.sender][targetAsset];
         (uint256 delta_, bool hasProfit_) = _profit(position_, msg.sender);
         uint256 owed_ = hasProfit_
             ? position_.baseAmount + delta_
             : position_.baseAmount - delta_;
 
-        delete hasPosition[msg.sender];
-        delete positions[msg.sender];
-        delete entryPrices[msg.sender];
+        delete hasPosition[msg.sender][targetAsset];
+        delete positions[msg.sender][targetAsset];
+        delete entryPrices[msg.sender][targetAsset];
         _addressProvider.baseAsset().transfer(msg.sender, owed_);
         return owed_;
     }
 
+    function totalValue(
+        address account,
+        string calldata targetAsset
+    ) external view returns (uint256) {
+        if (!hasPosition[account][targetAsset]) return 0;
+
+        Position memory position_ = positions[account][targetAsset];
+        (uint256 delta_, bool hasProfit_) = _profit(position_, account);
+        uint256 owed_ = hasProfit_
+            ? position_.baseAmount + delta_
+            : position_.baseAmount - delta_;
+
+        return owed_;
+    }
+
+    // TODO Revise
     function updateFeePercent(uint256 annualFeePercent_) external {
         _annualFeePercent = annualFeePercent_;
     }
 
+    // TODO Revise
     function position(
-        address user_
-    ) external view returns (ISynthetixHandler.Position memory) {
-        ISynthetixHandler.Position memory position_ = positions[user_];
+        address user_,
+        string memory targetAsset
+    ) external view returns (Position memory) {
+        Position memory position_ = positions[user_][targetAsset];
         (position_.delta, position_.hasProfit) = _profit(position_, user_);
         return position_;
     }
 
+    // TODO Revise
     function _price(string memory token_) internal view returns (uint256) {
         return _addressProvider.oracle().getPrice(token_);
     }
 
+    // TODO Revise
     function _profit(
-        ISynthetixHandler.Position memory position_,
+        Position memory position_,
         address user_
     ) internal view returns (uint256 delta_, bool hasProfit_) {
         uint256 currentPrice_ = _price(position_.targetAsset);
-        uint256 entryPrice_ = entryPrices[user_];
+        uint256 entryPrice_ = entryPrices[user_][position_.targetAsset];
         uint256 priceDelta_ = _absDiff(currentPrice_, entryPrice_);
         uint256 percentDelta_ = priceDelta_.div(entryPrice_);
         uint256 scaledPercentDelta_ = percentDelta_.mul(position_.leverage);
@@ -107,9 +163,8 @@ contract BaseProtocol {
         return (positionDelta_ + fee_, false);
     }
 
-    function _fee(
-        ISynthetixHandler.Position memory position_
-    ) internal view returns (uint256) {
+    // TODO Revise
+    function _fee(Position memory position_) internal view returns (uint256) {
         uint256 timePassed_ = block.timestamp - position_.createdAt;
         uint256 percentThroughYear_ = (timePassed_ * 1e18) / 365 days;
         uint256 loaned_ = position_.baseAmount.mul(position_.leverage);
@@ -124,39 +179,133 @@ contract BaseProtocol {
 contract MockSynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
-    BaseProtocol internal immutable _baseProtocol;
+    BaseProtocol public immutable baseProtocol;
+    IAddressProvider internal immutable _addressProvider;
 
     constructor(address addressProvider_, uint256 annualFeePercent_) {
-        _baseProtocol = new BaseProtocol(addressProvider_, annualFeePercent_);
+        baseProtocol = new BaseProtocol(addressProvider_, annualFeePercent_);
+        _addressProvider = IAddressProvider(addressProvider_);
     }
 
-    function createPosition(
-        string calldata targetAsset,
-        uint256 baseAmount,
-        uint256 leverage,
-        bool isLong
-    ) external override {
-        _baseProtocol.createPosition(targetAsset, baseAmount, leverage, isLong);
+    function depositMargin(
+        string calldata targetAsset_,
+        uint256 amount_
+    ) external {
+        _addressProvider.baseAsset().approve(address(baseProtocol), amount_);
+        baseProtocol.depositMargin(targetAsset_, amount_);
     }
 
-    function closePosition() external override returns (uint256) {
-        return _baseProtocol.closePosition();
+    function withdrawMargin(
+        string calldata targetAsset_,
+        uint256 amount_
+    ) external {
+        baseProtocol.withdrawMargin(targetAsset_, amount_);
     }
 
-    function updateFeePercent(uint256 annualFeePercent_) external {
-        _baseProtocol.updateFeePercent(annualFeePercent_);
+    function submitLeverageUpdate(
+        string calldata targetAsset_,
+        uint256 leverage_,
+        bool isLong_
+    ) external {
+        if (baseProtocol.hasPosition(address(this), targetAsset_)) {
+            baseProtocol.closePosition(targetAsset_);
+        }
+        uint256 margin_ = baseProtocol.margin(address(this), targetAsset_);
+        baseProtocol.createPosition(targetAsset_, margin_, leverage_, isLong_);
     }
 
-    function position() external view override returns (Position memory) {
-        return _baseProtocol.position(msg.sender);
+    function hasOpenPosition(
+        string calldata targetAsset_
+    ) external view returns (bool) {
+        return hasOpenPosition(targetAsset_, msg.sender);
     }
 
-    function hasPosition() external view override returns (bool) {
-        return _baseProtocol.hasPosition(msg.sender);
+    function hasOpenPosition(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (bool) {
+        return baseProtocol.hasPosition(account_, targetAsset_);
     }
 
-    function approveAddress() external view override returns (address) {
-        return address(_baseProtocol);
+    function totalValue(
+        string calldata targetAsset_
+    ) external view returns (uint256) {
+        return totalValue(targetAsset_, msg.sender);
+    }
+
+    function totalValue(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (uint256) {
+        return baseProtocol.totalValue(account_, targetAsset_);
+    }
+
+    function leverage(
+        string calldata targetAsset_
+    ) external view returns (uint256) {
+        return baseProtocol.position(msg.sender, targetAsset_).leverage;
+    }
+
+    function leverage(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (uint256) {
+        return baseProtocol.position(account_, targetAsset_).leverage;
+    }
+
+    function notionalValue(
+        string calldata targetAsset_
+    ) external view returns (uint256) {
+        return notionalValue(targetAsset_, msg.sender);
+    }
+
+    function notionalValue(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (uint256) {
+        if (!baseProtocol.hasPosition(account_, targetAsset_)) return 0;
+        BaseProtocol.Position memory position = baseProtocol.position(
+            account_,
+            targetAsset_
+        );
+        return position.baseAmount.mul(position.leverage);
+    }
+
+    function isLong(string calldata targetAsset_) external view returns (bool) {
+        return isLong(targetAsset_, msg.sender);
+    }
+
+    function isLong(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (bool) {
+        return baseProtocol.position(account_, targetAsset_).isLong;
+    }
+
+    function remainingMargin(
+        string calldata targetAsset_
+    ) external view returns (uint256) {
+        return remainingMargin(targetAsset_, msg.sender);
+    }
+
+    function remainingMargin(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (uint256) {
+        return baseProtocol.margin(account_, targetAsset_);
+    }
+
+    function fillPrice(
+        string calldata targetAsset_,
+        int256
+    ) external view returns (uint256) {
+        return _addressProvider.oracle().getPrice(targetAsset_);
+    }
+
+    function assetPrice(
+        string calldata targetAsset_
+    ) external view returns (uint256) {
+        return _addressProvider.oracle().getPrice(targetAsset_);
     }
 
     function isAssetSupported(
@@ -177,5 +326,11 @@ contract MockSynthetixHandler is ISynthetixHandler {
             }
         }
         return false;
+    }
+
+    // Admin Functions
+
+    function updateFeePercent(uint256 annualFeePercent_) external {
+        baseProtocol.updateFeePercent(annualFeePercent_);
     }
 }
