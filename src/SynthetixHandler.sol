@@ -12,6 +12,11 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
+    IPerpsV2MarketData internal immutable _perpsV2MarketData;
+    IAddressProvider internal immutable _addressProvider;
+
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
+
     error NoMarket();
     error ErrorGettingPnl();
     error ErrorGettingOrderFee();
@@ -19,11 +24,6 @@ contract SynthetixHandler is ISynthetixHandler {
     error ErrorGettingFillPrice();
     error ErrorGettingAssetPrice();
     error NoMargin();
-
-    IPerpsV2MarketData internal immutable _perpsV2MarketData;
-    IAddressProvider internal immutable _addressProvider;
-
-    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
 
     constructor(address addressProvider_, address perpsV2MarketData_) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
@@ -33,7 +33,7 @@ contract SynthetixHandler is ISynthetixHandler {
     function depositMargin(
         string calldata targetAsset_,
         uint256 amount_
-    ) external override {
+    ) public override {
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
         _addressProvider.baseAsset().approve(address(market_), amount_);
         market_.transferMargin(int256(amount_));
@@ -42,7 +42,7 @@ contract SynthetixHandler is ISynthetixHandler {
     function withdrawMargin(
         string calldata targetAsset_,
         uint256 amount_
-    ) external override {
+    ) public override {
         _market(targetAsset_).transferMargin(-int256(amount_));
     }
 
@@ -50,7 +50,7 @@ contract SynthetixHandler is ISynthetixHandler {
         string calldata targetAsset_,
         uint256 leverage_,
         bool isLong_
-    ) external override {
+    ) public override {
         uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
         uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
@@ -71,7 +71,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function hasPendingLeverageUpdate(
         string calldata targetAsset_
-    ) external view override returns (bool) {
+    ) public view override returns (bool) {
         return hasPendingLeverageUpdate(targetAsset_, msg.sender);
     }
 
@@ -84,7 +84,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function hasOpenPosition(
         string calldata targetAsset_
-    ) external view override returns (bool) {
+    ) public view override returns (bool) {
         return hasOpenPosition(targetAsset_, msg.sender);
     }
 
@@ -97,7 +97,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function totalValue(
         string calldata targetAsset_
-    ) external view override returns (uint256) {
+    ) public view override returns (uint256) {
         return totalValue(targetAsset_, msg.sender);
     }
 
@@ -112,7 +112,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function leverage(
         string calldata targetAsset_
-    ) external view override returns (uint256) {
+    ) public view override returns (uint256) {
         return leverage(targetAsset_, msg.sender);
     }
 
@@ -128,7 +128,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function notionalValue(
         string calldata targetAsset_
-    ) external view override returns (uint256) {
+    ) public view override returns (uint256) {
         return notionalValue(targetAsset_, msg.sender);
     }
 
@@ -145,7 +145,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function isLong(
         string calldata targetAsset_
-    ) external view override returns (bool) {
+    ) public view override returns (bool) {
         return isLong(targetAsset_, msg.sender);
     }
 
@@ -162,7 +162,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function remainingMargin(
         string calldata targetAsset_
-    ) external view override returns (uint256) {
+    ) public view override returns (uint256) {
         return remainingMargin(targetAsset_, msg.sender);
     }
 
@@ -189,7 +189,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     function isAssetSupported(
         string calldata targetAsset_
-    ) external view override returns (bool) {
+    ) public view override returns (bool) {
         try _perpsV2MarketData.marketDetailsForKey(_key(targetAsset_)) returns (
             IPerpsV2MarketData.MarketData memory
         ) {
