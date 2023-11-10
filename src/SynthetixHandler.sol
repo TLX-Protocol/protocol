@@ -25,7 +25,7 @@ contract SynthetixHandler is ISynthetixHandler {
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.2e18; // 0.2%
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
 
     constructor(address addressProvider_, address perpsV2MarketData_) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
@@ -61,19 +61,22 @@ contract SynthetixHandler is ISynthetixHandler {
         int256 sizeDelta_ = int256(targetNotional_) - int256(notionalValue_);
         if (!isLong_) sizeDelta_ = -sizeDelta_;
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
-        uint256 fillPrice_ = fillPrice(targetAsset_, sizeDelta_);
-        uint256 price_ = fillPrice_.mul(100e18 + _SLIPPAGE_TOLERANCE);
+        uint256 price_ = fillPrice(targetAsset_, sizeDelta_);
+
+        if (isLong_) {
+            price_ = price_.mul(1e18 + _SLIPPAGE_TOLERANCE);
+        } else {
+            price_ = price_.div(1e18 + _SLIPPAGE_TOLERANCE);
+        }
         market_.submitOffchainDelayedOrder(sizeDelta_, price_);
     }
 
-    // TODO Test
     function hasPendingLeverageUpdate(
         string calldata targetAsset_
     ) external view override returns (bool) {
         return hasPendingLeverageUpdate(targetAsset_, msg.sender);
     }
 
-    // TODO Test
     function hasPendingLeverageUpdate(
         string calldata targetAsset_,
         address account_
