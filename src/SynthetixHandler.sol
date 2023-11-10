@@ -10,7 +10,6 @@ import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBase
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 // TODO Add view for has pending leverage update
-// TODO Add better support for price impact
 
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
@@ -25,6 +24,8 @@ contract SynthetixHandler is ISynthetixHandler {
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
     IAddressProvider internal immutable _addressProvider;
+
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.2e18; // 0.2%
 
     constructor(address addressProvider_, address perpsV2MarketData_) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
@@ -60,9 +61,9 @@ contract SynthetixHandler is ISynthetixHandler {
         int256 sizeDelta_ = int256(targetNotional_) - int256(notionalValue_);
         if (!isLong_) sizeDelta_ = -sizeDelta_;
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
-        uint256 desiredFillPrice_ = fillPrice(targetAsset_, sizeDelta_);
-        desiredFillPrice_ = (desiredFillPrice_ * 110) / 100;
-        market_.submitOffchainDelayedOrder(sizeDelta_, desiredFillPrice_);
+        uint256 fillPrice_ = fillPrice(targetAsset_, sizeDelta_);
+        uint256 price_ = fillPrice_.mul(100e18 + _SLIPPAGE_TOLERANCE);
+        market_.submitOffchainDelayedOrder(sizeDelta_, price_);
     }
 
     function hasOpenPosition(
