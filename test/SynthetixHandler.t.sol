@@ -16,6 +16,7 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 import {Contracts} from "../src/libraries/Contracts.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import {Base64} from "../src/testing/Base64.sol";
 
@@ -26,6 +27,7 @@ contract SynthetixHandlerTest is IntegrationTest {
     using Address for address;
     using Surl for *;
     using stdJson for string;
+    using ScaledNumber for uint256;
 
     string constant PYTH_URL = "https://xc-mainnet.pyth.network/api/get_vaa";
     string constant PYTH_ID =
@@ -37,15 +39,6 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     receive() external payable {}
-
-    function testExecuteOrder() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
-        _depositMargin(100e18);
-        _submitLeverageUpdate(2e18, true);
-        assertFalse(synthetixHandler.hasOpenPosition(Symbols.ETH));
-        _executeOrder();
-        assertTrue(synthetixHandler.hasOpenPosition(Symbols.ETH));
-    }
 
     function testDepositMargin() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
@@ -70,15 +63,30 @@ contract SynthetixHandlerTest is IntegrationTest {
         _submitLeverageUpdate(2e18, true);
     }
 
-    function testHasOpenPosition() public {
-        assertFalse(synthetixHandler.hasOpenPosition(Symbols.ETH));
-    }
-
-    function testRemainingMargin() public {
-        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 0);
+    function testExecuteOrder() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+    }
+
+    function testHasPendingLeverageUpdate() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        _submitLeverageUpdate(2e18, true);
+        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        _executeOrder();
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+    }
+
+    function testHasOpenPosition() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        assertFalse(synthetixHandler.hasOpenPosition(Symbols.ETH));
+        _executeOrder();
+        assertTrue(synthetixHandler.hasOpenPosition(Symbols.ETH));
     }
 
     function testTotalValue() public {
@@ -86,13 +94,75 @@ contract SynthetixHandlerTest is IntegrationTest {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertEq(synthetixHandler.totalValue(Symbols.ETH), 100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.totalValue(Symbols.ETH),
+            100e18,
+            0.01e18
+        );
     }
 
     function testNotional() public {
         assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        uint256 amount_ = 100e18;
+        _mintTokensFor(Tokens.SUSD, address(this), amount_);
         _depositMargin(100e18);
         assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.notionalValue(Symbols.ETH),
+            100e18 * 2,
+            0.01e18
+        );
+    }
+
+    function testLeverage() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.leverage(Symbols.ETH),
+            2e18,
+            0.01e18
+        );
+    }
+
+    function testIsLongTrue() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertTrue(synthetixHandler.isLong(Symbols.ETH));
+    }
+
+    function testIsLongFalse() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, false);
+        _executeOrder();
+        assertFalse(synthetixHandler.isLong(Symbols.ETH));
+    }
+
+    function testRemainingMargin() public {
+        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 0);
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.remainingMargin(Symbols.ETH),
+            100e18,
+            0.01e18
+        );
+    }
+
+    function testIsAssetSupported() public {
+        assertTrue(synthetixHandler.isAssetSupported(Symbols.ETH));
+        assertFalse(synthetixHandler.isAssetSupported("BABYDOGE"));
     }
 
     function _depositMargin(uint256 amount_) internal {
