@@ -9,7 +9,7 @@ import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBase
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
-// TODO Add view for has pending leverage update
+// TODO Add full tests for everything
 
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
@@ -64,6 +64,21 @@ contract SynthetixHandler is ISynthetixHandler {
         uint256 fillPrice_ = fillPrice(targetAsset_, sizeDelta_);
         uint256 price_ = fillPrice_.mul(100e18 + _SLIPPAGE_TOLERANCE);
         market_.submitOffchainDelayedOrder(sizeDelta_, price_);
+    }
+
+    // TODO Test
+    function hasPendingLeverageUpdate(
+        string calldata targetAsset_
+    ) external view override returns (bool) {
+        return hasPendingLeverageUpdate(targetAsset_, msg.sender);
+    }
+
+    // TODO Test
+    function hasPendingLeverageUpdate(
+        string calldata targetAsset_,
+        address account_
+    ) public view override returns (bool) {
+        return _market(targetAsset_).delayedOrders(account_).sizeDelta != 0;
     }
 
     function hasOpenPosition(

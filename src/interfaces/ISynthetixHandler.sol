@@ -38,6 +38,26 @@ interface ISynthetixHandler {
     ) external;
 
     /**
+     * @notice Returns if the caller has a pending leverage update.
+     * @param targetAsset The asset to check if the caller has a pending leverage update for.
+     * @return hasPendingLeverageUpdate Whether the caller has a pending leverage update.
+     */
+    function hasPendingLeverageUpdate(
+        string calldata targetAsset
+    ) external view returns (bool hasPendingLeverageUpdate);
+
+    /**
+     * @notice Returns if the `account` has a pending leverage update.
+     * @param targetAsset The asset to check if the `account` has a pending leverage update for.
+     * @param account The account to check if they have a pending leverage update.
+     * @return hasPendingLeverageUpdate Whether the `account` has a pending leverage update.
+     */
+    function hasPendingLeverageUpdate(
+        string calldata targetAsset,
+        address account
+    ) external view returns (bool hasPendingLeverageUpdate);
+
+    /**
      * @notice Returns if the caller has an open position for the `targetAsset`.
      * @param targetAsset The asset to check if the caller has an open position for.
      * @return hasOpenPosition Whether the caller has an open position for the `targetAsset`.
