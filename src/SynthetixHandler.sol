@@ -9,8 +9,6 @@ import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBase
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
-// TODO Add full tests for everything
-
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
@@ -108,10 +106,8 @@ contract SynthetixHandler is ISynthetixHandler {
         address account_
     ) public view override returns (uint256) {
         uint256 remainingMargin_ = remainingMargin(targetAsset_, account_);
-        uint256 notionalValue_ = notionalValue(targetAsset_, account_);
         int256 pnl_ = _pnl(targetAsset_, account_);
-        uint256 closeFee_ = _orderFee(targetAsset_, -int256(notionalValue_));
-        return uint256(int256(remainingMargin_ - closeFee_) + pnl_);
+        return uint256(int256(remainingMargin_) + pnl_);
     }
 
     function leverage(
