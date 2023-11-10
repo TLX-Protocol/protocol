@@ -9,6 +9,9 @@ import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBase
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
+// TODO Add view for has pending leverage update
+// TODO Add better support for price impact
+
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
@@ -58,6 +61,7 @@ contract SynthetixHandler is ISynthetixHandler {
         if (!isLong_) sizeDelta_ = -sizeDelta_;
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
         uint256 desiredFillPrice_ = fillPrice(targetAsset_, sizeDelta_);
+        desiredFillPrice_ = (desiredFillPrice_ * 110) / 100;
         market_.submitOffchainDelayedOrder(sizeDelta_, desiredFillPrice_);
     }
 
