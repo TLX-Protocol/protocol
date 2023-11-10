@@ -24,7 +24,7 @@ import {Airdrop} from "../../src/Airdrop.sol";
 import {Locker} from "../../src/Locker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
-import {MockSynthetixHandler} from "../../src/testing/MockSynthetixHandler.sol";
+import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
 
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
@@ -46,7 +46,7 @@ contract IntegrationTest is Test {
     Locker public locker;
     Bonding public bonding;
     Vesting public vesting;
-    MockSynthetixHandler public mockSynthetixHandler;
+    SynthetixHandler public synthetixHandler;
 
     constructor() {
         vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 111_702_139));
@@ -149,19 +149,14 @@ contract IntegrationTest is Test {
         uint256 susdPrice_ = oracle.getPrice("sUSD");
         mockOracle.setPrice("sUSD", susdPrice_);
 
-        // MockSynthetixHandler Setup
-        mockSynthetixHandler = new MockSynthetixHandler(
+        // SynthetixHandler Setup
+        synthetixHandler = new SynthetixHandler(
             address(addressProvider),
-            0.2e18
-        );
-        _mintTokensFor(
-            Tokens.SUSD,
-            address(mockSynthetixHandler.baseProtocol()),
-            10_000_000e18
+            address(Contracts.PERPS_V2_MARKET_DATA)
         );
         addressProvider.updateAddress(
             AddressKeys.SYNTHETIX_HANDLER,
-            address(mockSynthetixHandler)
+            address(synthetixHandler)
         );
 
         // TLX Token Setup

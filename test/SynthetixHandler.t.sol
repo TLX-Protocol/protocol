@@ -13,8 +13,6 @@ import {Surl} from "surl/src/Surl.sol";
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
-import {SynthetixHandler} from "../src/SynthetixHandler.sol";
-
 import {Contracts} from "../src/libraries/Contracts.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
@@ -38,16 +36,7 @@ contract SynthetixHandlerTest is IntegrationTest {
         uint256 publishTime;
     }
 
-    SynthetixHandler public synthetixHandler;
-
     receive() external payable {}
-
-    function setUp() public {
-        synthetixHandler = new SynthetixHandler(
-            address(addressProvider),
-            address(Contracts.PERPS_V2_MARKET_DATA)
-        );
-    }
 
     function testExecuteOrder() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
