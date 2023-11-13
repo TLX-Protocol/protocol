@@ -9,8 +9,6 @@ import {IPyth} from "pyth-sdk-solidity/IPyth.sol";
 import {IPerpsV2MarketData} from "../src/interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 
-import {Surl} from "surl/src/Surl.sol";
-
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Contracts} from "../src/libraries/Contracts.sol";
@@ -25,7 +23,6 @@ import "forge-std/StdJson.sol";
 
 contract SynthetixHandlerTest is IntegrationTest {
     using Address for address;
-    using Surl for *;
     using stdJson for string;
     using ScaledNumber for uint256;
 
@@ -234,9 +231,12 @@ contract SynthetixHandlerTest is IntegrationTest {
             "&publish_time=",
             Strings.toString(publishTime)
         );
-        (uint256 status, bytes memory data) = url.get();
-        assertEq(status, 200);
-        return abi.decode(string(data).parseRaw(".vaa"), (string));
+        string[] memory inputs = new string[](3);
+        inputs[0] = "curl";
+        inputs[1] = url;
+        inputs[2] = "-s";
+        bytes memory res = vm.ffi(inputs);
+        return abi.decode(string(res).parseRaw(".vaa"), (string));
     }
 
     function _market(
