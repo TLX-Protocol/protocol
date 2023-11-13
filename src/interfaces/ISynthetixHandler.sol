@@ -38,6 +38,13 @@ interface ISynthetixHandler {
     ) external;
 
     /**
+     * @notice Cancel a pending leverage update for the `targetAsset`.
+     * @dev Should be called with delegatecall.
+     * @param targetAsset The asset to cancel a pending leverage update for.
+     */
+    function cancelLeverageUpdate(string calldata targetAsset) external;
+
+    /**
      * @notice Returns if the caller has a pending leverage update.
      * @param targetAsset The asset to check if the caller has a pending leverage update for.
      * @return hasPendingLeverageUpdate Whether the caller has a pending leverage update.

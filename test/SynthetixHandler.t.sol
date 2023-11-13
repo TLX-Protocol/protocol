@@ -80,6 +80,16 @@ contract SynthetixHandlerTest is IntegrationTest {
         assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
     }
 
+    function testCancelLeverageUpdate() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        skip(2 minutes);
+        _cancelLeverageUpdate();
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+    }
+
     function testHasOpenPosition() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
@@ -193,6 +203,12 @@ contract SynthetixHandlerTest is IntegrationTest {
                 leverage_,
                 isLong_
             )
+        );
+    }
+
+    function _cancelLeverageUpdate() internal {
+        address(synthetixHandler).functionDelegateCall(
+            abi.encodeWithSignature("cancelLeverageUpdate(string)", Symbols.ETH)
         );
     }
 

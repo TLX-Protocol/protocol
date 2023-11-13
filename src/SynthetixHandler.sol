@@ -69,6 +69,12 @@ contract SynthetixHandler is ISynthetixHandler {
         market_.submitOffchainDelayedOrder(sizeDelta_, price_);
     }
 
+    function cancelLeverageUpdate(
+        string calldata targetAsset_
+    ) public override {
+        _market(targetAsset_).cancelOffchainDelayedOrder(address(this));
+    }
+
     function hasPendingLeverageUpdate(
         string calldata targetAsset_
     ) public view override returns (bool) {
