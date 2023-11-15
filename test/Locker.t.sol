@@ -221,8 +221,6 @@ contract LockerTest is IntegrationTest {
     }
 
     function testAccounting() public {
-        // TODO after one user unlocks, the others keep earning
-
         uint256 tolerance_ = 1 * 10 ** rewardDecimals;
 
         // A Locks 100
