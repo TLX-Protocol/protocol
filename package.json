@@ -1,7 +1,7 @@
 {
   "name": "tlx-protocol",
   "version": "1.0.0",
-  "description": "TODO",
+  "description": "The simplest way to trade with leverage",
   "main": "index.js",
   "directories": {
     "lib": "lib",
