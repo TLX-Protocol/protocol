@@ -5,7 +5,6 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/exten
 
 import {ILeveragedTokenFactory} from "./ILeveragedTokenFactory.sol";
 import {IPositionManagerFactory} from "./IPositionManagerFactory.sol";
-import {IOracle} from "./IOracle.sol";
 import {IReferrals} from "./IReferrals.sol";
 import {IAirdrop} from "./IAirdrop.sol";
 import {IBonding} from "./IBonding.sol";
@@ -48,12 +47,6 @@ interface IAddressProvider {
         external
         view
         returns (IPositionManagerFactory positionManagerFactory);
-
-    /**
-     * @notice Returns the Oracle contract.
-     * @return oracle The Oracle contract.
-     */
-    function oracle() external view returns (IOracle oracle);
 
     /**
      * @notice Returns the Referrals contract.
