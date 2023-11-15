@@ -52,11 +52,8 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert Errors.AlreadyExists();
-        if (
-            !_addressProvider.derivativesHandler().isAssetSupported(
-                targetAsset_
-            )
-        ) revert AssetNotSupported();
+        if (!_addressProvider.synthetixHandler().isAssetSupported(targetAsset_))
+            revert AssetNotSupported();
 
         // Deploying position managers
         PositionManager longPositionManager_ = new PositionManager(
