@@ -15,4 +15,8 @@ library Contracts {
         0x138b809B8472fF09Cd3E075E6EcbB2e42D41d870;
     address public constant SUSD_USD_ORACLE =
         0x7f99817d87baD03ea21E05112Ca799d715730efe;
+
+    // Synthetix
+    address public constant PERPS_V2_MARKET_DATA =
+        0x340B5d664834113735730Ad4aFb3760219Ad9112;
 }

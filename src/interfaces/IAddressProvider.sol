@@ -11,7 +11,7 @@ import {IBonding} from "./IBonding.sol";
 import {IVesting} from "./IVesting.sol";
 import {ITlxToken} from "./ITlxToken.sol";
 import {ILocker} from "./ILocker.sol";
-import {IDerivativesHandler} from "./IDerivativesHandler.sol";
+import {ISynthetixHandler} from "./ISynthetixHandler.sol";
 
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
@@ -94,13 +94,13 @@ interface IAddressProvider {
     function baseAsset() external view returns (IERC20Metadata baseAsset);
 
     /**
-     * @notice Returns the DerivativesHandler contract.
-     * @return derivativesHandler The DerivativesHandler contract.
+     * @notice Returns the SynthetixHandler contract.
+     * @return synthetixHandler The SynthetixHandler  contract.
      */
-    function derivativesHandler()
+    function synthetixHandler()
         external
         view
-        returns (IDerivativesHandler derivativesHandler);
+        returns (ISynthetixHandler synthetixHandler);
 
     /**
      * @notice Returns the address for the POL token.
