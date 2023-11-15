@@ -6,6 +6,8 @@ import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 
+import {PositionManager} from "./PositionManager.sol";
+
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
@@ -25,6 +27,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
 
     mapping(address => address) public override pair;
     mapping(address => bool) public override isLeveragedToken;
+    mapping(address => bool) public override isPositionManager;
 
     constructor(address addressProvider_, uint256 maxLeverage_) {
         _addressProvider = IAddressProvider(addressProvider_);
@@ -49,28 +52,43 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert Errors.AlreadyExists();
-        address positionManager_ = _addressProvider
-            .positionManagerFactory()
-            .positionManager(targetAsset_);
-        if (positionManager_ == address(0)) revert NoPositionManager();
+        if (
+            !_addressProvider.derivativesHandler().isAssetSupported(
+                targetAsset_
+            )
+        ) revert AssetNotSupported();
+
+        // Deploying position managers
+        PositionManager longPositionManager_ = new PositionManager(
+            address(_addressProvider)
+        );
+        PositionManager shortPositionManager_ = new PositionManager(
+            address(_addressProvider)
+        );
 
         // Deploying tokens
         longToken = _deployToken(
-            positionManager_,
+            address(longPositionManager_),
             targetAsset_,
             targetLeverage_,
             true
         );
         shortToken = _deployToken(
-            positionManager_,
+            address(shortPositionManager_),
             targetAsset_,
             targetLeverage_,
             false
         );
 
-        // Setting pairs
+        // Setting storage
         pair[longToken] = shortToken;
         pair[shortToken] = longToken;
+        isPositionManager[address(longPositionManager_)] = true;
+        isPositionManager[address(shortPositionManager_)] = true;
+
+        // Setting leveraged tokens
+        longPositionManager_.setLeveragedToken(longToken);
+        shortPositionManager_.setLeveragedToken(shortToken);
     }
 
     function allTokens() external view override returns (address[] memory) {
@@ -154,7 +172,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
-    ) internal view returns (string memory) {
+    ) internal pure returns (string memory) {
         string memory direction_ = isLong_ ? "Long" : "Short";
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return
@@ -167,7 +185,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
-    ) internal view returns (string memory) {
+    ) internal pure returns (string memory) {
         string memory direction_ = isLong_ ? "L" : "S";
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return string(abi.encodePacked(targetAsset_, leverage_, direction_));

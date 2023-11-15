@@ -35,4 +35,10 @@ interface ILeveragedToken is IERC20Metadata {
      * @return long `true` if the leveraged token is long and `false` if the leveraged token is short.
      */
     function isLong() external view returns (bool long);
+
+    /**
+     * @notice Returns the position manager of the leveraged token.
+     * @return positionManager The position manager of the leveraged token.
+     */
+    function positionManager() external view returns (address positionManager);
 }

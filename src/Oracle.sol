@@ -118,10 +118,7 @@ contract Oracle is IOracle, Ownable {
 
     function _exchangeRate(address token_) internal view returns (uint256) {
         return
-            IPositionManager(
-                _addressProvider.positionManagerFactory().positionManager(
-                    ILeveragedToken(token_).targetAsset()
-                )
-            ).exchangeRate(token_);
+            IPositionManager(ILeveragedToken(token_).positionManager())
+                .exchangeRate();
     }
 }

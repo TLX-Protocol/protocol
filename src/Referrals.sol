@@ -7,6 +7,8 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {IPositionManager} from "./interfaces/IPositionManager.sol";
+import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract Referrals is IReferrals, Ownable {
     using ScaledNumber for uint256;
@@ -24,10 +26,13 @@ contract Referrals is IReferrals, Ownable {
 
     modifier onlyPositionManager() {
         if (
-            !_addressProvider.positionManagerFactory().isPositionManager(
+            !_addressProvider.leveragedTokenFactory().isPositionManager(
                 msg.sender
             )
-        ) revert NotPositionManager();
+        ) {
+            revert NotPositionManager();
+        }
+
         _;
     }
 

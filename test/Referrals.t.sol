@@ -9,6 +9,7 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 
 import {IReferrals} from "../src/interfaces/IReferrals.sol";
+import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract ReferralsTest is IntegrationTest {
     bytes32 public constant CODE = bytes32(bytes("test"));
@@ -135,9 +136,10 @@ contract ReferralsTest is IntegrationTest {
     function testUpdateReferralFor() public {
         referrals.register(alice, CODE);
 
-        address positionManager_ = positionManagerFactory.createPositionManager(
-            Symbols.UNI
-        );
+        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        address positionManager_ = ILeveragedToken(
+            leveragedTokenFactory.longTokens(Symbols.UNI)[0]
+        ).positionManager();
         vm.prank(positionManager_);
         referrals.updateReferralFor(bob, CODE);
 

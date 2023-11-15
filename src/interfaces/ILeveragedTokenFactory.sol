@@ -8,6 +8,7 @@ interface ILeveragedTokenFactory {
     error MaxLeverage();
     error NoPositionManager();
     error MaxOfTwoDecimals();
+    error AssetNotSupported();
 
     /**
      * @notice Creates a new Long and Short Leveraged Token for the given target asset and leverage.
@@ -108,4 +109,13 @@ interface ILeveragedTokenFactory {
     function isLeveragedToken(
         address token
     ) external view returns (bool isLeveragedToken);
+
+    /**
+     * @notice Returns if the given address is a position manager.
+     * @param positionManager The address of the position manager.
+     * @return isPositionManager If the given address is a position manager.
+     */
+    function isPositionManager(
+        address positionManager
+    ) external view returns (bool isPositionManager);
 }

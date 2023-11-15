@@ -9,7 +9,6 @@ import {AddressKeys} from "./libraries/AddressKeys.sol";
 
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
-import {IPositionManagerFactory} from "./interfaces/IPositionManagerFactory.sol";
 import {IOracle} from "./interfaces/IOracle.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
@@ -43,18 +42,6 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return
             ILeveragedTokenFactory(
                 _addresses[AddressKeys.LEVERAGED_TOKEN_FACTORY]
-            );
-    }
-
-    function positionManagerFactory()
-        external
-        view
-        override
-        returns (IPositionManagerFactory)
-    {
-        return
-            IPositionManagerFactory(
-                _addresses[AddressKeys.POSITION_MANAGER_FACTORY]
             );
     }
 
