@@ -17,7 +17,7 @@ import {IBonding} from "./interfaces/IBonding.sol";
 import {IVesting} from "./interfaces/IVesting.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
-import {IDerivativesHandler} from "./interfaces/IDerivativesHandler.sol";
+import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 
 contract AddressProvider is IAddressProvider, Ownable, Initializable {
     mapping(bytes32 => address) internal _addresses;
@@ -94,13 +94,13 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
         return IERC20Metadata(_addresses[AddressKeys.BASE_ASSET]);
     }
 
-    function derivativesHandler()
+    function synthetixHandler()
         external
         view
         override
-        returns (IDerivativesHandler)
+        returns (ISynthetixHandler)
     {
-        return IDerivativesHandler(_addresses[AddressKeys.DERIVATIVES_HANDLER]);
+        return ISynthetixHandler(_addresses[AddressKeys.SYNTHETIX_HANDLER]);
     }
 
     function pol() external view override returns (address) {

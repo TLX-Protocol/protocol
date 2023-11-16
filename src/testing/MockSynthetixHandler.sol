@@ -5,7 +5,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {ScaledNumber} from "../libraries/ScaledNumber.sol";
 
-import {IDerivativesHandler} from "../interfaces/IDerivativesHandler.sol";
+import {ISynthetixHandler} from "../interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 
 contract BaseProtocol {
@@ -16,7 +16,7 @@ contract BaseProtocol {
     uint256 internal _annualFeePercent;
 
     mapping(address => bool) public hasPosition;
-    mapping(address => IDerivativesHandler.Position) public positions;
+    mapping(address => ISynthetixHandler.Position) public positions;
     mapping(address => uint256) public entryPrices;
 
     constructor(address addressProvider_, uint256 annualFeePercent_) {
@@ -32,13 +32,13 @@ contract BaseProtocol {
         bool isLong
     ) external {
         if (hasPosition[msg.sender])
-            revert IDerivativesHandler.PositionAlreadyExists();
+            revert ISynthetixHandler.PositionAlreadyExists();
 
         IERC20(baseToken).transferFrom(msg.sender, address(this), baseAmount);
         hasPosition[msg.sender] = true;
         uint256 usdPrice_ = _price(targetAsset);
         entryPrices[msg.sender] = usdPrice_;
-        positions[msg.sender] = IDerivativesHandler.Position({
+        positions[msg.sender] = ISynthetixHandler.Position({
             createdAt: block.timestamp,
             baseToken: baseToken,
             targetAsset: targetAsset,
@@ -52,9 +52,9 @@ contract BaseProtocol {
 
     function closePosition() external returns (uint256) {
         if (!hasPosition[msg.sender])
-            revert IDerivativesHandler.NoPositionExists();
+            revert ISynthetixHandler.NoPositionExists();
 
-        IDerivativesHandler.Position memory position_ = positions[msg.sender];
+        ISynthetixHandler.Position memory position_ = positions[msg.sender];
         (uint256 delta_, bool hasProfit_) = _profit(position_, msg.sender);
         uint256 owed_ = hasProfit_
             ? position_.baseAmount + delta_
@@ -73,8 +73,8 @@ contract BaseProtocol {
 
     function position(
         address user_
-    ) external view returns (IDerivativesHandler.Position memory) {
-        IDerivativesHandler.Position memory position_ = positions[user_];
+    ) external view returns (ISynthetixHandler.Position memory) {
+        ISynthetixHandler.Position memory position_ = positions[user_];
         (position_.delta, position_.hasProfit) = _profit(position_, user_);
         return position_;
     }
@@ -84,7 +84,7 @@ contract BaseProtocol {
     }
 
     function _profit(
-        IDerivativesHandler.Position memory position_,
+        ISynthetixHandler.Position memory position_,
         address user_
     ) internal view returns (uint256 delta_, bool hasProfit_) {
         uint256 currentPrice_ = _price(position_.targetAsset);
@@ -106,7 +106,7 @@ contract BaseProtocol {
     }
 
     function _fee(
-        IDerivativesHandler.Position memory position_
+        ISynthetixHandler.Position memory position_
     ) internal view returns (uint256) {
         uint256 timePassed_ = block.timestamp - position_.createdAt;
         uint256 percentThroughYear_ = (timePassed_ * 1e18) / 365 days;
@@ -119,7 +119,7 @@ contract BaseProtocol {
     }
 }
 
-contract MockDerivativesHandler is IDerivativesHandler {
+contract MockSynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
     BaseProtocol internal immutable _baseProtocol;
