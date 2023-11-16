@@ -60,7 +60,7 @@ contract IntegrationTest is Test {
     SynthetixHandler public synthetixHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 111_702_139));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 112_274_700));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
@@ -173,6 +173,8 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
     }
 
+    receive() external payable {}
+
     function _mintTokensFor(
         address token_,
         address account_,
@@ -191,6 +193,10 @@ contract IntegrationTest is Test {
     }
 
     function _executeOrder() internal {
+        _executeOrder(address(this));
+    }
+
+    function _executeOrder(address account_) internal {
         uint256 currentTime = block.timestamp;
         uint256 searchTime = currentTime + 5;
         string memory vaa = _getVaa(searchTime);
@@ -199,7 +205,7 @@ contract IntegrationTest is Test {
         bytes[] memory priceUpdateData = new bytes[](1);
         priceUpdateData[0] = hexData;
         _market(Symbols.ETH).executeOffchainDelayedOrder{value: 1 ether}(
-            address(this),
+            account_,
             priceUpdateData
         );
     }

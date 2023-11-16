@@ -16,8 +16,6 @@ contract SynthetixHandlerTest is IntegrationTest {
     using Address for address;
     using ScaledNumber for uint256;
 
-    receive() external payable {}
-
     function testDepositMargin() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
