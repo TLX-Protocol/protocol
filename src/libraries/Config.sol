@@ -19,4 +19,5 @@ library Config {
     uint256 public constant MAX_LEVERAGE = 100e18;
     uint256 public constant REBATE_PERCENT = 0.5e18;
     uint256 public constant EARNINGS_PERCENT = 0.5e18;
+    uint256 public constant REBALANCE_THRESHOLD = 0.25e18; // 25%
 }
