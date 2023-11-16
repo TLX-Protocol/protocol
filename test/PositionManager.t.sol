@@ -19,7 +19,7 @@ contract PositionManagerTest is IntegrationTest {
 
     function setUp() public {
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Symbols.UNI, 1.23e18);
+            .createLeveragedTokens(Symbols.ETH, 1.23e18);
         leveragedToken = LeveragedToken(longTokenAddress_);
         positionManager = IPositionManager(leveragedToken.positionManager());
     }
@@ -46,7 +46,7 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(IERC20(Tokens.SUSD).balanceOf(address(positionManager)), 0);
         assertEq(
             synthetixHandler.remainingMargin(
-                Symbols.UNI,
+                Symbols.ETH,
                 address(positionManager)
             ),
             100e18
@@ -78,7 +78,7 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(IERC20(Tokens.SUSD).balanceOf(address(positionManager)), 0);
         assertEq(
             synthetixHandler.remainingMargin(
-                Symbols.UNI,
+                Symbols.ETH,
                 address(positionManager)
             ),
             100e18
@@ -126,13 +126,15 @@ contract PositionManagerTest is IntegrationTest {
     }
 
     function testCanRebalance() public {
-        assertFalse(positionManager.canRebalance());
+        assertFalse(positionManager.canRebalance(), "1");
         _mintTokens();
-        assertTrue(positionManager.canRebalance());
-        // positionManager.rebalance();
-        // assertFalse(positionManager.canRebalance());
-        // TODO rebalance then check is false
-        // TODO, add funds on bahalf of, then check is false
+        assertTrue(positionManager.canRebalance(), "2");
+        positionManager.rebalance();
+        assertFalse(positionManager.canRebalance(), "3");
+        _executeOrder(address(positionManager));
+        assertFalse(positionManager.canRebalance(), "4");
+        _mintTokens();
+        assertTrue(positionManager.canRebalance(), "5");
     }
 
     function _mintTokens() public {
