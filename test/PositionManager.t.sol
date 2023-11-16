@@ -137,6 +137,27 @@ contract PositionManagerTest is IntegrationTest {
         assertTrue(positionManager.canRebalance(), "5");
     }
 
+    function testRebalance() public {
+        _mintTokens();
+        assertEq(
+            synthetixHandler.leverage(Symbols.ETH, address(positionManager)),
+            0
+        );
+        positionManager.rebalance();
+        _executeOrder(address(positionManager));
+        assertApproxEqRel(
+            synthetixHandler.leverage(Symbols.ETH, address(positionManager)),
+            1.23e18,
+            0.05e18
+        );
+        _mintTokens();
+        assertApproxEqRel(
+            synthetixHandler.leverage(Symbols.ETH, address(positionManager)),
+            1.23e18 / 2,
+            0.05e18
+        );
+    }
+
     function _mintTokens() public {
         uint256 baseAmountIn = 100e18;
         _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);

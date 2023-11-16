@@ -16,6 +16,8 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 // TODO Rebalance during mint??
 // TODO What if we need to rebalance to withdraw??
 // TODO What if it is cancelled??
+// TODO Rebalance during mint and redeems
+// TODO Don't allow mint or redeems if there is a pending leverage update
 
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
