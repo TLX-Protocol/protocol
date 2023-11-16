@@ -12,6 +12,11 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
+// TODO Rebalance
+// TODO Rebalance during mint??
+// TODO What if we need to rebalance to withdraw??
+// TODO What if it is cancelled??
+
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
     using Address for address;
@@ -19,13 +24,15 @@ contract PositionManager is IPositionManager {
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
+    uint256 internal immutable rebalanceThreshold;
 
     ILeveragedToken public override leveragedToken;
 
-    constructor(address addressProvider_) {
+    constructor(address addressProvider_, uint256 rebalanceThreshold_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _baseAsset = _addressProvider.baseAsset();
         _baseDecimals = _baseAsset.decimals();
+        rebalanceThreshold = rebalanceThreshold_;
     }
 
     function mintAmountIn(
@@ -86,9 +93,12 @@ contract PositionManager is IPositionManager {
         return baseAmountReceived_;
     }
 
-    function rebalance() external override returns (uint256) {
-        // TODO implement
-        return 0;
+    function rebalance() external override {
+        if (!canRebalance()) revert CannotRebalance();
+        _submitLeverageUpdate(
+            leveragedToken.targetLeverage(),
+            leveragedToken.isLong()
+        );
     }
 
     function setLeveragedToken(address leveragedToken_) external override {
@@ -105,6 +115,34 @@ contract PositionManager is IPositionManager {
         );
         if (totalSupply_ == 0) return 1e18;
         return totalValue.div(totalSupply_);
+    }
+
+    function canRebalance() public view override returns (bool) {
+        // Can't rebalance if there is no margin
+        if (
+            _addressProvider.synthetixHandler().remainingMargin(
+                leveragedToken.targetAsset()
+            ) == 0
+        ) return false;
+
+        // Can't rebalance if there is a pending leverage update
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                leveragedToken.targetAsset(),
+                address(this)
+            )
+        ) return false;
+
+        // Can't rebalance if the leverage is already within the threshold
+        uint256 current_ = _addressProvider.synthetixHandler().leverage(
+            leveragedToken.targetAsset()
+        );
+        uint256 target_ = leveragedToken.targetLeverage();
+        uint256 diff_ = current_ > target_
+            ? current_ - target_
+            : target_ - current_;
+        uint256 percentDiff_ = diff_.div(target_);
+        return percentDiff_ >= rebalanceThreshold;
     }
 
     function _depositMargin(uint256 amount_) internal {

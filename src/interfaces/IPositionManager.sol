@@ -16,6 +16,7 @@ interface IPositionManager {
     );
 
     error InsufficientAmount();
+    error CannotRebalance();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
@@ -53,7 +54,7 @@ interface IPositionManager {
     /**
      * @notice Rebalances the position to the target leverage.
      */
-    function rebalance() external returns (uint256);
+    function rebalance() external;
 
     /**
      * @notice Sets the leveraged token of the position.
@@ -77,4 +78,10 @@ interface IPositionManager {
      * @return exchangeRate The exchange rate.
      */
     function exchangeRate() external view returns (uint256 exchangeRate);
+
+    /**
+     * @notice Returns if the leveraged token can be rebalanced.
+     * @return canRebalance If the leveraged token can be rebalanced.
+     */
+    function canRebalance() external view returns (bool canRebalance);
 }

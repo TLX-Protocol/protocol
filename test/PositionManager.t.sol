@@ -121,10 +121,24 @@ contract PositionManagerTest is IntegrationTest {
 
     function testExchangeRate() public {
         assertEq(positionManager.exchangeRate(), 1e18);
+        _mintTokens();
+        assertApproxEqRel(positionManager.exchangeRate(), 1e18, 0.01e18);
+    }
+
+    function testCanRebalance() public {
+        assertFalse(positionManager.canRebalance());
+        _mintTokens();
+        assertTrue(positionManager.canRebalance());
+        // positionManager.rebalance();
+        // assertFalse(positionManager.canRebalance());
+        // TODO rebalance then check is false
+        // TODO, add funds on bahalf of, then check is false
+    }
+
+    function _mintTokens() public {
         uint256 baseAmountIn = 100e18;
         _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
         IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
         positionManager.mintAmountIn(baseAmountIn, 0);
-        assertApproxEqRel(positionManager.exchangeRate(), 1e18, 0.01e18);
     }
 }
