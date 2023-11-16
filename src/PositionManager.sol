@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -13,6 +14,7 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
+    using Address for address;
 
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
@@ -32,13 +34,14 @@ contract PositionManager is IPositionManager {
     ) external override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
 
-        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         uint256 exchangeRate_ = exchangeRate();
+        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         uint256 leveragedTokenAmount_ = baseAmountIn_
             .scaleFrom(_baseDecimals)
             .div(exchangeRate_);
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
         if (!sufficient_) revert InsufficientAmount();
+        _depositMargin(baseAmountIn_);
         leveragedToken.mint(msg.sender, leveragedTokenAmount_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
         return leveragedTokenAmount_;
@@ -57,6 +60,7 @@ contract PositionManager is IPositionManager {
         bool sufficient_ = baseAmountIn_ <= maxBaseAmountIn_;
         if (!sufficient_) revert InsufficientAmount();
         _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
+        _depositMargin(baseAmountIn_);
         leveragedToken.mint(msg.sender, leveragedTokenAmountOut_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmountOut_);
         return baseAmountIn_;
@@ -75,6 +79,7 @@ contract PositionManager is IPositionManager {
         bool sufficient_ = baseAmountReceived_ >= minBaseAmountReceived_;
         if (!sufficient_) revert InsufficientAmount();
         leveragedToken.burn(msg.sender, leveragedTokenAmount_);
+        _withdrawMargin(baseAmountReceived_);
         _baseAsset.transfer(msg.sender, baseAmountReceived_);
 
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
@@ -94,7 +99,42 @@ contract PositionManager is IPositionManager {
     }
 
     function exchangeRate() public view override returns (uint256) {
-        // TODO implement
-        return 2e18;
+        uint256 totalSupply_ = leveragedToken.totalSupply();
+        uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
+            leveragedToken.targetAsset()
+        );
+        if (totalSupply_ == 0) return 1e18;
+        return totalValue.div(totalSupply_);
+    }
+
+    function _depositMargin(uint256 amount_) internal {
+        address(_addressProvider.synthetixHandler()).functionDelegateCall(
+            abi.encodeWithSignature(
+                "depositMargin(string,uint256)",
+                leveragedToken.targetAsset(),
+                amount_
+            )
+        );
+    }
+
+    function _withdrawMargin(uint256 amount_) internal {
+        address(_addressProvider.synthetixHandler()).functionDelegateCall(
+            abi.encodeWithSignature(
+                "withdrawMargin(string,uint256)",
+                leveragedToken.targetAsset(),
+                amount_
+            )
+        );
+    }
+
+    function _submitLeverageUpdate(uint256 leverage_, bool isLong_) internal {
+        address(_addressProvider.synthetixHandler()).functionDelegateCall(
+            abi.encodeWithSignature(
+                "submitLeverageUpdate(string,uint256,bool)",
+                leveragedToken.targetAsset(),
+                leverage_,
+                isLong_
+            )
+        );
     }
 }
