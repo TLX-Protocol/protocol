@@ -24,21 +24,10 @@ interface IPositionManager {
      * @param minLeveragedTokenAmountOut The minimum amount of leveragedTokens to mint (reverts otherwise).
      * @return leveragedTokenAmountOut The amount of leveragedTokens minted.
      */
-    function mintAmountIn(
+    function mint(
         uint256 baseAmountIn,
         uint256 minLeveragedTokenAmountOut
     ) external returns (uint256 leveragedTokenAmountOut);
-
-    /**
-     * @notice Mints leveragedTokenAmountOut leveraged tokens to the caller.
-     * @param leveragedTokenAmountOut The amount of the leveraged tokens to mint.
-     * @param maxBaseAmountIn The maximum amount of the base asset to use (reverts otherwise).
-     * @return baseAmountIn The amount of the base asset used.
-     */
-    function mintAmountOut(
-        uint256 leveragedTokenAmountOut,
-        uint256 maxBaseAmountIn
-    ) external returns (uint256 baseAmountIn);
 
     /**
      * @notice Redeems leveragedTokenAmount of the leveraged token and returns the base asset.

@@ -12,7 +12,6 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-// TODO Rebalance
 // TODO Rebalance during mint??
 // TODO What if we need to rebalance to withdraw??
 // TODO What if it is cancelled??
@@ -37,7 +36,7 @@ contract PositionManager is IPositionManager {
         rebalanceThreshold = rebalanceThreshold_;
     }
 
-    function mintAmountIn(
+    function mint(
         uint256 baseAmountIn_,
         uint256 minLeveragedTokenAmountOut_
     ) external override returns (uint256) {
@@ -54,25 +53,6 @@ contract PositionManager is IPositionManager {
         leveragedToken.mint(msg.sender, leveragedTokenAmount_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
         return leveragedTokenAmount_;
-    }
-
-    function mintAmountOut(
-        uint256 leveragedTokenAmountOut_,
-        uint256 maxBaseAmountIn_
-    ) external override returns (uint256) {
-        if (leveragedTokenAmountOut_ == 0) return 0;
-
-        uint256 exchangeRate_ = exchangeRate();
-        uint256 baseAmountIn_ = leveragedTokenAmountOut_
-            .mul(exchangeRate_)
-            .scaleTo(_baseDecimals);
-        bool sufficient_ = baseAmountIn_ <= maxBaseAmountIn_;
-        if (!sufficient_) revert InsufficientAmount();
-        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
-        _depositMargin(baseAmountIn_);
-        leveragedToken.mint(msg.sender, leveragedTokenAmountOut_);
-        emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmountOut_);
-        return baseAmountIn_;
     }
 
     function redeem(
