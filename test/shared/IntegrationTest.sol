@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {Test, stdStorage, StdStorage} from "forge-std/Test.sol";
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
@@ -12,6 +13,8 @@ import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
+import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
+import {IPerpsV2MarketConsolidated} from "../../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 
 import {Oracle} from "../../src/Oracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
@@ -25,8 +28,18 @@ import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
 
+import {Base64} from "../../src/testing/Base64.sol";
+
+import "forge-std/StdJson.sol";
+
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
+    using stdJson for string;
+
+    // Constants
+    string constant PYTH_URL = "https://xc-mainnet.pyth.network/api/get_vaa";
+    string constant PYTH_ID =
+        "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"; // ETH/USD
 
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
@@ -89,7 +102,8 @@ contract IntegrationTest is Test {
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
             address(addressProvider),
-            Config.MAX_LEVERAGE
+            Config.MAX_LEVERAGE,
+            Config.REBALANCE_THRESHOLD
         );
         addressProvider.updateAddress(
             AddressKeys.LEVERAGED_TOKEN_FACTORY,
@@ -174,5 +188,49 @@ contract IntegrationTest is Test {
             .sig(IERC20(token_).balanceOf.selector)
             .with_key(account_)
             .checked_write(amount_);
+    }
+
+    function _executeOrder() internal {
+        uint256 currentTime = block.timestamp;
+        uint256 searchTime = currentTime + 5;
+        string memory vaa = _getVaa(searchTime);
+        bytes memory decoded = Base64.decode(vaa);
+        bytes memory hexData = abi.encodePacked(decoded);
+        bytes[] memory priceUpdateData = new bytes[](1);
+        priceUpdateData[0] = hexData;
+        _market(Symbols.ETH).executeOffchainDelayedOrder{value: 1 ether}(
+            address(this),
+            priceUpdateData
+        );
+    }
+
+    function _getVaa(uint256 publishTime) internal returns (string memory) {
+        string memory url = string.concat(
+            PYTH_URL,
+            "?id=",
+            PYTH_ID,
+            "&publish_time=",
+            Strings.toString(publishTime)
+        );
+        string[] memory inputs = new string[](3);
+        inputs[0] = "curl";
+        inputs[1] = url;
+        inputs[2] = "-s";
+        bytes memory res = vm.ffi(inputs);
+        return abi.decode(string(res).parseRaw(".vaa"), (string));
+    }
+
+    function _market(
+        string memory targetAsset_
+    ) internal view returns (IPerpsV2MarketConsolidated) {
+        IPerpsV2MarketData.MarketData memory marketData_ = IPerpsV2MarketData(
+            Contracts.PERPS_V2_MARKET_DATA
+        ).marketDetailsForKey(_key(targetAsset_));
+        require(marketData_.market != address(0), "No market");
+        return IPerpsV2MarketConsolidated(marketData_.market);
+    }
+
+    function _key(string memory targetAsset_) internal pure returns (bytes32) {
+        return bytes32(bytes(abi.encodePacked("s", targetAsset_, "PERP")));
     }
 }
