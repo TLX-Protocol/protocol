@@ -64,6 +64,15 @@ contract PositionManagerTest is IntegrationTest {
         positionManager.mint(baseAmountIn, minLeveragedTokenAmountOut);
     }
 
+    function testMintRevertsDuringLeverageUpdate() public {
+        _mintTokens();
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
+        IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
+        vm.expectRevert(IPositionManager.LeverageUpdatePending.selector);
+        positionManager.mint(baseAmountIn, 0);
+    }
+
     function testRedeem() public {
         // Minting Leveraged Tokens
         uint256 baseAmountIn = 100e18;
@@ -75,7 +84,7 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(leveragedToken.balanceOf(address(this)), 100e18);
 
         // Redeeming Leveraged Tokens
-        uint256 leveragedTokenAmountIn = 1e18; // TODO Make this bigger
+        uint256 leveragedTokenAmountIn = 1e18;
         uint256 minBaseAmountOut = 0.9e18;
         uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
         uint256 baseAmountOut = positionManager.redeem(
@@ -88,6 +97,12 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(leveragedToken.totalSupply(), 99e18);
         assertEq(leveragedToken.balanceOf(address(this)), 99e18);
         assertApproxEqRel(balanceAfter - balanceBefore, 1e18, 0.05e18, "2");
+    }
+
+    function testRedeemRevertsDuringLeverageUpdate() public {
+        _mintTokens();
+        vm.expectRevert(IPositionManager.LeverageUpdatePending.selector);
+        positionManager.redeem(1e18, 0);
     }
 
     function testExchangeRate() public {

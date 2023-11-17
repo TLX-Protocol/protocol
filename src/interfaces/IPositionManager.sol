@@ -17,6 +17,7 @@ interface IPositionManager {
 
     error InsufficientAmount();
     error CannotRebalance();
+    error LeverageUpdatePending();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.

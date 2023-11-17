@@ -12,8 +12,6 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-// TODO Don't allow mint or redeems if there is a pending leverage update
-
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
     using Address for address;
@@ -37,6 +35,11 @@ contract PositionManager is IPositionManager {
         uint256 minLeveragedTokenAmountOut_
     ) external override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                leveragedToken.targetAsset()
+            )
+        ) revert LeverageUpdatePending();
 
         uint256 exchangeRate_ = exchangeRate();
         _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
@@ -60,6 +63,11 @@ contract PositionManager is IPositionManager {
         uint256 minBaseAmountReceived_
     ) external override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                leveragedToken.targetAsset()
+            )
+        ) revert LeverageUpdatePending();
 
         uint256 exchangeRate_ = exchangeRate();
         uint256 baseAmountReceived_ = leveragedTokenAmount_
