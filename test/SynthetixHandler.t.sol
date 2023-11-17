@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-import {IPyth} from "pyth-sdk-solidity/IPyth.sol";
 
 import {IPerpsV2MarketData} from "../src/interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
