@@ -25,7 +25,7 @@ contract PositionManager is IPositionManager {
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
-    uint256 internal immutable rebalanceThreshold;
+    uint256 internal immutable _rebalanceThreshold;
 
     ILeveragedToken public override leveragedToken;
 
@@ -33,7 +33,7 @@ contract PositionManager is IPositionManager {
         _addressProvider = IAddressProvider(addressProvider_);
         _baseAsset = _addressProvider.baseAsset();
         _baseDecimals = _baseAsset.decimals();
-        rebalanceThreshold = rebalanceThreshold_;
+        _rebalanceThreshold = rebalanceThreshold_;
     }
 
     function mint(
@@ -84,7 +84,7 @@ contract PositionManager is IPositionManager {
         _submitLeverageUpdate();
     }
 
-    function setLeveragedToken(address leveragedToken_) external override {
+    function setLeveragedToken(address leveragedToken_) public override {
         if (address(leveragedToken) != address(0)) {
             revert Errors.AlreadyExists();
         }
@@ -125,7 +125,7 @@ contract PositionManager is IPositionManager {
             ? current_ - target_
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
-        return percentDiff_ >= rebalanceThreshold;
+        return percentDiff_ >= _rebalanceThreshold;
     }
 
     function _depositMargin(uint256 amount_) internal {
