@@ -14,8 +14,6 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 
-// TODO Streaming fee
-
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
     using Address for address;
@@ -23,6 +21,8 @@ contract PositionManager is IPositionManager {
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
+
+    uint256 internal _lastRebalanceTimestamp;
 
     ILeveragedToken public override leveragedToken;
 
@@ -120,7 +120,28 @@ contract PositionManager is IPositionManager {
 
     function rebalance() public override {
         if (!canRebalance()) revert CannotRebalance();
+
+        // Accounting
+        uint256 streamingFeePercent_ = _addressProvider
+            .parameterProvider()
+            .streamingFee();
+        uint256 notionalValue_ = _addressProvider
+            .synthetixHandler()
+            .notionalValue(leveragedToken.targetAsset());
+        uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
+        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
+        uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
+
+        // Sending fees to locker
+        ILocker locker_ = _addressProvider.locker();
+        if (fee_ != 0 && locker_.totalLocked() != 0) {
+            _addressProvider.baseAsset().approve(address(locker_), fee_);
+            locker_.donateRewards(fee_);
+        }
+
+        // Rebalancing
         _submitLeverageUpdate();
+        _lastRebalanceTimestamp = block.timestamp;
     }
 
     function setLeveragedToken(address leveragedToken_) public override {
