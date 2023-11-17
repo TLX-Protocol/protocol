@@ -9,6 +9,7 @@ import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
+import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 
@@ -20,6 +21,7 @@ import {Oracle} from "../../src/Oracle.sol";
 import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
+import {ParameterProvider} from "../../src/ParameterProvider.sol";
 import {Referrals} from "../../src/Referrals.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
@@ -51,6 +53,7 @@ contract IntegrationTest is Test {
     MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
+    ParameterProvider public parameterProvider;
     Referrals public referrals;
     TlxToken public tlx;
     Airdrop public airdrop;
@@ -66,6 +69,17 @@ contract IntegrationTest is Test {
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
         addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.SUSD);
+
+        // ParameterProvider Setup
+        parameterProvider = new ParameterProvider();
+        parameterProvider.updateParameter(
+            ParameterKeys.REBALANCE_THRESHOLD,
+            Config.REBALANCE_THRESHOLD
+        );
+        addressProvider.updateAddress(
+            AddressKeys.PARAMETER_PROVIDER,
+            address(parameterProvider)
+        );
 
         // Vesting Setup
         IVesting.VestingAmount[] memory amounts_ = new Vesting.VestingAmount[](
