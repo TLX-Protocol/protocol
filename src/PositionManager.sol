@@ -11,10 +11,10 @@ import {Errors} from "./libraries/Errors.sol";
 import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
+import {IReferrals} from "./interfaces/IReferrals.sol";
+import {ILocker} from "./interfaces/ILocker.sol";
 
-// TODO Create parameter provider
-// TODO Move rebalance threshold to parameter provider
-// TODO Redemption fee
+// TODO Charge redemption fee on notional
 // TODO Streaming fee
 
 contract PositionManager is IPositionManager {
@@ -44,13 +44,18 @@ contract PositionManager is IPositionManager {
             )
         ) revert LeverageUpdatePending();
 
+        // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         uint256 leveragedTokenAmount_ = baseAmountIn_
             .scaleFrom(_baseDecimals)
             .div(exchangeRate_);
+
+        // Verifying sufficient amount
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
         if (!sufficient_) revert InsufficientAmount();
+
+        // Minting
+        _baseAsset.transferFrom(msg.sender, address(this), baseAmountIn_);
         _depositMargin(baseAmountIn_);
         leveragedToken.mint(msg.sender, leveragedTokenAmount_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
@@ -72,12 +77,35 @@ contract PositionManager is IPositionManager {
             )
         ) revert LeverageUpdatePending();
 
+        // Accounting
         uint256 exchangeRate_ = exchangeRate();
         uint256 baseAmountReceived_ = leveragedTokenAmount_
             .mul(exchangeRate_)
             .scaleTo(_baseDecimals);
+        uint256 feePercent_ = _addressProvider
+            .parameterProvider()
+            .redemptionFee();
+        uint256 fee_ = baseAmountReceived_.mul(feePercent_);
+        baseAmountReceived_ = baseAmountReceived_ - fee_;
+
+        // Verifying sufficient amount
         bool sufficient_ = baseAmountReceived_ >= minBaseAmountReceived_;
         if (!sufficient_) revert InsufficientAmount();
+
+        // Paying referrals
+        IReferrals referrals_ = _addressProvider.referrals();
+        _addressProvider.baseAsset().approve(address(referrals_), fee_);
+        uint256 referralAmount_ = referrals_.takeEarnings(fee_, msg.sender);
+
+        // Sending fees to locker
+        ILocker locker_ = _addressProvider.locker();
+        uint256 amount_ = fee_ - referralAmount_;
+        if (amount_ != 0 && locker_.totalLocked() != 0) {
+            _addressProvider.baseAsset().approve(address(locker_), amount_);
+            locker_.donateRewards(amount_);
+        }
+
+        // Redeeming
         leveragedToken.burn(msg.sender, leveragedTokenAmount_);
         _withdrawMargin(baseAmountReceived_);
         _baseAsset.transfer(msg.sender, baseAmountReceived_);
