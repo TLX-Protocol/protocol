@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-import {IPyth} from "pyth-sdk-solidity/IPyth.sol";
 
 import {IPerpsV2MarketData} from "../src/interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
@@ -67,7 +66,25 @@ contract SynthetixHandlerTest is IntegrationTest {
         _executeOrder();
     }
 
+    function testSubmitLeverageUpdateTwice() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+    }
+
     function testHasPendingLeverageUpdate() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        _submitLeverageUpdate(2e18, true);
+        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        _executeOrder();
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
@@ -80,6 +97,11 @@ contract SynthetixHandlerTest is IntegrationTest {
     function testCancelLeverageUpdate() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        skip(2 minutes);
+        _cancelLeverageUpdate();
+        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
         _submitLeverageUpdate(2e18, true);
         assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
         skip(2 minutes);
@@ -108,12 +130,25 @@ contract SynthetixHandlerTest is IntegrationTest {
             100e18,
             0.01e18
         );
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertApproxEqRel(
+            synthetixHandler.totalValue(Symbols.ETH),
+            200e18,
+            0.01e18
+        );
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.totalValue(Symbols.ETH),
+            200e18,
+            0.01e18
+        );
     }
 
     function testNotional() public {
         assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
-        uint256 amount_ = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), amount_);
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
         _submitLeverageUpdate(2e18, true);
@@ -123,9 +158,32 @@ contract SynthetixHandlerTest is IntegrationTest {
             100e18 * 2,
             0.01e18
         );
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertApproxEqRel(
+            synthetixHandler.notionalValue(Symbols.ETH),
+            100e18 * 2,
+            0.01e18
+        );
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.notionalValue(Symbols.ETH),
+            200e18 * 2,
+            0.01e18
+        );
     }
 
     function testLeverage() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.leverage(Symbols.ETH),
+            2e18,
+            0.01e18
+        );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
@@ -143,9 +201,19 @@ contract SynthetixHandlerTest is IntegrationTest {
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertTrue(synthetixHandler.isLong(Symbols.ETH));
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertTrue(synthetixHandler.isLong(Symbols.ETH));
     }
 
     function testIsLongFalse() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, false);
+        _executeOrder();
+        assertFalse(synthetixHandler.isLong(Symbols.ETH));
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, false);
@@ -163,6 +231,20 @@ contract SynthetixHandlerTest is IntegrationTest {
         assertApproxEqRel(
             synthetixHandler.remainingMargin(Symbols.ETH),
             100e18,
+            0.01e18
+        );
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        assertApproxEqRel(
+            synthetixHandler.remainingMargin(Symbols.ETH),
+            200e18,
+            0.01e18
+        );
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        assertApproxEqRel(
+            synthetixHandler.remainingMargin(Symbols.ETH),
+            200e18,
             0.01e18
         );
     }
