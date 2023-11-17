@@ -12,6 +12,11 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
+// TODO Create parameter provider
+// TODO Move rebalance threshold to parameter provider
+// TODO Redemption fee
+// TODO Streaming fee
+
 contract PositionManager is IPositionManager {
     using ScaledNumber for uint256;
     using Address for address;
@@ -19,15 +24,13 @@ contract PositionManager is IPositionManager {
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
     uint8 internal immutable _baseDecimals;
-    uint256 internal immutable _rebalanceThreshold;
 
     ILeveragedToken public override leveragedToken;
 
-    constructor(address addressProvider_, uint256 rebalanceThreshold_) {
+    constructor(address addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _baseAsset = _addressProvider.baseAsset();
         _baseDecimals = _baseAsset.decimals();
-        _rebalanceThreshold = rebalanceThreshold_;
     }
 
     function mint(
@@ -132,7 +135,10 @@ contract PositionManager is IPositionManager {
             ? current_ - target_
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
-        return percentDiff_ >= _rebalanceThreshold;
+        uint256 rebalanceThreshold_ = _addressProvider
+            .parameterProvider()
+            .rebalanceThreshold();
+        return percentDiff_ >= rebalanceThreshold_;
     }
 
     function _depositMargin(uint256 amount_) internal {

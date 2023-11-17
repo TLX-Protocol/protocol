@@ -16,7 +16,6 @@ import {LeveragedToken} from "./LeveragedToken.sol";
 contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _maxLeverage;
-    uint256 internal immutable _rebalanceThreshold;
 
     address[] internal _allTokens;
     address[] internal _longTokens;
@@ -31,14 +30,9 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(address => bool) public override isLeveragedToken;
     mapping(address => bool) public override isPositionManager;
 
-    constructor(
-        address addressProvider_,
-        uint256 maxLeverage_,
-        uint256 rebalanceThreshold_
-    ) {
+    constructor(address addressProvider_, uint256 maxLeverage_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _maxLeverage = maxLeverage_;
-        _rebalanceThreshold = rebalanceThreshold_;
     }
 
     function createLeveragedTokens(
@@ -64,12 +58,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
 
         // Deploying position managers
         PositionManager longPositionManager_ = new PositionManager(
-            address(_addressProvider),
-            _rebalanceThreshold
+            address(_addressProvider)
         );
         PositionManager shortPositionManager_ = new PositionManager(
-            address(_addressProvider),
-            _rebalanceThreshold
+            address(_addressProvider)
         );
 
         // Deploying tokens
