@@ -76,6 +76,10 @@ contract IntegrationTest is Test {
             ParameterKeys.REBALANCE_THRESHOLD,
             Config.REBALANCE_THRESHOLD
         );
+        parameterProvider.updateParameter(
+            ParameterKeys.REDEMPTION_FEE,
+            Config.REDEMPTION_FEE
+        );
         addressProvider.updateAddress(
             AddressKeys.PARAMETER_PROVIDER,
             address(parameterProvider)

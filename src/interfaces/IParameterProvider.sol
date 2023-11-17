@@ -23,4 +23,10 @@ interface IParameterProvider {
      * @return rebalanceThreshold The rebalance threshold parameter.
      */
     function rebalanceThreshold() external view returns (uint256);
+
+    /**
+     * @notice Returns the redemption fee parameter.
+     * @return redemptionFee The redemption fee parameter.
+     */
+    function redemptionFee() external view returns (uint256);
 }

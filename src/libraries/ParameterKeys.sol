@@ -3,4 +3,5 @@ pragma solidity ^0.8.13;
 
 library ParameterKeys {
     bytes32 public constant REBALANCE_THRESHOLD = "rebalanceThreshold";
+    bytes32 public constant REDEMPTION_FEE = "redemptionFee";
 }
