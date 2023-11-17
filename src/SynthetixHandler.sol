@@ -53,11 +53,12 @@ contract SynthetixHandler is ISynthetixHandler {
     ) public override {
         uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
-        uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
         uint256 assetPrice_ = assetPrice(targetAsset_);
+        uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
+        notionalValue_ = notionalValue_.div(assetPrice_); // Convert to target units
         uint256 targetNotional_ = marginAmount_.mul(leverage_).div(assetPrice_);
         int256 sizeDelta_ = int256(targetNotional_) - int256(notionalValue_);
-        if (!isLong_) sizeDelta_ = -sizeDelta_;
+        if (!isLong_) sizeDelta_ = -sizeDelta_; // Invert if shorting
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
         uint256 price_ = fillPrice(targetAsset_, sizeDelta_);
 
