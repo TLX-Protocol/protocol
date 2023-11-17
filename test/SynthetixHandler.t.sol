@@ -46,6 +46,17 @@ contract SynthetixHandlerTest is IntegrationTest {
         _executeOrder();
     }
 
+    function testSubmitLeverageUpdateTwice() public {
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _depositMargin(100e18);
+        _submitLeverageUpdate(2e18, true);
+        _executeOrder();
+    }
+
     function testHasPendingLeverageUpdate() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
