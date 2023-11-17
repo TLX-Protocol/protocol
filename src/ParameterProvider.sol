@@ -31,4 +31,8 @@ contract ParameterProvider is IParameterProvider, Ownable {
     function redemptionFee() external view override returns (uint256) {
         return _parameters[ParameterKeys.REDEMPTION_FEE];
     }
+
+    function streamingFee() external view override returns (uint256) {
+        return _parameters[ParameterKeys.STREAMING_FEE];
+    }
 }

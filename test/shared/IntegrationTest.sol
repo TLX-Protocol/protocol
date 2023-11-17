@@ -80,6 +80,10 @@ contract IntegrationTest is Test {
             ParameterKeys.REDEMPTION_FEE,
             Config.REDEMPTION_FEE
         );
+        parameterProvider.updateParameter(
+            ParameterKeys.STREAMING_FEE,
+            Config.STREAMING_FEE
+        );
         addressProvider.updateAddress(
             AddressKeys.PARAMETER_PROVIDER,
             address(parameterProvider)

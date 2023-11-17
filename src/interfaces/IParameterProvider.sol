@@ -29,4 +29,10 @@ interface IParameterProvider {
      * @return redemptionFee The redemption fee parameter.
      */
     function redemptionFee() external view returns (uint256);
+
+    /**
+     * @notice Returns the streaming fee parameter.
+     * @return streamingFee The streaming fee parameter.
+     */
+    function streamingFee() external view returns (uint256);
 }
