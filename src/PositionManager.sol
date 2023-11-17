@@ -12,10 +12,6 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-// TODO Move this synthetix handler fix back to the root branch
-// TODO What if we need to rebalance to withdraw?? (check if the margin changes as the price changes)
-// TODO What if it is cancelled??
-// TODO Rebalance during mint and redeems
 // TODO Don't allow mint or redeems if there is a pending leverage update
 
 contract PositionManager is IPositionManager {
@@ -74,8 +70,11 @@ contract PositionManager is IPositionManager {
         leveragedToken.burn(msg.sender, leveragedTokenAmount_);
         _withdrawMargin(baseAmountReceived_);
         _baseAsset.transfer(msg.sender, baseAmountReceived_);
-
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
+
+        // Rebalancing if necessary
+        if (canRebalance()) rebalance();
+
         return baseAmountReceived_;
     }
 
