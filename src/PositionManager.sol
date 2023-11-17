@@ -12,8 +12,8 @@ import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-// TODO Rebalance during mint??
-// TODO What if we need to rebalance to withdraw??
+// TODO Move this synthetix handler fix back to the root branch
+// TODO What if we need to rebalance to withdraw?? (check if the margin changes as the price changes)
 // TODO What if it is cancelled??
 // TODO Rebalance during mint and redeems
 // TODO Don't allow mint or redeems if there is a pending leverage update
@@ -52,6 +52,10 @@ contract PositionManager is IPositionManager {
         _depositMargin(baseAmountIn_);
         leveragedToken.mint(msg.sender, leveragedTokenAmount_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
+
+        // Rebalancing if necessary
+        if (canRebalance()) rebalance();
+
         return leveragedTokenAmount_;
     }
 
@@ -75,12 +79,9 @@ contract PositionManager is IPositionManager {
         return baseAmountReceived_;
     }
 
-    function rebalance() external override {
+    function rebalance() public override {
         if (!canRebalance()) revert CannotRebalance();
-        _submitLeverageUpdate(
-            leveragedToken.targetLeverage(),
-            leveragedToken.isLong()
-        );
+        _submitLeverageUpdate();
     }
 
     function setLeveragedToken(address leveragedToken_) external override {
@@ -147,13 +148,13 @@ contract PositionManager is IPositionManager {
         );
     }
 
-    function _submitLeverageUpdate(uint256 leverage_, bool isLong_) internal {
+    function _submitLeverageUpdate() internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
             abi.encodeWithSignature(
                 "submitLeverageUpdate(string,uint256,bool)",
                 leveragedToken.targetAsset(),
-                leverage_,
-                isLong_
+                leveragedToken.targetLeverage(),
+                leveragedToken.isLong()
             )
         );
     }

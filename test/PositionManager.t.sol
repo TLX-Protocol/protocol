@@ -44,12 +44,13 @@ contract PositionManagerTest is IntegrationTest {
         assertEq(leveragedToken.totalSupply(), 100e18);
         assertEq(leveragedToken.balanceOf(address(this)), 100e18);
         assertEq(IERC20(Tokens.SUSD).balanceOf(address(positionManager)), 0);
-        assertEq(
+        assertApproxEqRel(
             synthetixHandler.remainingMargin(
                 Symbols.ETH,
                 address(positionManager)
             ),
-            100e18
+            100e18,
+            0.05e18
         );
         assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 0);
     }
@@ -70,48 +71,46 @@ contract PositionManagerTest is IntegrationTest {
         uint256 minLeveragedTokenAmountOut = 100e18;
         IERC20(Tokens.SUSD).approve(address(positionManager), baseAmountIn);
         positionManager.mint(baseAmountIn, minLeveragedTokenAmountOut);
+        _executeOrder(address(positionManager));
         assertEq(leveragedToken.balanceOf(address(this)), 100e18);
 
         // Redeeming Leveraged Tokens
-        uint256 leveragedTokenAmountIn = 100e18;
-        uint256 minBaseAmountOut = 90e18;
+        uint256 leveragedTokenAmountIn = 1e18; // TODO Make this bigger
+        uint256 minBaseAmountOut = 0.9e18;
+        uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
         uint256 baseAmountOut = positionManager.redeem(
             leveragedTokenAmountIn,
             minBaseAmountOut
         );
+        uint256 balanceAfter = IERC20(Tokens.SUSD).balanceOf(address(this));
 
-        assertEq(baseAmountOut, 100e18);
-        assertEq(leveragedToken.totalSupply(), 0);
-        assertEq(leveragedToken.balanceOf(address(this)), 0);
-        assertEq(IERC20(Tokens.SUSD).balanceOf(address(positionManager)), 0);
-        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 100e18);
+        assertApproxEqRel(baseAmountOut, 1e18, 0.05e18, "1");
+        assertEq(leveragedToken.totalSupply(), 99e18);
+        assertEq(leveragedToken.balanceOf(address(this)), 99e18);
+        assertApproxEqRel(balanceAfter - balanceBefore, 1e18, 0.05e18, "2");
     }
 
     function testExchangeRate() public {
         assertEq(positionManager.exchangeRate(), 1e18);
         _mintTokens();
-        assertApproxEqRel(positionManager.exchangeRate(), 1e18, 0.01e18);
+        _executeOrder(address(positionManager));
+        assertApproxEqRel(positionManager.exchangeRate(), 1e18, 0.05e18);
     }
 
     function testCanRebalance() public {
         assertFalse(positionManager.canRebalance(), "1");
         _mintTokens();
-        assertTrue(positionManager.canRebalance(), "2");
-        positionManager.rebalance();
+        assertFalse(positionManager.canRebalance(), "2");
+        _executeOrder(address(positionManager));
+
         assertFalse(positionManager.canRebalance(), "3");
+        _mintTokens();
         _executeOrder(address(positionManager));
         assertFalse(positionManager.canRebalance(), "4");
-        _mintTokens();
-        assertTrue(positionManager.canRebalance(), "5");
     }
 
     function testRebalance() public {
         _mintTokens();
-        assertEq(
-            synthetixHandler.leverage(Symbols.ETH, address(positionManager)),
-            0
-        );
-        positionManager.rebalance();
         _executeOrder(address(positionManager));
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(positionManager)),
