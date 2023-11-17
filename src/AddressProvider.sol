@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {Initializable} from "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
@@ -17,8 +16,9 @@ import {IVesting} from "./interfaces/IVesting.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
+import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 
-contract AddressProvider is IAddressProvider, Ownable, Initializable {
+contract AddressProvider is IAddressProvider, Ownable {
     mapping(bytes32 => address) internal _addresses;
 
     function updateAddress(
@@ -92,5 +92,14 @@ contract AddressProvider is IAddressProvider, Ownable, Initializable {
 
     function pol() external view override returns (address) {
         return _addresses[AddressKeys.POL];
+    }
+
+    function parameterProvider()
+        external
+        view
+        override
+        returns (IParameterProvider)
+    {
+        return IParameterProvider(_addresses[AddressKeys.PARAMETER_PROVIDER]);
     }
 }

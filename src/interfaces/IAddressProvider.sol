@@ -12,6 +12,7 @@ import {IVesting} from "./IVesting.sol";
 import {ITlxToken} from "./ITlxToken.sol";
 import {ILocker} from "./ILocker.sol";
 import {ISynthetixHandler} from "./ISynthetixHandler.sol";
+import {IParameterProvider} from "./IParameterProvider.sol";
 
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
@@ -107,4 +108,13 @@ interface IAddressProvider {
      * @return pol The address of the POL token.
      */
     function pol() external view returns (address pol);
+
+    /**
+     * @notice Returns the address for the Parameter Provider.
+     * @return parameterProvider The address of the Parameter Provider.
+     */
+    function parameterProvider()
+        external
+        view
+        returns (IParameterProvider parameterProvider);
 }

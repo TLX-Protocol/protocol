@@ -14,4 +14,5 @@ library AddressKeys {
     bytes32 public constant LOCKER = "locker";
     bytes32 public constant SYNTHETIX_HANDLER = "synthetixHandler";
     bytes32 public constant POL = "pol";
+    bytes32 public constant PARAMETER_PROVIDER = "parameterProvider";
 }
