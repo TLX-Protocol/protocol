@@ -14,7 +14,6 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 
-// TODO Charge redemption fee on notional
 // TODO Streaming fee
 
 contract PositionManager is IPositionManager {
@@ -85,7 +84,9 @@ contract PositionManager is IPositionManager {
         uint256 feePercent_ = _addressProvider
             .parameterProvider()
             .redemptionFee();
-        uint256 fee_ = baseAmountReceived_.mul(feePercent_);
+        uint256 fee_ = baseAmountReceived_
+            .mul(leveragedToken.targetLeverage())
+            .mul(feePercent_);
         baseAmountReceived_ = baseAmountReceived_ - fee_;
 
         // Verifying sufficient amount
