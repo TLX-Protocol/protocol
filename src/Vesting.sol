@@ -15,6 +15,7 @@ contract Vesting is IVesting {
     uint256 internal immutable _duration;
 
     mapping(address => uint256) public override claimed;
+    mapping(address => mapping(address => bool)) public override isDelegate;
 
     constructor(
         address addressProvider_,
@@ -32,12 +33,28 @@ contract Vesting is IVesting {
         }
     }
 
-    function claim() external override {
-        uint256 claimable_ = claimable(msg.sender);
+    function claim() public override {
+        claim(msg.sender, msg.sender);
+    }
+
+    function claim(address account_, address to_) public override {
+        bool isDelegate_ = isDelegate[account_][msg.sender];
+        bool authorized_ = account_ == msg.sender || isDelegate_;
+        if (!authorized_) revert NotAuthorized();
+
+        uint256 claimable_ = claimable(account_);
         if (claimable_ == 0) revert NothingToClaim();
-        claimed[msg.sender] += claimable_;
-        _addressProvider.tlx().transfer(msg.sender, claimable_);
-        emit Claimed(msg.sender, claimable_);
+        claimed[account_] += claimable_;
+        _addressProvider.tlx().transfer(to_, claimable_);
+        emit Claimed(account_, to_, claimable_);
+    }
+
+    function addDelegate(address delegate_) public override {
+        isDelegate[msg.sender][delegate_] = true;
+    }
+
+    function removeDelegate(address delegate_) public override {
+        isDelegate[msg.sender][delegate_] = false;
     }
 
     function claimable(
