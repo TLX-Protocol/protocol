@@ -39,13 +39,13 @@ interface IBonding {
      * @notice Sets the bonding to live.
      * @dev Reverts if the caller is not the owner.
      */
-    function launchBonding() external;
+    function launch() external;
 
     /**
      * @notice Returns if the bonding is live.
-     * @return bondingLive If the bonding is live.
+     * @return isLive If the bonding is live.
      */
-    function bondingLive() external view returns (bool bondingLive);
+    function isLive() external view returns (bool isLive);
 
     /**
      * @notice Returns the exchange rate between leveraged tokens baseAsset value and TLX.
