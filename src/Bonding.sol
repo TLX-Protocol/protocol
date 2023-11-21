@@ -16,6 +16,7 @@ contract Bonding is IBonding, Ownable {
     using ScaledNumber for uint256;
 
     uint256 public override totalTlxBonded;
+    bool public override bondingLive;
 
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _periodDecayMultiplier;
@@ -40,7 +41,6 @@ contract Bonding is IBonding, Ownable {
         _periodDuration = periodDuration_;
         _lastDecayTimestamp = block.timestamp;
         _baseForAllTlx = baseForAllTlx_;
-        _lastUpdate = block.timestamp;
     }
 
     function bond(
@@ -48,6 +48,9 @@ contract Bonding is IBonding, Ownable {
         uint256 leveragedTokenAmount_,
         uint256 minTlxTokensReceived_
     ) external override returns (uint256) {
+        // Check that the bonding is live
+        if (!bondingLive) revert BondingNotLive();
+
         // Check that the leveraged token is valid
         if (!_isLeveragedToken(leveragedToken_)) revert NotLeveragedToken();
 
@@ -93,7 +96,15 @@ contract Bonding is IBonding, Ownable {
         _baseForAllTlx = baseForAllTlx_;
     }
 
+    function launchBonding() external override onlyOwner {
+        if (bondingLive) revert BondingAlreadyLive();
+        bondingLive = true;
+        _lastUpdate = block.timestamp;
+    }
+
     function availableTlx() public view override returns (uint256) {
+        if (!bondingLive) return 0;
+
         uint256 nextDecay_ = _lastDecayTimestamp + _periodDuration;
         return
             _tlxInRange(

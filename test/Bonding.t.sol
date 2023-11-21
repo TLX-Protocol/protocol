@@ -36,17 +36,45 @@ contract BondingTest is IntegrationTest {
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
 
+    function testLaunchingBonding() public {
+        assertEq(bonding.bondingLive(), false);
+
+        // Testing reverts when not live
+        vm.expectRevert(IBonding.BondingNotLive.selector);
+        bonding.bond(leveragedToken, 1e18, 0);
+
+        // Testing reverts when making live from non owner
+        vm.startPrank(alice);
+        vm.expectRevert();
+        bonding.launchBonding();
+        vm.stopPrank();
+
+        // Test making live
+        bonding.launchBonding();
+        assertEq(bonding.bondingLive(), true);
+
+        // Testing can bond
+        skip(15 days);
+        bonding.bond(leveragedToken, 1e18, 0);
+    }
+
     function testShouldRevertForNonLeveragedToken() public {
+        bonding.launchBonding();
+
         vm.expectRevert(IBonding.NotLeveragedToken.selector);
         bonding.bond(Tokens.UNI, 1e18, 0);
     }
 
     function testShouldRevertForNotEnoughTlx() public {
+        bonding.launchBonding();
+
         vm.expectRevert(IBonding.MinTlxNotReached.selector);
         bonding.bond(leveragedToken, 1e18, 1e18);
     }
 
     function testShouldBondAll() public {
+        bonding.launchBonding();
+
         // Half of a period
         skip(15 days);
 
@@ -114,6 +142,8 @@ contract BondingTest is IntegrationTest {
     }
 
     function testRevertsForExceedsAvailable() public {
+        bonding.launchBonding();
+
         // Half of a period
         skip(15 days);
 
@@ -122,6 +152,8 @@ contract BondingTest is IntegrationTest {
     }
 
     function testShouldBondAllOverLongPeriod() public {
+        bonding.launchBonding();
+
         // Half of a period
         skip(45 days);
 
