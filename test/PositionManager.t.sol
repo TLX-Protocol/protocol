@@ -21,7 +21,7 @@ contract PositionManagerTest is IntegrationTest {
         (address longTokenAddress_, ) = leveragedTokenFactory
             .createLeveragedTokens(Symbols.ETH, 1.23e18);
         leveragedToken = LeveragedToken(longTokenAddress_);
-        positionManager = IPositionManager(leveragedToken.positionManager());
+        positionManager = leveragedToken.positionManager();
     }
 
     function testInit() public {

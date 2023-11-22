@@ -8,7 +8,6 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {IOracle} from "./interfaces/IOracle.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
-import {IPositionManager} from "./interfaces/IPositionManager.sol";
 
 interface IChainlink {
     function latestRoundData()
@@ -117,8 +116,6 @@ contract Oracle is IOracle, Ownable {
     }
 
     function _exchangeRate(address token_) internal view returns (uint256) {
-        return
-            IPositionManager(ILeveragedToken(token_).positionManager())
-                .exchangeRate();
+        return ILeveragedToken(token_).positionManager().exchangeRate();
     }
 }

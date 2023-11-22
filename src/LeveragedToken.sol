@@ -8,14 +8,17 @@ import {Errors} from "./libraries/Errors.sol";
 
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
+import {IPositionManager} from "./interfaces/IPositionManager.sol";
+
 contract LeveragedToken is ILeveragedToken, ERC20 {
     string public override targetAsset;
     uint256 public immutable override targetLeverage;
     bool public immutable override isLong;
-    address public immutable override positionManager;
+    IPositionManager public immutable override positionManager;
 
     modifier onlyPositionManager() {
-        if (msg.sender != positionManager) revert Errors.NotAuthorized();
+        if (msg.sender != address(positionManager))
+            revert Errors.NotAuthorized();
         _;
     }
 
@@ -30,7 +33,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
-        positionManager = positionManager_;
+        positionManager = IPositionManager(positionManager_);
     }
 
     function mint(
@@ -45,5 +48,9 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         uint256 amount
     ) external override onlyPositionManager {
         _burn(account, amount);
+    }
+
+    function isActive() external view override returns (bool) {
+        return positionManager.exchangeRate() > 0;
     }
 }

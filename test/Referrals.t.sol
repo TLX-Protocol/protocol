@@ -137,10 +137,13 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, CODE);
 
         leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
-        address positionManager_ = ILeveragedToken(
-            leveragedTokenFactory.longTokens(Symbols.UNI)[0]
-        ).positionManager();
-        vm.prank(positionManager_);
+        vm.prank(
+            address(
+                ILeveragedToken(
+                    leveragedTokenFactory.longTokens(Symbols.UNI)[0]
+                ).positionManager()
+            )
+        );
         referrals.updateReferralFor(bob, CODE);
 
         assertEq(referrals.codeRebate(CODE), 0.5e18);
