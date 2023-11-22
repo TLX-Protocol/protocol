@@ -20,7 +20,6 @@ contract PositionManager is IPositionManager {
 
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
-    uint8 internal immutable _baseDecimals;
 
     uint256 internal _lastRebalanceTimestamp;
 
@@ -29,7 +28,6 @@ contract PositionManager is IPositionManager {
     constructor(address addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _baseAsset = _addressProvider.baseAsset();
-        _baseDecimals = _baseAsset.decimals();
     }
 
     function mint(
@@ -45,9 +43,7 @@ contract PositionManager is IPositionManager {
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        uint256 leveragedTokenAmount_ = baseAmountIn_
-            .scaleFrom(_baseDecimals)
-            .div(exchangeRate_);
+        uint256 leveragedTokenAmount_ = baseAmountIn_.div(exchangeRate_);
 
         // Verifying sufficient amount
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
@@ -78,9 +74,7 @@ contract PositionManager is IPositionManager {
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        uint256 baseAmountReceived_ = leveragedTokenAmount_
-            .mul(exchangeRate_)
-            .scaleTo(_baseDecimals);
+        uint256 baseAmountReceived_ = leveragedTokenAmount_.mul(exchangeRate_);
         uint256 feePercent_ = _addressProvider
             .parameterProvider()
             .redemptionFee();
