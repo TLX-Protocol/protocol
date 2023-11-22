@@ -71,10 +71,9 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        _addressProvider.tlx().transfer(address(this), tlxAmount_);
         ILocker locker_ = _addressProvider.locker();
         _addressProvider.tlx().approve(address(locker_), tlxAmount_);
-        ILocker(locker_).lockFor(tlxAmount_, msg.sender);
+        locker_.lockFor(tlxAmount_, msg.sender);
 
         // Emit the event
         emit Bonded(
