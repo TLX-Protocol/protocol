@@ -92,6 +92,7 @@ contract Bonding is IBonding, Ownable {
     function setBaseForAllTlx(
         uint256 baseForAllTlx_
     ) external override onlyOwner {
+        if (!isLive) revert BondingNotLive();
         _updateCache();
         _baseForAllTlx = baseForAllTlx_;
     }
