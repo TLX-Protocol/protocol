@@ -7,6 +7,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
+import {Config} from "../src/libraries/Config.sol";
 
 import {PositionManager} from "../src/PositionManager.sol";
 import {LeveragedToken} from "../src/LeveragedToken.sol";
@@ -19,7 +20,11 @@ contract PositionManagerTest is IntegrationTest {
 
     function setUp() public {
         (address longTokenAddress_, ) = leveragedTokenFactory
-            .createLeveragedTokens(Symbols.ETH, 1.23e18);
+            .createLeveragedTokens(
+                Symbols.ETH,
+                1.23e18,
+                Config.REBALANCE_THRESHOLD
+            );
         leveragedToken = LeveragedToken(longTokenAddress_);
         positionManager = leveragedToken.positionManager();
     }
@@ -138,6 +143,25 @@ contract PositionManagerTest is IntegrationTest {
             1.23e18 / 2,
             0.05e18
         );
+    }
+
+    function testUpdateRebalanceThreshold() public {
+        assertEq(
+            positionManager.rebalanceThreshold(),
+            Config.REBALANCE_THRESHOLD
+        );
+        vm.expectRevert(IPositionManager.InvalidRebalanceThreshold.selector);
+        positionManager.setRebalanceThreshold(0.0001e18);
+        vm.expectRevert(IPositionManager.InvalidRebalanceThreshold.selector);
+        positionManager.setRebalanceThreshold(0.9e18);
+        vm.expectRevert(IPositionManager.InvalidRebalanceThreshold.selector);
+        positionManager.setRebalanceThreshold(Config.REBALANCE_THRESHOLD);
+        vm.startPrank(alice);
+        vm.expectRevert();
+        positionManager.setRebalanceThreshold(0.33e18);
+        vm.stopPrank();
+        positionManager.setRebalanceThreshold(0.33e18);
+        assertEq(positionManager.rebalanceThreshold(), 0.33e18);
     }
 
     function _mintTokens() public {

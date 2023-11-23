@@ -60,95 +60,152 @@ contract SynthetixHandlerTest is IntegrationTest {
     function testHasPendingLeverageUpdate() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _submitLeverageUpdate(2e18, true);
-        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertTrue(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _executeOrder();
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _submitLeverageUpdate(2e18, true);
-        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertTrue(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _executeOrder();
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
     }
 
     function testCancelLeverageUpdate() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
-        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertTrue(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         skip(2 minutes);
         _cancelLeverageUpdate();
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         _submitLeverageUpdate(2e18, true);
-        assertTrue(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertTrue(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
         skip(2 minutes);
         _cancelLeverageUpdate();
-        assertFalse(synthetixHandler.hasPendingLeverageUpdate(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasPendingLeverageUpdate(
+                Symbols.ETH,
+                address(this)
+            )
+        );
     }
 
     function testHasOpenPosition() public {
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
-        assertFalse(synthetixHandler.hasOpenPosition(Symbols.ETH));
+        assertFalse(
+            synthetixHandler.hasOpenPosition(Symbols.ETH, address(this))
+        );
         _executeOrder();
-        assertTrue(synthetixHandler.hasOpenPosition(Symbols.ETH));
+        assertTrue(
+            synthetixHandler.hasOpenPosition(Symbols.ETH, address(this))
+        );
     }
 
     function testTotalValue() public {
-        assertEq(synthetixHandler.totalValue(Symbols.ETH), 0);
+        assertEq(synthetixHandler.totalValue(Symbols.ETH, address(this)), 0);
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertEq(synthetixHandler.totalValue(Symbols.ETH), 100e18);
+        assertEq(
+            synthetixHandler.totalValue(Symbols.ETH, address(this)),
+            100e18
+        );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.totalValue(Symbols.ETH),
+            synthetixHandler.totalValue(Symbols.ETH, address(this)),
             100e18,
             0.01e18
         );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
-            synthetixHandler.totalValue(Symbols.ETH),
+            synthetixHandler.totalValue(Symbols.ETH, address(this)),
             200e18,
             0.01e18
         );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.totalValue(Symbols.ETH),
+            synthetixHandler.totalValue(Symbols.ETH, address(this)),
             200e18,
             0.01e18
         );
     }
 
     function testNotional() public {
-        assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
+        assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertEq(synthetixHandler.notionalValue(Symbols.ETH), 0);
+        assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.notionalValue(Symbols.ETH),
+            synthetixHandler.notionalValue(Symbols.ETH, address(this)),
             100e18 * 2,
             0.01e18
         );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
-            synthetixHandler.notionalValue(Symbols.ETH),
+            synthetixHandler.notionalValue(Symbols.ETH, address(this)),
             100e18 * 2,
             0.01e18
         );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.notionalValue(Symbols.ETH),
+            synthetixHandler.notionalValue(Symbols.ETH, address(this)),
             200e18 * 2,
             0.01e18
         );
@@ -160,7 +217,7 @@ contract SynthetixHandlerTest is IntegrationTest {
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH),
+            synthetixHandler.leverage(Symbols.ETH, address(this)),
             2e18,
             0.01e18
         );
@@ -169,7 +226,7 @@ contract SynthetixHandlerTest is IntegrationTest {
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH),
+            synthetixHandler.leverage(Symbols.ETH, address(this)),
             2e18,
             0.01e18
         );
@@ -180,12 +237,12 @@ contract SynthetixHandlerTest is IntegrationTest {
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
-        assertTrue(synthetixHandler.isLong(Symbols.ETH));
+        assertTrue(synthetixHandler.isLong(Symbols.ETH, address(this)));
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
-        assertTrue(synthetixHandler.isLong(Symbols.ETH));
+        assertTrue(synthetixHandler.isLong(Symbols.ETH, address(this)));
     }
 
     function testIsLongFalse() public {
@@ -193,37 +250,43 @@ contract SynthetixHandlerTest is IntegrationTest {
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, false);
         _executeOrder();
-        assertFalse(synthetixHandler.isLong(Symbols.ETH));
+        assertFalse(synthetixHandler.isLong(Symbols.ETH, address(this)));
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, false);
         _executeOrder();
-        assertFalse(synthetixHandler.isLong(Symbols.ETH));
+        assertFalse(synthetixHandler.isLong(Symbols.ETH, address(this)));
     }
 
     function testRemainingMargin() public {
-        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 0);
+        assertEq(
+            synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
+            0
+        );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
-        assertEq(synthetixHandler.remainingMargin(Symbols.ETH), 100e18);
+        assertEq(
+            synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
+            100e18
+        );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.remainingMargin(Symbols.ETH),
+            synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
             100e18,
             0.01e18
         );
         _mintTokensFor(Tokens.SUSD, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
-            synthetixHandler.remainingMargin(Symbols.ETH),
+            synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
             200e18,
             0.01e18
         );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
-            synthetixHandler.remainingMargin(Symbols.ETH),
+            synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
             200e18,
             0.01e18
         );

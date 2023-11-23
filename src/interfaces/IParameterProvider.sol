@@ -12,17 +12,11 @@ interface IParameterProvider {
     function updateParameter(bytes32 key, uint256 value) external;
 
     /**
-     * @notice Returns the parameter for a kiven key.
+     * @notice Returns the parameter for a given key.
      * @param key The key of the parameter to be returned.
      * @return value The parameter  for the given key.
      */
     function parameterOf(bytes32 key) external view returns (uint256 value);
-
-    /**
-     * @notice Returns the rebalance threshold parameter.
-     * @return rebalanceThreshold The rebalance threshold parameter.
-     */
-    function rebalanceThreshold() external view returns (uint256);
 
     /**
      * @notice Returns the redemption fee parameter.

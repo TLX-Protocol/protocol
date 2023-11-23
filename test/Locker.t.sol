@@ -201,7 +201,21 @@ contract LockerTest is IntegrationTest {
         assertEq(locker.claimable(address(this)), rewardAmount, "claimable");
     }
 
+    function testClaimingDisabled() public {
+        _mintTokensFor(address(tlx), address(this), 100e18);
+        _mintTokensFor(address(reward), address(this), rewardAmount);
+        tlx.approve(address(locker), 100e18);
+        locker.lock(100e18);
+        reward.approve(address(locker), rewardAmount);
+        locker.donateRewards(rewardAmount);
+        uint256 claimable_ = locker.claimable(address(this));
+        assertEq(claimable_, rewardAmount, "claimable");
+        vm.expectRevert(ILocker.ClaimingNotEnabled.selector);
+        locker.claim();
+    }
+
     function testClaim() public {
+        locker.enableClaiming();
         _mintTokensFor(address(tlx), address(this), 100e18);
         _mintTokensFor(address(reward), address(this), rewardAmount);
         tlx.approve(address(locker), 100e18);
@@ -218,6 +232,18 @@ contract LockerTest is IntegrationTest {
         assertEq(claimed_, rewardAmount);
         assertEq(reward.balanceOf(address(locker)), 0);
         assertEq(locker.claimable(address(this)), 0, "claimable");
+    }
+
+    function testNonOwnerCantEnableClaiming() public {
+        vm.startPrank(alice);
+        vm.expectRevert();
+        locker.enableClaiming();
+    }
+
+    function testCantEnableClainmingTwice() public {
+        locker.enableClaiming();
+        vm.expectRevert(ILocker.ClaimingAlreadyEnabled.selector);
+        locker.enableClaiming();
     }
 
     function testAccounting() public {

@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -14,22 +15,25 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 
-contract PositionManager is IPositionManager {
+contract PositionManager is IPositionManager, Ownable {
     using ScaledNumber for uint256;
     using Address for address;
 
+    uint256 internal constant _MIN_REBALANCE_THRESHOLD = 0.01e18;
+    uint256 internal constant _MAX_REBALANCE_THRESHOLD = 0.8e18;
+
     IAddressProvider internal immutable _addressProvider;
     IERC20Metadata internal immutable _baseAsset;
-    uint8 internal immutable _baseDecimals;
 
     uint256 internal _lastRebalanceTimestamp;
 
     ILeveragedToken public override leveragedToken;
+    uint256 public override rebalanceThreshold;
 
-    constructor(address addressProvider_) {
+    constructor(address addressProvider_, uint256 rebalanceThreshold_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _baseAsset = _addressProvider.baseAsset();
-        _baseDecimals = _baseAsset.decimals();
+        rebalanceThreshold = rebalanceThreshold_;
     }
 
     function mint(
@@ -39,15 +43,14 @@ contract PositionManager is IPositionManager {
         if (baseAmountIn_ == 0) return 0;
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             )
         ) revert LeverageUpdatePending();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        uint256 leveragedTokenAmount_ = baseAmountIn_
-            .scaleFrom(_baseDecimals)
-            .div(exchangeRate_);
+        uint256 leveragedTokenAmount_ = baseAmountIn_.div(exchangeRate_);
 
         // Verifying sufficient amount
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
@@ -72,15 +75,14 @@ contract PositionManager is IPositionManager {
         if (leveragedTokenAmount_ == 0) return 0;
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             )
         ) revert LeverageUpdatePending();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        uint256 baseAmountReceived_ = leveragedTokenAmount_
-            .mul(exchangeRate_)
-            .scaleTo(_baseDecimals);
+        uint256 baseAmountReceived_ = leveragedTokenAmount_.mul(exchangeRate_);
         uint256 feePercent_ = _addressProvider
             .parameterProvider()
             .redemptionFee();
@@ -127,7 +129,7 @@ contract PositionManager is IPositionManager {
             .streamingFee();
         uint256 notionalValue_ = _addressProvider
             .synthetixHandler()
-            .notionalValue(leveragedToken.targetAsset());
+            .notionalValue(leveragedToken.targetAsset(), address(this));
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
         uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
@@ -151,10 +153,26 @@ contract PositionManager is IPositionManager {
         leveragedToken = ILeveragedToken(leveragedToken_);
     }
 
+    function setRebalanceThreshold(
+        uint256 rebalanceThreshold_
+    ) public override onlyOwner {
+        if (rebalanceThreshold_ < _MIN_REBALANCE_THRESHOLD) {
+            revert InvalidRebalanceThreshold();
+        }
+        if (rebalanceThreshold_ > _MAX_REBALANCE_THRESHOLD) {
+            revert InvalidRebalanceThreshold();
+        }
+        if (rebalanceThreshold_ == rebalanceThreshold) {
+            revert InvalidRebalanceThreshold();
+        }
+        rebalanceThreshold = rebalanceThreshold_;
+    }
+
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = leveragedToken.totalSupply();
         uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
-            leveragedToken.targetAsset()
+            leveragedToken.targetAsset(),
+            address(this)
         );
         if (totalSupply_ == 0) return 1e18;
         return totalValue.div(totalSupply_);
@@ -164,7 +182,8 @@ contract PositionManager is IPositionManager {
         // Can't rebalance if there is no margin
         if (
             _addressProvider.synthetixHandler().remainingMargin(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             ) == 0
         ) return false;
 
@@ -178,17 +197,15 @@ contract PositionManager is IPositionManager {
 
         // Can't rebalance if the leverage is already within the threshold
         uint256 current_ = _addressProvider.synthetixHandler().leverage(
-            leveragedToken.targetAsset()
+            leveragedToken.targetAsset(),
+            address(this)
         );
         uint256 target_ = leveragedToken.targetLeverage();
         uint256 diff_ = current_ > target_
             ? current_ - target_
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
-        uint256 rebalanceThreshold_ = _addressProvider
-            .parameterProvider()
-            .rebalanceThreshold();
-        return percentDiff_ >= rebalanceThreshold_;
+        return percentDiff_ >= rebalanceThreshold;
     }
 
     function _depositMargin(uint256 amount_) internal {

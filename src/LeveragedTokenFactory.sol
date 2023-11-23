@@ -37,7 +37,8 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
 
     function createLeveragedTokens(
         string calldata targetAsset_,
-        uint256 targetLeverage_
+        uint256 targetLeverage_,
+        uint256 rebalanceThreshold_
     )
         external
         override
@@ -58,11 +59,15 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
 
         // Deploying position managers
         PositionManager longPositionManager_ = new PositionManager(
-            address(_addressProvider)
+            address(_addressProvider),
+            rebalanceThreshold_
         );
+        longPositionManager_.transferOwnership(msg.sender);
         PositionManager shortPositionManager_ = new PositionManager(
-            address(_addressProvider)
+            address(_addressProvider),
+            rebalanceThreshold_
         );
+        shortPositionManager_.transferOwnership(msg.sender);
 
         // Deploying tokens
         longToken = _deployToken(

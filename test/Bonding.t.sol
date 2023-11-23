@@ -19,7 +19,11 @@ contract BondingTest is IntegrationTest {
     address public leveragedToken;
 
     function setUp() public {
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            2.12e18,
+            Config.REBALANCE_THRESHOLD
+        );
         leveragedToken = leveragedTokenFactory.longTokens(Symbols.UNI)[0];
         _mintTokensFor(leveragedToken, address(this), 100_000e18);
         IERC20(leveragedToken).approve(address(bonding), 100_000e18);
@@ -35,17 +39,45 @@ contract BondingTest is IntegrationTest {
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
 
+    function testLaunchingBonding() public {
+        assertEq(bonding.isLive(), false);
+
+        // Testing reverts when not live
+        vm.expectRevert(IBonding.BondingNotLive.selector);
+        bonding.bond(leveragedToken, 1e18, 0);
+
+        // Testing reverts when making live from non owner
+        vm.startPrank(alice);
+        vm.expectRevert();
+        bonding.launch();
+        vm.stopPrank();
+
+        // Test making live
+        bonding.launch();
+        assertEq(bonding.isLive(), true);
+
+        // Testing can bond
+        skip(15 days);
+        bonding.bond(leveragedToken, 1e18, 0);
+    }
+
     function testShouldRevertForNonLeveragedToken() public {
+        bonding.launch();
+
         vm.expectRevert(IBonding.NotLeveragedToken.selector);
         bonding.bond(Tokens.UNI, 1e18, 0);
     }
 
     function testShouldRevertForNotEnoughTlx() public {
+        bonding.launch();
+
         vm.expectRevert(IBonding.MinTlxNotReached.selector);
         bonding.bond(leveragedToken, 1e18, 1e18);
     }
 
     function testShouldBondAll() public {
+        bonding.launch();
+
         // Half of a period
         skip(15 days);
 
@@ -112,6 +144,8 @@ contract BondingTest is IntegrationTest {
     }
 
     function testRevertsForExceedsAvailable() public {
+        bonding.launch();
+
         // Half of a period
         skip(15 days);
 
@@ -123,6 +157,8 @@ contract BondingTest is IntegrationTest {
     }
 
     function testShouldBondAllOverLongPeriod() public {
+        bonding.launch();
+
         // Half of a period
         skip(45 days);
 

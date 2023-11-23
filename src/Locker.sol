@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -9,7 +10,7 @@ import {Errors} from "./libraries/Errors.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-contract Locker is ILocker {
+contract Locker is ILocker, Ownable {
     using ScaledNumber for uint256;
 
     IAddressProvider internal immutable _addressProvider;
@@ -25,6 +26,7 @@ contract Locker is ILocker {
 
     uint256 public override totalLocked;
     uint256 public override totalPrepared;
+    bool public override claimingEnabled;
 
     constructor(
         address addressProvider_,
@@ -98,6 +100,8 @@ contract Locker is ILocker {
     }
 
     function claim() public override {
+        if (!claimingEnabled) revert ClaimingNotEnabled();
+
         _checkpoint(msg.sender);
 
         uint256 amount_ = _usersRewards[msg.sender];
@@ -119,6 +123,12 @@ contract Locker is ILocker {
         _rewardIntegral += amount_.div(divisor_);
 
         emit DonatedRewards(msg.sender, amount_);
+    }
+
+    function enableClaiming() public override onlyOwner {
+        if (claimingEnabled) revert ClaimingAlreadyEnabled();
+
+        claimingEnabled = true;
     }
 
     function claimable(

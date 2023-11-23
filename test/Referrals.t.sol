@@ -7,6 +7,7 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
+import {Config} from "../src/libraries/Config.sol";
 
 import {IReferrals} from "../src/interfaces/IReferrals.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
@@ -136,7 +137,11 @@ contract ReferralsTest is IntegrationTest {
     function testUpdateReferralFor() public {
         referrals.register(alice, CODE);
 
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            2.12e18,
+            Config.REBALANCE_THRESHOLD
+        );
         vm.prank(
             address(
                 ILeveragedToken(
