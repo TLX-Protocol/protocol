@@ -2,6 +2,14 @@
 pragma solidity ^0.8.13;
 
 interface ISynthetixHandler {
+    error NoMarket();
+    error ErrorGettingPnl();
+    error ErrorGettingOrderFee();
+    error ErrorGettingIsLong();
+    error ErrorGettingFillPrice();
+    error ErrorGettingAssetPrice();
+    error NoMargin();
+
     /**
      * @notice Deposit `amount` of margin to Synthetix for the `targetAsset`.
      * @dev Should be called with delegatecall.

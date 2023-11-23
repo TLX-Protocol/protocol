@@ -17,14 +17,6 @@ contract SynthetixHandler is ISynthetixHandler {
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
 
-    error NoMarket();
-    error ErrorGettingPnl();
-    error ErrorGettingOrderFee();
-    error ErrorGettingIsLong();
-    error ErrorGettingFillPrice();
-    error ErrorGettingAssetPrice();
-    error NoMargin();
-
     constructor(address addressProvider_, address perpsV2MarketData_) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
         _addressProvider = IAddressProvider(addressProvider_);
