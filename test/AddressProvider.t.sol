@@ -13,18 +13,17 @@ contract AddressProviderTest is IntegrationTest {
             address(addressProvider.leveragedTokenFactory()),
             address(leveragedTokenFactory)
         );
-        assertEq(address(addressProvider.oracle()), address(oracle));
     }
 
     function testUpdateAddress() public {
-        addressProvider.updateAddress(AddressKeys.ORACLE, Tokens.UNI);
-        assertEq(address(addressProvider.oracle()), Tokens.UNI);
+        addressProvider.updateAddress(AddressKeys.REFERRALS, Tokens.UNI);
+        assertEq(address(addressProvider.referrals()), Tokens.UNI);
     }
 
     function testQueryAddress() public {
         assertEq(
-            addressProvider.addressOf(AddressKeys.ORACLE),
-            address(oracle)
+            addressProvider.addressOf(AddressKeys.AIRDROP),
+            address(airdrop)
         );
     }
 }

@@ -28,8 +28,6 @@ contract PositionManagerFactory is IPositionManagerFactory, Ownable {
         // Checks
         if (_positionManager[targetAsset_] != address(0))
             revert Errors.AlreadyExists();
-        if (_addressProvider.oracle().getPrice(targetAsset_) == 0)
-            revert NoOracle();
         if (!_addressProvider.synthetixHandler().isAssetSupported(targetAsset_))
             revert AssetNotSupported();
 

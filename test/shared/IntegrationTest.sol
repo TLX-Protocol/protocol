@@ -13,8 +13,6 @@ import {Symbols} from "../../src/libraries/Symbols.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
 
-import {Oracle} from "../../src/Oracle.sol";
-import {MockOracle} from "../../src/testing/MockOracle.sol";
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
 import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
@@ -35,8 +33,6 @@ contract IntegrationTest is Test {
     address public treasury = makeAddr("treasury");
 
     // Contracts
-    Oracle public oracle;
-    MockOracle public mockOracle;
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
     PositionManagerFactory public positionManagerFactory;
@@ -78,15 +74,6 @@ contract IntegrationTest is Test {
             Config.BASE_FOR_ALL_TLX
         );
         addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
-
-        // Oracle Setup
-        oracle = new Oracle(address(addressProvider), Contracts.ETH_USD_ORACLE);
-        oracle.setUsdOracle(Symbols.UNI, Contracts.UNI_USD_ORACLE);
-        oracle.setUsdOracle(Symbols.ETH, Contracts.ETH_USD_ORACLE);
-        oracle.setUsdOracle("sUSD", Contracts.SUSD_USD_ORACLE);
-        oracle.setUsdOracle(Symbols.USDC, Contracts.USDC_USD_ORACLE);
-        oracle.setUsdOracle(Symbols.BTC, Contracts.BTC_USD_ORACLE);
-        addressProvider.updateAddress(AddressKeys.ORACLE, address(oracle));
 
         // LeveragedTokenFactory Setup
         leveragedTokenFactory = new LeveragedTokenFactory(
@@ -137,17 +124,6 @@ contract IntegrationTest is Test {
             Config.REWARD_TOKEN
         );
         addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
-
-        // Mock Oracle Setup
-        mockOracle = new MockOracle();
-        uint256 uniPrice_ = oracle.getPrice(Symbols.UNI);
-        mockOracle.setPrice(Symbols.UNI, uniPrice_);
-        uint256 ethPrice_ = oracle.getPrice(Symbols.ETH);
-        mockOracle.setPrice(Symbols.ETH, ethPrice_);
-        uint256 usdcPrice_ = oracle.getPrice(Symbols.USDC);
-        mockOracle.setPrice(Symbols.USDC, usdcPrice_);
-        uint256 susdPrice_ = oracle.getPrice("sUSD");
-        mockOracle.setPrice("sUSD", susdPrice_);
 
         // SynthetixHandler Setup
         synthetixHandler = new SynthetixHandler(

@@ -40,9 +40,4 @@ contract PositionManagerFactoryTest is IntegrationTest {
         vm.expectRevert(Errors.AlreadyExists.selector);
         positionManagerFactory.createPositionManager(Symbols.UNI);
     }
-
-    function testRevertsWithNoOracle() public {
-        vm.expectRevert(IPositionManagerFactory.NoOracle.selector);
-        positionManagerFactory.createPositionManager(Symbols.CRV);
-    }
 }
