@@ -39,8 +39,7 @@ contract Vesting is IVesting {
 
     function claim(address account_, address to_) public override {
         bool isDelegate_ = isDelegate[account_][msg.sender];
-        bool authorized_ = account_ == msg.sender || isDelegate_;
-        if (!authorized_) revert NotAuthorized();
+        if (account_ != msg.sender && !isDelegate_) revert NotAuthorized();
 
         uint256 claimable_ = claimable(account_);
         if (claimable_ == 0) revert NothingToClaim();
