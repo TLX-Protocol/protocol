@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {ILeveragedTokenFactory} from "./ILeveragedTokenFactory.sol";
-import {IOracle} from "./IOracle.sol";
 import {IReferrals} from "./IReferrals.sol";
 import {IAirdrop} from "./IAirdrop.sol";
 import {IBonding} from "./IBonding.sol";
@@ -38,12 +37,6 @@ interface IAddressProvider {
         external
         view
         returns (ILeveragedTokenFactory leveragedTokenFactory);
-
-    /**
-     * @notice Returns the Oracle contract.
-     * @return oracle The Oracle contract.
-     */
-    function oracle() external view returns (IOracle oracle);
 
     /**
      * @notice Returns the Referrals contract.

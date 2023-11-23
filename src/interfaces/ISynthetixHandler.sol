@@ -2,6 +2,13 @@
 pragma solidity ^0.8.13;
 
 interface ISynthetixHandler {
+    error ErrorGettingPnl();
+    error ErrorGettingOrderFee();
+    error ErrorGettingIsLong();
+    error ErrorGettingFillPrice();
+    error ErrorGettingAssetPrice();
+    error NoMargin();
+
     /**
      * @notice Deposit `amount` of margin to Synthetix for the `targetAsset`.
      * @dev Should be called with delegatecall.
@@ -45,15 +52,6 @@ interface ISynthetixHandler {
     function cancelLeverageUpdate(string calldata targetAsset) external;
 
     /**
-     * @notice Returns if the caller has a pending leverage update.
-     * @param targetAsset The asset to check if the caller has a pending leverage update for.
-     * @return hasPendingLeverageUpdate Whether the caller has a pending leverage update.
-     */
-    function hasPendingLeverageUpdate(
-        string calldata targetAsset
-    ) external view returns (bool hasPendingLeverageUpdate);
-
-    /**
      * @notice Returns if the `account` has a pending leverage update.
      * @param targetAsset The asset to check if the `account` has a pending leverage update for.
      * @param account The account to check if they have a pending leverage update.
@@ -63,15 +61,6 @@ interface ISynthetixHandler {
         string calldata targetAsset,
         address account
     ) external view returns (bool hasPendingLeverageUpdate);
-
-    /**
-     * @notice Returns if the caller has an open position for the `targetAsset`.
-     * @param targetAsset The asset to check if the caller has an open position for.
-     * @return hasOpenPosition Whether the caller has an open position for the `targetAsset`.
-     */
-    function hasOpenPosition(
-        string calldata targetAsset
-    ) external view returns (bool hasOpenPosition);
 
     /**
      * @notice Returns if the `account` has an open position for the `targetAsset`.
@@ -85,15 +74,6 @@ interface ISynthetixHandler {
     ) external view returns (bool hasOpenPosition);
 
     /**
-     * @notice Returns the total value of the callers position for the `targetAsset` in the Base Asset.
-     * @param targetAsset The asset to get the total value of the callers position for.
-     * @return totalValue The total value of the callers position for the `targetAsset` in the Base Asset.
-     */
-    function totalValue(
-        string calldata targetAsset
-    ) external view returns (uint256 totalValue);
-
-    /**
      * @notice Returns the total value of the `account`'s position for the `targetAsset` in the Base Asset.
      * @param targetAsset The asset to get the total value of the `account`'s position for.
      * @param account The account to get the total value of the `account`'s position for the `targetAsset`.
@@ -103,15 +83,6 @@ interface ISynthetixHandler {
         string calldata targetAsset,
         address account
     ) external view returns (uint256 totalValue);
-
-    /**
-     * @notice Returns the leverage of the callers position for the `targetAsset`.
-     * @param targetAsset The asset to get the leverage of the callers position for.
-     * @return leverage The leverage of the callers position for the `targetAsset`.
-     */
-    function leverage(
-        string calldata targetAsset
-    ) external view returns (uint256 leverage);
 
     /**
      * @notice Returns the leverage of the `account`'s position for the `targetAsset`.
@@ -125,15 +96,6 @@ interface ISynthetixHandler {
     ) external view returns (uint256 leverage);
 
     /**
-     * @notice Returns the notional value of the callers position for the `targetAsset` in the Base Asset.
-     * @param targetAsset The asset to get the notional value of the callers position for.
-     * @return notionalValue The notional value of the callers position for the `targetAsset` in the Base Asset.
-     */
-    function notionalValue(
-        string calldata targetAsset
-    ) external view returns (uint256);
-
-    /**
      * @notice Returns the notional value of the `account`'s position for the `targetAsset` in the Base Asset.
      * @param targetAsset The asset to get the notional value of the `account`'s position for.
      * @param account The account to get the notional value of the `account`'s position for the `targetAsset`.
@@ -143,16 +105,6 @@ interface ISynthetixHandler {
         string calldata targetAsset,
         address account
     ) external view returns (uint256);
-
-    /**
-     * @notice Returns if the callers position for the `targetAsset` is long.
-     * @dev Reverts if the caller does not have an open position for the `targetAsset`.
-     * @param targetAsset The asset to check if the callers position for is long.
-     * @return isLong Whether the callers position for the `targetAsset` is long.
-     */
-    function isLong(
-        string calldata targetAsset
-    ) external view returns (bool isLong);
 
     /**
      * @notice Returns if the `account`'s position for the `targetAsset` is long.
@@ -165,15 +117,6 @@ interface ISynthetixHandler {
         string calldata targetAsset,
         address account
     ) external view returns (bool isLong);
-
-    /**
-     * @notice Returns the remaining margin of the callers position for the `targetAsset`.
-     * @param targetAsset The asset to get the remaining margin of the callers position for.
-     * @return remainingMargin The remaining margin of the callers position for the `targetAsset`.
-     */
-    function remainingMargin(
-        string calldata targetAsset
-    ) external view returns (uint256 remainingMargin);
 
     /**
      * @notice Returns the remaining margin of the `account`'s position for the `targetAsset`.

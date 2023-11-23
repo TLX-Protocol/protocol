@@ -12,6 +12,8 @@ interface IBonding {
     error NotLeveragedToken();
     error MinTlxNotReached();
     error ExceedsAvailable();
+    error BondingNotLive();
+    error BondingAlreadyLive();
 
     /**
      * @notice Bond leveraged tokens for TLX.
@@ -32,6 +34,18 @@ interface IBonding {
      * @param baseForAllTlx The new base for all TLX.
      */
     function setBaseForAllTlx(uint256 baseForAllTlx) external;
+
+    /**
+     * @notice Sets the bonding to live.
+     * @dev Reverts if the caller is not the owner.
+     */
+    function launch() external;
+
+    /**
+     * @notice Returns if the bonding is live.
+     * @return isLive If the bonding is live.
+     */
+    function isLive() external view returns (bool isLive);
 
     /**
      * @notice Returns the exchange rate between leveraged tokens baseAsset value and TLX.

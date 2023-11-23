@@ -23,6 +23,8 @@ interface ILocker {
     error NoUnlockPrepared();
     error NotUnlocked();
     error UnlockPrepared();
+    error ClaimingNotEnabled();
+    error ClaimingAlreadyEnabled();
 
     /**
      * @notice Locks TLX tokens for the caller.
@@ -67,6 +69,18 @@ interface ILocker {
      * @notice Donates an amount of the reward token to the locker.
      */
     function donateRewards(uint256 amount) external;
+
+    /**
+     * @notice Enables claiming for lockers.
+     * @dev This can only be called by the owner.
+     */
+    function enableClaiming() external;
+
+    /**
+     * @notice Returns if claiming is enabled for lockers.
+     * @return claimingEnabled Whether claiming is enabled for lockers.
+     */
+    function claimingEnabled() external view returns (bool claimingEnabled);
 
     /**
      * @notice Returns the amount of TLX tokens locked for the given account.
