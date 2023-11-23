@@ -73,10 +73,6 @@ contract IntegrationTest is Test {
         // ParameterProvider Setup
         parameterProvider = new ParameterProvider();
         parameterProvider.updateParameter(
-            ParameterKeys.REBALANCE_THRESHOLD,
-            Config.REBALANCE_THRESHOLD
-        );
-        parameterProvider.updateParameter(
             ParameterKeys.REDEMPTION_FEE,
             Config.REDEMPTION_FEE
         );

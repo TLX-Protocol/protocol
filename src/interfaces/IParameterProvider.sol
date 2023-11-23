@@ -19,12 +19,6 @@ interface IParameterProvider {
     function parameterOf(bytes32 key) external view returns (uint256 value);
 
     /**
-     * @notice Returns the rebalance threshold parameter.
-     * @return rebalanceThreshold The rebalance threshold parameter.
-     */
-    function rebalanceThreshold() external view returns (uint256);
-
-    /**
      * @notice Returns the redemption fee parameter.
      * @return redemptionFee The redemption fee parameter.
      */

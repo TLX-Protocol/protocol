@@ -19,7 +19,11 @@ contract BondingTest is IntegrationTest {
     address public leveragedToken;
 
     function setUp() public {
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            2.12e18,
+            Config.REBALANCE_THRESHOLD
+        );
         leveragedToken = leveragedTokenFactory.longTokens(Symbols.UNI)[0];
         _mintTokensFor(leveragedToken, address(this), 100_000e18);
         IERC20(leveragedToken).approve(address(bonding), 100_000e18);

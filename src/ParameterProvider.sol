@@ -24,10 +24,6 @@ contract ParameterProvider is IParameterProvider, Ownable {
         return _parameters[key_];
     }
 
-    function rebalanceThreshold() external view override returns (uint256) {
-        return _parameters[ParameterKeys.REBALANCE_THRESHOLD];
-    }
-
     function redemptionFee() external view override returns (uint256) {
         return _parameters[ParameterKeys.REDEMPTION_FEE];
     }

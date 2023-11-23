@@ -10,33 +10,24 @@ import {Config} from "../src/libraries/Config.sol";
 
 contract ParameterProviderTest is IntegrationTest {
     function testInit() public {
-        assertEq(
-            parameterProvider.rebalanceThreshold(),
-            Config.REBALANCE_THRESHOLD
-        );
+        assertEq(parameterProvider.streamingFee(), Config.STREAMING_FEE);
     }
 
     function testUpdateParameter() public {
-        parameterProvider.updateParameter(
-            ParameterKeys.REBALANCE_THRESHOLD,
-            0.9e18
-        );
-        assertEq(parameterProvider.rebalanceThreshold(), 0.9e18);
+        parameterProvider.updateParameter(ParameterKeys.STREAMING_FEE, 0.9e18);
+        assertEq(parameterProvider.streamingFee(), 0.9e18);
     }
 
     function testRevertsForNonOwner() public {
         vm.startPrank(alice);
         vm.expectRevert();
-        parameterProvider.updateParameter(
-            ParameterKeys.REBALANCE_THRESHOLD,
-            0.9e18
-        );
+        parameterProvider.updateParameter(ParameterKeys.STREAMING_FEE, 0.9e18);
     }
 
     function testQueryParameter() public {
         assertEq(
-            parameterProvider.parameterOf(ParameterKeys.REBALANCE_THRESHOLD),
-            Config.REBALANCE_THRESHOLD
+            parameterProvider.parameterOf(ParameterKeys.STREAMING_FEE),
+            Config.STREAMING_FEE
         );
     }
 }
