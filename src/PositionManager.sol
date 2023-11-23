@@ -43,7 +43,8 @@ contract PositionManager is IPositionManager, Ownable {
         if (baseAmountIn_ == 0) return 0;
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             )
         ) revert LeverageUpdatePending();
 
@@ -74,7 +75,8 @@ contract PositionManager is IPositionManager, Ownable {
         if (leveragedTokenAmount_ == 0) return 0;
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             )
         ) revert LeverageUpdatePending();
 
@@ -127,7 +129,7 @@ contract PositionManager is IPositionManager, Ownable {
             .streamingFee();
         uint256 notionalValue_ = _addressProvider
             .synthetixHandler()
-            .notionalValue(leveragedToken.targetAsset());
+            .notionalValue(leveragedToken.targetAsset(), address(this));
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
         uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
@@ -169,7 +171,8 @@ contract PositionManager is IPositionManager, Ownable {
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = leveragedToken.totalSupply();
         uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
-            leveragedToken.targetAsset()
+            leveragedToken.targetAsset(),
+            address(this)
         );
         if (totalSupply_ == 0) return 1e18;
         return totalValue.div(totalSupply_);
@@ -179,7 +182,8 @@ contract PositionManager is IPositionManager, Ownable {
         // Can't rebalance if there is no margin
         if (
             _addressProvider.synthetixHandler().remainingMargin(
-                leveragedToken.targetAsset()
+                leveragedToken.targetAsset(),
+                address(this)
             ) == 0
         ) return false;
 
@@ -193,7 +197,8 @@ contract PositionManager is IPositionManager, Ownable {
 
         // Can't rebalance if the leverage is already within the threshold
         uint256 current_ = _addressProvider.synthetixHandler().leverage(
-            leveragedToken.targetAsset()
+            leveragedToken.targetAsset(),
+            address(this)
         );
         uint256 target_ = leveragedToken.targetLeverage();
         uint256 diff_ = current_ > target_
