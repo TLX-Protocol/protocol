@@ -236,7 +236,6 @@ contract SynthetixHandler is ISynthetixHandler {
     ) internal view returns (IPerpsV2MarketConsolidated) {
         IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
             .marketDetailsForKey(_key(targetAsset_));
-        if (marketData_.market == address(0)) revert NoMarket();
         return IPerpsV2MarketConsolidated(marketData_.market);
     }
 
