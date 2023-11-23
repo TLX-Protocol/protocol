@@ -154,7 +154,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
-    ) internal view returns (string memory) {
+    ) internal pure returns (string memory) {
         string memory direction_ = isLong_ ? "Long" : "Short";
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return
@@ -167,7 +167,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         string calldata targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
-    ) internal view returns (string memory) {
+    ) internal pure returns (string memory) {
         string memory direction_ = isLong_ ? "L" : "S";
         string memory leverage_ = _getLeverageString(targetLeverage_);
         return string(abi.encodePacked(targetAsset_, leverage_, direction_));
