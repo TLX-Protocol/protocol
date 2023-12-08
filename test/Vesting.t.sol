@@ -71,4 +71,33 @@ contract Vesting is IntegrationTest {
         vm.prank(alice);
         vesting.claim();
     }
+
+    function testDelegate() public {
+        skip(365 days / 2);
+
+        // Testing can't claim as delegate
+        vm.startPrank(bob);
+        vm.expectRevert(IVesting.NotAuthorized.selector);
+        vesting.claim(alice, bob);
+        vm.stopPrank();
+
+        // Adding delegate
+        vm.prank(alice);
+        vesting.addDelegate(bob);
+
+        // Testing can claim as delegate
+        vm.prank(bob);
+        vesting.claim(alice, bob);
+        assertEq(tlx.balanceOf(bob), 50e18, "balance");
+
+        // Removing delegate
+        vm.prank(alice);
+        vesting.removeDelegate(bob);
+
+        skip(365 days / 2);
+        vm.startPrank(bob);
+        vm.expectRevert(IVesting.NotAuthorized.selector);
+        vesting.claim(alice, bob);
+        vm.stopPrank();
+    }
 }

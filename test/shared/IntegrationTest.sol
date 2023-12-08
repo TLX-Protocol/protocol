@@ -36,10 +36,12 @@ contract IntegrationTest is Test {
     using stdStorage for StdStorage;
     using stdJson for string;
 
-    // Constants
-    string constant PYTH_URL = "https://xc-mainnet.pyth.network/api/get_vaa";
-    string constant PYTH_ID =
-        "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"; // ETH/USD
+    // Some notes on why this is commented out below
+    // string constant PYTH_URL = "https://hermes.pyth.network/api/get_vaa";
+    // string constant PYTH_ID =
+    //     "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"; // ETH/USD
+    string constant VAA =
+        "UE5BVQEAAAADuAEAAAADDQBdPXDahGNNr23Wo+CIBkq9kZLHqI667+PA5fraNH918xy+0w/XbhLUvraNuaNEBYsYb5LhiY/2MgEhngj22e03AAMFiZExKBlpCCR0j8/kvO3bvsoQi7pFKiFfIePaw5Rn9nzGWGhl3WjGcEgH9I4nVa7UrnAbRqPMIaXLDLASlk0wAQZjulzaozrgAZrb3iog34sIxRMXbrOhmPmmPwmnBIvUbh4yi6egeUxf5S+95hg7dh8nwiEM0M0tqHvEz821vna7AQjnVJaM3w6iHnSThMkWydx633fhvMuUCRjxURW01stnBAOCBL1WMsGQWXDDHsdrES3MEuiNVYEkhY9K2uAiN+X9AAlOcZBXAU0Jb5izrcVrG8QOYKIWiVVkfq5Jsh/yPED7pV4RyGefKh5SkF95DLNqFZC8HjYMMqSh8gC4J0+bc4K3AQpZSA6i4rbOHZbxSlgoeG/fpeOcJf8aIl6Uv++kK8SM/xNe0FQA4R5jSo+wAfVijjOF2jTWDEX9hO6TJ69Y/WU6AQsbbzxflnBwq4hC5TtFjtusMLEDBlIzp7pYfWByk6MSkCk1YbguZ4/RWBH/X11Z/ETKVFuo3nWXDd2evwJY2EjxAQxlPMZa410JIXlnxIA4H3inO61sBMYWLJxR0ybKn0DtYH3N4ev40QJ+YOVuqAO0sIPqm69M12pxqVhKPlH/+KixAA0/nKdIHaz0SmC2nsFksxa30x8TJD6dR61fyaMdDIS6E03/HhJ8vT9bqPHHcfuLcAOPKGkhfmkWqPFPjhnRKONXAQ4Y+j5vmyD9l52Qn+tagF1TjAKiDVFNcQfBSiK06ThXC3hdJjj7Pt5Usf8SeKrAA6/+pf0RHgzNN728OsF3+z+VAA9+Do9+UOqPwhn/i3GiM1TvGhXDQwadPCwG9N/bhJq/my8eDlKd5sinXGIIE/A1w83wx4Pz1r3faxkWRniOu6zWABHhKHcCh8nLecCQTH8rOGwD6iIH3vM0YhWtpBKiyzkBahEGR1Ewin1v51O6D2QqQAeLDNyhkrW1hNJKLJDFNjpIABKzqVlIGGw6k+c/UUejYxYY9LFYRyYLFlBkZk2IO3l2ywoU1r6lfZlmiNLdsIw6x0loIy1fzfS1GjvRwbRmjjyFAWVzEgsAAAAAABrhAfrtrFhR4yubI7X5QRqMK6xKrj7U3XuBHdGnLqSqcQAAAAABy1tpAUFVV1YAAAAAAAbSX6oAACcQ1Z4XBgUcxMOAKhsGv2fZAZvH7pIBAFUA/2FJGpMREt3xvYFHzRtkE3X3n1glEm1mVICHRjT9Cs4AAAA3IM7epAAAAAAFSGFk////+AAAAABlcxIKAAAAAGVzEgkAAAA3DMMpcAAAAAAFgWxeCiya6yAcnUvKQ6WTHY+hZESCgVoOLtDwnokED5y2b6Eo/RCJ6ls/X/v8suW6/MSSp9FerSPbzooMjgGRNqpKwYnD73KDP9tSHlUYubhmLIQKv5PZhQGXWEDmq7Y23DDpuFo8DRQBF1Kxr1MRzQsQfhBJNI+4j3J1BUAHMGLhlkueL2BRfvVilCZwu92oEu5GL4GtbNyMbsivwthqdUvxmwqmlRQ6xdue3kiLMTXVQa8OxRIkKuhpr4w8sQy4T6DSpv/XeLnwksYn";
 
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
@@ -59,7 +61,7 @@ contract IntegrationTest is Test {
     SynthetixHandler public synthetixHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 112_571_697));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 113_220_646));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
@@ -203,20 +205,28 @@ contract IntegrationTest is Test {
         );
     }
 
+    // We used to use this API logic, allowing us to get it at any timestamp.
+    // The endpoint is in the format https://hermes.pyth.network/api/get_vaa?id=0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace&publish_time=1702040074
+    // However suddently the API became super flakey, and stopped working. Tried an alternative, and it was even worse
+    // Realised that the timestamp is always roughly the same, so we can just hard code the VAA.
+    // Although this will break when we update the block number, meaning we have to manually update the VAA again.
+    // Not ideal long term, but hopefully we can switch back to the API when it's more stable.
     function _getVaa(uint256 publishTime) internal returns (string memory) {
-        string memory url = string.concat(
-            PYTH_URL,
-            "?id=",
-            PYTH_ID,
-            "&publish_time=",
-            Strings.toString(publishTime)
-        );
-        string[] memory inputs = new string[](3);
-        inputs[0] = "curl";
-        inputs[1] = url;
-        inputs[2] = "-s";
-        bytes memory res = vm.ffi(inputs);
-        return abi.decode(string(res).parseRaw(".vaa"), (string));
+        // string memory url = string.concat(
+        //     PYTH_URL,
+        //     "?id=",
+        //     PYTH_ID,
+        //     "&publish_time=",
+        //     Strings.toString(publishTime)
+        // );
+        // console.log(url);
+        // string[] memory inputs = new string[](3);
+        // inputs[0] = "curl";
+        // inputs[1] = url;
+        // inputs[2] = "-s";
+        // bytes memory res = vm.ffi(inputs);
+        // return abi.decode(string(res).parseRaw(".vaa"), (string));
+        return VAA;
     }
 
     function _market(
