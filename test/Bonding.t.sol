@@ -19,7 +19,6 @@ contract BondingTest is IntegrationTest {
     address public leveragedToken;
 
     function setUp() public {
-        positionManagerFactory.createPositionManager(Symbols.UNI);
         leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
         leveragedToken = leveragedTokenFactory.longTokens(Symbols.UNI)[0];
         _mintTokensFor(leveragedToken, address(this), 100_000e18);

@@ -10,10 +10,8 @@ import {Symbols} from "../src/libraries/Symbols.sol";
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
-contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
-    function setUp() public {
-        positionManagerFactory.createPositionManager(Symbols.UNI);
-    }
+contract LeveragedTokenFactoryTest is IntegrationTest {
+    function setUp() public {}
 
     function testDeployTokens() public {
         (
@@ -99,11 +97,6 @@ contract LeveragedTokenleveragedTokenFactoryTest is IntegrationTest {
             true
         );
         assertEq(leveragedTokenFactory.isLeveragedToken(Tokens.UNI), false);
-    }
-
-    function testRevertsNoPositionManager() public {
-        vm.expectRevert(ILeveragedTokenFactory.NoPositionManager.selector);
-        leveragedTokenFactory.createLeveragedTokens(Symbols.BTC, 1.23e18);
     }
 
     function testRevertsZeroLeverage() public {

@@ -181,10 +181,7 @@ contract Bonding is IBonding, Ownable {
 
     function _priceInBaseAsset(address token_) internal view returns (uint256) {
         return
-            IPositionManager(
-                _addressProvider.positionManagerFactory().positionManager(
-                    ILeveragedToken(token_).targetAsset()
-                )
-            ).exchangeRate(token_);
+            IPositionManager(ILeveragedToken(token_).positionManager())
+                .exchangeRate();
     }
 }

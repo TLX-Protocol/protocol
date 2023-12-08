@@ -15,7 +15,6 @@ import {IVesting} from "../../src/interfaces/IVesting.sol";
 
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
-import {PositionManagerFactory} from "../../src/PositionManagerFactory.sol";
 import {Referrals} from "../../src/Referrals.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
@@ -35,7 +34,6 @@ contract IntegrationTest is Test {
     // Contracts
     LeveragedTokenFactory public leveragedTokenFactory;
     AddressProvider public addressProvider;
-    PositionManagerFactory public positionManagerFactory;
     Referrals public referrals;
     TlxToken public tlx;
     Airdrop public airdrop;
@@ -83,15 +81,6 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(
             AddressKeys.LEVERAGED_TOKEN_FACTORY,
             address(leveragedTokenFactory)
-        );
-
-        // PositionManagerFactory Setup
-        positionManagerFactory = new PositionManagerFactory(
-            address(addressProvider)
-        );
-        addressProvider.updateAddress(
-            AddressKeys.POSITION_MANAGER_FACTORY,
-            address(positionManagerFactory)
         );
 
         // Referrals Setup

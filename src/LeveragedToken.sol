@@ -12,11 +12,10 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
     string public override targetAsset;
     uint256 public immutable override targetLeverage;
     bool public immutable override isLong;
-
-    address internal immutable _positionManager;
+    address public immutable override positionManager;
 
     modifier onlyPositionManager() {
-        if (msg.sender != _positionManager) revert Errors.NotAuthorized();
+        if (msg.sender != positionManager) revert Errors.NotAuthorized();
         _;
     }
 
@@ -31,7 +30,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
-        _positionManager = positionManager_;
+        positionManager = positionManager_;
     }
 
     function mint(
