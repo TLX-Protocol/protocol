@@ -25,7 +25,7 @@ contract SynthetixHandlerTest is IntegrationTest {
     using stdJson for string;
     using ScaledNumber for uint256;
 
-    string constant PYTH_URL = "https://xc-mainnet.pyth.network/api/get_vaa";
+    string constant PYTH_URL = "https://hermes.pyth.network/api/get_vaa";
     string constant PYTH_ID =
         "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"; // ETH/USD
 
