@@ -43,7 +43,7 @@ contract IntegrationTest is Test {
     SynthetixHandler public synthetixHandler;
 
     constructor() {
-        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 112_571_697));
+        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 113_220_646));
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
