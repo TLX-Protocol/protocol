@@ -2,12 +2,12 @@
 pragma solidity ^0.8.13;
 
 interface IParameterProvider {
-    event ParameterUpdated(bytes32 indexed key, uint256 value);
-
     struct Parameter {
         bytes32 key;
         uint256 value;
     }
+
+    event ParameterUpdated(bytes32 indexed key, uint256 value);
 
     /**
      * @notice Updates a parameter for the given key.

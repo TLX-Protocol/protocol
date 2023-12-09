@@ -115,30 +115,6 @@ contract PositionManager is IPositionManager, Ownable {
         _rebalance();
     }
 
-    function _rebalance() internal {
-        // Accounting
-        uint256 streamingFeePercent_ = _addressProvider
-            .parameterProvider()
-            .streamingFee();
-        uint256 notionalValue_ = _addressProvider
-            .synthetixHandler()
-            .notionalValue(leveragedToken.targetAsset(), address(this));
-        uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
-        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
-        uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
-
-        // Sending fees to locker
-        ILocker locker_ = _addressProvider.locker();
-        if (fee_ != 0 && locker_.totalLocked() != 0) {
-            _addressProvider.baseAsset().approve(address(locker_), fee_);
-            locker_.donateRewards(fee_);
-        }
-
-        // Rebalancing
-        _submitLeverageUpdate();
-        _lastRebalanceTimestamp = block.timestamp;
-    }
-
     function setLeveragedToken(address leveragedToken_) public override {
         if (address(leveragedToken) != address(0)) {
             revert Errors.AlreadyExists();
@@ -199,6 +175,30 @@ contract PositionManager is IPositionManager, Ownable {
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
         return percentDiff_ >= rebalanceThreshold;
+    }
+
+    function _rebalance() internal {
+        // Accounting
+        uint256 streamingFeePercent_ = _addressProvider
+            .parameterProvider()
+            .streamingFee();
+        uint256 notionalValue_ = _addressProvider
+            .synthetixHandler()
+            .notionalValue(leveragedToken.targetAsset(), address(this));
+        uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
+        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
+        uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
+
+        // Sending fees to locker
+        ILocker locker_ = _addressProvider.locker();
+        if (fee_ != 0 && locker_.totalLocked() != 0) {
+            _addressProvider.baseAsset().approve(address(locker_), fee_);
+            locker_.donateRewards(fee_);
+        }
+
+        // Rebalancing
+        _submitLeverageUpdate();
+        _lastRebalanceTimestamp = block.timestamp;
     }
 
     function _ensureNoPendingLeverageUpdate() internal {
