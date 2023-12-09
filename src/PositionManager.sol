@@ -63,7 +63,7 @@ contract PositionManager is IPositionManager, Ownable {
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) rebalance();
+        if (canRebalance()) _rebalance();
 
         return leveragedTokenAmount_;
     }
@@ -115,14 +115,17 @@ contract PositionManager is IPositionManager, Ownable {
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) rebalance();
+        if (canRebalance()) _rebalance();
 
         return baseAmountReceived_;
     }
 
     function rebalance() public override {
         if (!canRebalance()) revert CannotRebalance();
+        _rebalance();
+    }
 
+    function _rebalance() internal {
         // Accounting
         uint256 streamingFeePercent_ = _addressProvider
             .parameterProvider()
