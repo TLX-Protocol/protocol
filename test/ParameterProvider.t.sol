@@ -30,4 +30,13 @@ contract ParameterProviderTest is IntegrationTest {
             Config.STREAMING_FEE
         );
     }
+
+    function testParameters() public {
+        uint256 oldLength_ = parameterProvider.parameters().length;
+        bytes32 newKey = "newKey";
+        parameterProvider.updateParameter(newKey, 123);
+        assertEq(parameterProvider.parameters().length, oldLength_ + 1);
+        assertEq(parameterProvider.parameters()[oldLength_].key, newKey);
+        assertEq(parameterProvider.parameters()[oldLength_].value, 123);
+    }
 }
