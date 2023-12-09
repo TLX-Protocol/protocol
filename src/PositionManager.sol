@@ -41,12 +41,7 @@ contract PositionManager is IPositionManager, Ownable {
         uint256 minLeveragedTokenAmountOut_
     ) external override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset(),
-                address(this)
-            )
-        ) revert LeverageUpdatePending();
+        _ensureNoPendingLeverageUpdate();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
@@ -73,12 +68,7 @@ contract PositionManager is IPositionManager, Ownable {
         uint256 minBaseAmountReceived_
     ) external override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset(),
-                address(this)
-            )
-        ) revert LeverageUpdatePending();
+        _ensureNoPendingLeverageUpdate();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
@@ -209,6 +199,15 @@ contract PositionManager is IPositionManager, Ownable {
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
         return percentDiff_ >= rebalanceThreshold;
+    }
+
+    function _ensureNoPendingLeverageUpdate() internal {
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                leveragedToken.targetAsset(),
+                address(this)
+            )
+        ) revert LeverageUpdatePending();
     }
 
     function _depositMargin(uint256 amount_) internal {
