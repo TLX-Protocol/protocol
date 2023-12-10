@@ -12,15 +12,35 @@ interface IVesting {
         uint256 claimed;
     }
 
-    event Claimed(address indexed account, uint256 amount);
+    event Claimed(address indexed account, address indexed to, uint256 amount);
 
     error NothingToClaim();
     error InvalidDuration();
+    error NotAuthorized();
 
     /**
      * @notice Claim vested tokens.
      */
     function claim() external;
+
+    /**
+     * @notice Claim vested tokens for 'account' and send to 'to'.
+     * @param account The address to claim the vested tokens for.
+     * @param to The address to send the claimed tokens to.
+     */
+    function claim(address account, address to) external;
+
+    /**
+     * @notice Adds a delegate for the caller.
+     * @param delegate The address of the delegate to add.
+     */
+    function addDelegate(address delegate) external;
+
+    /**
+     * @notice Removes a delegate for the caller.
+     * @param delegate The address of the delegate to remove.
+     */
+    function removeDelegate(address delegate) external;
 
     /**
      * @notice Get the amount of tokens that have vested for `account`.
@@ -50,4 +70,15 @@ interface IVesting {
      * @return amount The amount of tokens claimable for `account`.
      */
     function claimable(address account) external view returns (uint256 amount);
+
+    /**
+     * @notice Check if `delegate` is a delegate for `account`.
+     * @param account The address to check the delegate for.
+     * @param delegate The address to check if it is a delegate.
+     * @return isDelegate True if `delegate` is a delegate for `account`.
+     */
+    function isDelegate(
+        address account,
+        address delegate
+    ) external view returns (bool isDelegate);
 }

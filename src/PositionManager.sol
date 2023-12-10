@@ -41,12 +41,7 @@ contract PositionManager is IPositionManager, Ownable {
         uint256 minLeveragedTokenAmountOut_
     ) external override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset(),
-                address(this)
-            )
-        ) revert LeverageUpdatePending();
+        _ensureNoPendingLeverageUpdate();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
@@ -63,7 +58,7 @@ contract PositionManager is IPositionManager, Ownable {
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) rebalance();
+        if (canRebalance()) _rebalance();
 
         return leveragedTokenAmount_;
     }
@@ -73,12 +68,7 @@ contract PositionManager is IPositionManager, Ownable {
         uint256 minBaseAmountReceived_
     ) external override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                leveragedToken.targetAsset(),
-                address(this)
-            )
-        ) revert LeverageUpdatePending();
+        _ensureNoPendingLeverageUpdate();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
@@ -115,35 +105,14 @@ contract PositionManager is IPositionManager, Ownable {
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) rebalance();
+        if (canRebalance()) _rebalance();
 
         return baseAmountReceived_;
     }
 
     function rebalance() public override {
         if (!canRebalance()) revert CannotRebalance();
-
-        // Accounting
-        uint256 streamingFeePercent_ = _addressProvider
-            .parameterProvider()
-            .streamingFee();
-        uint256 notionalValue_ = _addressProvider
-            .synthetixHandler()
-            .notionalValue(leveragedToken.targetAsset(), address(this));
-        uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
-        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
-        uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
-
-        // Sending fees to locker
-        ILocker locker_ = _addressProvider.locker();
-        if (fee_ != 0 && locker_.totalLocked() != 0) {
-            _addressProvider.baseAsset().approve(address(locker_), fee_);
-            locker_.donateRewards(fee_);
-        }
-
-        // Rebalancing
-        _submitLeverageUpdate();
-        _lastRebalanceTimestamp = block.timestamp;
+        _rebalance();
     }
 
     function setLeveragedToken(address leveragedToken_) public override {
@@ -206,6 +175,39 @@ contract PositionManager is IPositionManager, Ownable {
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
         return percentDiff_ >= rebalanceThreshold;
+    }
+
+    function _rebalance() internal {
+        // Accounting
+        uint256 streamingFeePercent_ = _addressProvider
+            .parameterProvider()
+            .streamingFee();
+        uint256 notionalValue_ = _addressProvider
+            .synthetixHandler()
+            .notionalValue(leveragedToken.targetAsset(), address(this));
+        uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
+        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
+        uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
+
+        // Sending fees to locker
+        ILocker locker_ = _addressProvider.locker();
+        if (fee_ != 0 && locker_.totalLocked() != 0) {
+            _addressProvider.baseAsset().approve(address(locker_), fee_);
+            locker_.donateRewards(fee_);
+        }
+
+        // Rebalancing
+        _submitLeverageUpdate();
+        _lastRebalanceTimestamp = block.timestamp;
+    }
+
+    function _ensureNoPendingLeverageUpdate() internal {
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                leveragedToken.targetAsset(),
+                address(this)
+            )
+        ) revert LeverageUpdatePending();
     }
 
     function _depositMargin(uint256 amount_) internal {

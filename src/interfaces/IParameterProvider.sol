@@ -2,6 +2,11 @@
 pragma solidity ^0.8.13;
 
 interface IParameterProvider {
+    struct Parameter {
+        bytes32 key;
+        uint256 value;
+    }
+
     event ParameterUpdated(bytes32 indexed key, uint256 value);
 
     /**
@@ -29,4 +34,10 @@ interface IParameterProvider {
      * @return streamingFee The streaming fee parameter.
      */
     function streamingFee() external view returns (uint256);
+
+    /**
+     * @notice Returns all parameters.
+     * @return parameters All parameters.
+     */
+    function parameters() external view returns (Parameter[] memory parameters);
 }
