@@ -9,7 +9,6 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {IBonding} from "./interfaces/IBonding.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 
 contract Bonding is IBonding, Ownable {
@@ -180,8 +179,6 @@ contract Bonding is IBonding, Ownable {
     }
 
     function _priceInBaseAsset(address token_) internal view returns (uint256) {
-        return
-            IPositionManager(ILeveragedToken(token_).positionManager())
-                .exchangeRate();
+        return ILeveragedToken(token_).positionManager().exchangeRate();
     }
 }

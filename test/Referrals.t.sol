@@ -142,10 +142,13 @@ contract ReferralsTest is IntegrationTest {
             2.12e18,
             Config.REBALANCE_THRESHOLD
         );
-        address positionManager_ = ILeveragedToken(
-            leveragedTokenFactory.longTokens(Symbols.UNI)[0]
-        ).positionManager();
-        vm.prank(positionManager_);
+        vm.prank(
+            address(
+                ILeveragedToken(
+                    leveragedTokenFactory.longTokens(Symbols.UNI)[0]
+                ).positionManager()
+            )
+        );
         referrals.updateReferralFor(bob, CODE);
 
         assertEq(referrals.codeRebate(CODE), 0.5e18);

@@ -26,7 +26,7 @@ contract PositionManagerTest is IntegrationTest {
                 Config.REBALANCE_THRESHOLD
             );
         leveragedToken = LeveragedToken(longTokenAddress_);
-        positionManager = IPositionManager(leveragedToken.positionManager());
+        positionManager = leveragedToken.positionManager();
     }
 
     function testInit() public {
