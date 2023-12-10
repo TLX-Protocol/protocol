@@ -6,6 +6,7 @@ import {IntegrationTest} from "./shared/IntegrationTest.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Errors} from "../src/libraries/Errors.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
+import {Config} from "../src/libraries/Config.sol";
 
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
@@ -17,7 +18,11 @@ contract LeveragedTokenFactoryTest is IntegrationTest {
         (
             address longTokenAddress_,
             address shortTokenAddress_
-        ) = leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
+        ) = leveragedTokenFactory.createLeveragedTokens(
+                Symbols.UNI,
+                1.23e18,
+                Config.REBALANCE_THRESHOLD
+            );
         ILeveragedToken longToken = ILeveragedToken(longTokenAddress_);
         ILeveragedToken shortToken = ILeveragedToken(shortTokenAddress_);
         assertEq(longToken.name(), "UNI 1.23x Long");
@@ -101,17 +106,33 @@ contract LeveragedTokenFactoryTest is IntegrationTest {
 
     function testRevertsZeroLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.ZeroLeverage.selector);
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 0);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            0,
+            Config.REBALANCE_THRESHOLD
+        );
     }
 
     function testRevertsMaxLeverage() public {
         vm.expectRevert(ILeveragedTokenFactory.MaxLeverage.selector);
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 101e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            101e18,
+            Config.REBALANCE_THRESHOLD
+        );
     }
 
     function testRevertsTokenExists() public {
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            1.23e18,
+            Config.REBALANCE_THRESHOLD
+        );
         vm.expectRevert(Errors.AlreadyExists.selector);
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 1.23e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            1.23e18,
+            Config.REBALANCE_THRESHOLD
+        );
     }
 }

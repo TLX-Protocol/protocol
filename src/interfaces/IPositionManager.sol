@@ -16,6 +16,9 @@ interface IPositionManager {
     );
 
     error InsufficientAmount();
+    error CannotRebalance();
+    error LeverageUpdatePending();
+    error InvalidRebalanceThreshold();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
@@ -23,21 +26,10 @@ interface IPositionManager {
      * @param minLeveragedTokenAmountOut The minimum amount of leveragedTokens to mint (reverts otherwise).
      * @return leveragedTokenAmountOut The amount of leveragedTokens minted.
      */
-    function mintAmountIn(
+    function mint(
         uint256 baseAmountIn,
         uint256 minLeveragedTokenAmountOut
     ) external returns (uint256 leveragedTokenAmountOut);
-
-    /**
-     * @notice Mints leveragedTokenAmountOut leveraged tokens to the caller.
-     * @param leveragedTokenAmountOut The amount of the leveraged tokens to mint.
-     * @param maxBaseAmountIn The maximum amount of the base asset to use (reverts otherwise).
-     * @return baseAmountIn The amount of the base asset used.
-     */
-    function mintAmountOut(
-        uint256 leveragedTokenAmountOut,
-        uint256 maxBaseAmountIn
-    ) external returns (uint256 baseAmountIn);
 
     /**
      * @notice Redeems leveragedTokenAmount of the leveraged token and returns the base asset.
@@ -53,7 +45,7 @@ interface IPositionManager {
     /**
      * @notice Rebalances the position to the target leverage.
      */
-    function rebalance() external returns (uint256);
+    function rebalance() external;
 
     /**
      * @notice Sets the leveraged token of the position.
@@ -61,6 +53,13 @@ interface IPositionManager {
      * @param leveragedToken The leveraged token to set.
      */
     function setLeveragedToken(address leveragedToken) external;
+
+    /**
+     * @notice Sets the rebalance threshold.
+     * @dev Represented as a percent in 18 decimals, e.g. 20% = 0.2e18.
+     * @param rebalanceThreshold The rebalance threshold to set.
+     */
+    function setRebalanceThreshold(uint256 rebalanceThreshold) external;
 
     /**
      * @notice Returns the leveraged token of the position.
@@ -72,9 +71,25 @@ interface IPositionManager {
         returns (ILeveragedToken leveragedToken);
 
     /**
+     * @notice Returns the rebalance threshold.
+     * @dev Represented as a percent in 18 decimals, e.g. 20% = 0.2e18.
+     * @return rebalanceThreshold The rebalance threshold.
+     */
+    function rebalanceThreshold()
+        external
+        view
+        returns (uint256 rebalanceThreshold);
+
+    /**
      * @notice Returns the exchange rate from one leveraged token to one base asset.
      * @dev In 18 decimals.
      * @return exchangeRate The exchange rate.
      */
     function exchangeRate() external view returns (uint256 exchangeRate);
+
+    /**
+     * @notice Returns if the leveraged token can be rebalanced.
+     * @return canRebalance If the leveraged token can be rebalanced.
+     */
+    function canRebalance() external view returns (bool canRebalance);
 }

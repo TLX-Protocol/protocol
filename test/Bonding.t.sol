@@ -19,7 +19,11 @@ contract BondingTest is IntegrationTest {
     address public leveragedToken;
 
     function setUp() public {
-        leveragedTokenFactory.createLeveragedTokens(Symbols.UNI, 2.12e18);
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.UNI,
+            2.12e18,
+            Config.REBALANCE_THRESHOLD
+        );
         leveragedToken = leveragedTokenFactory.longTokens(Symbols.UNI)[0];
         _mintTokensFor(leveragedToken, address(this), 100_000e18);
         IERC20(leveragedToken).approve(address(bonding), 100_000e18);
@@ -103,8 +107,7 @@ contract BondingTest is IntegrationTest {
             "exchangeRate"
         );
 
-        // Dividing by 2 because a leveraged token is worth $2 (hard coded currently in the position manager)
-        uint256 amountRequired_ = 75_000e18 / 2;
+        uint256 amountRequired_ = 75_000e18;
         bonding.bond(
             leveragedToken,
             amountRequired_,
@@ -146,8 +149,11 @@ contract BondingTest is IntegrationTest {
         // Half of a period
         skip(15 days);
 
+        _mintTokensFor(leveragedToken, address(this), 150_000e18);
+        IERC20(leveragedToken).approve(address(bonding), 150_000e18);
+
         vm.expectRevert(IBonding.ExceedsAvailable.selector);
-        bonding.bond(leveragedToken, 75_000e18, 0);
+        bonding.bond(leveragedToken, 150_000e18, 0);
     }
 
     function testShouldBondAllOverLongPeriod() public {
@@ -185,8 +191,7 @@ contract BondingTest is IntegrationTest {
             "exchangeRate"
         );
 
-        // Dividing by 2 because a leveraged token is worth $2 (hard coded currently in the position manager)
-        uint256 amountRequired_ = 75_000e18 / 2;
+        uint256 amountRequired_ = 75_000e18;
         bonding.bond(
             leveragedToken,
             amountRequired_,

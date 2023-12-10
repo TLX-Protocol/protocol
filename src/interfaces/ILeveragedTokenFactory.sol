@@ -14,13 +14,15 @@ interface ILeveragedTokenFactory {
      * @notice Creates a new Long and Short Leveraged Token for the given target asset and leverage.
      * @dev Reverts if a Leveraged Token for the given target asset and leverage already exists.
      * @param targetAsset The target asset of the Leveraged Token.
-     * @param targetLeverage The target leverage of the Leveraged Token (2 decimals).
+     * @param targetLeverage The target leverage of the Leveraged Token (18 decimals).
+     * @param rebalanceThreshold The threshold for rebalancing (18 decimals).
      * @return longToken The address of the Long Leveraged Token.
      * @return shortToken The address of the Short Leveraged Token.
      */
     function createLeveragedTokens(
         string calldata targetAsset,
-        uint256 targetLeverage
+        uint256 targetLeverage,
+        uint256 rebalanceThreshold
     ) external returns (address longToken, address shortToken);
 
     /**
