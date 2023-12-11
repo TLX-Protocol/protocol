@@ -14,7 +14,8 @@ import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 contract LeveragedTokenTest is IntegrationTest {
     ILeveragedToken public leveragedToken;
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         (address longTokenAddress_, ) = leveragedTokenFactory
             .createLeveragedTokens(
                 Symbols.ETH,
@@ -140,25 +141,6 @@ contract LeveragedTokenTest is IntegrationTest {
             2e18 / 2,
             0.05e18
         );
-    }
-
-    function testUpdateRebalanceThreshold() public {
-        assertEq(
-            leveragedToken.rebalanceThreshold(),
-            Config.REBALANCE_THRESHOLD
-        );
-        vm.expectRevert(ILeveragedToken.InvalidRebalanceThreshold.selector);
-        leveragedToken.setRebalanceThreshold(0.0001e18);
-        vm.expectRevert(ILeveragedToken.InvalidRebalanceThreshold.selector);
-        leveragedToken.setRebalanceThreshold(0.9e18);
-        vm.expectRevert(ILeveragedToken.InvalidRebalanceThreshold.selector);
-        leveragedToken.setRebalanceThreshold(Config.REBALANCE_THRESHOLD);
-        vm.startPrank(alice);
-        vm.expectRevert();
-        leveragedToken.setRebalanceThreshold(0.33e18);
-        vm.stopPrank();
-        leveragedToken.setRebalanceThreshold(0.33e18);
-        assertEq(leveragedToken.rebalanceThreshold(), 0.33e18);
     }
 
     function _mintTokens() public {

@@ -18,7 +18,6 @@ interface ILeveragedToken is IERC20Metadata {
     error InsufficientAmount();
     error CannotRebalance();
     error LeverageUpdatePending();
-    error InvalidRebalanceThreshold();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
@@ -46,13 +45,6 @@ interface ILeveragedToken is IERC20Metadata {
      * @notice Rebalances the position to the target leverage.
      */
     function rebalance() external;
-
-    /**
-     * @notice Sets the rebalance threshold.
-     * @dev Represented as a percent in 18 decimals, e.g. 20% = 0.2e18.
-     * @param rebalanceThreshold The rebalance threshold to set.
-     */
-    function setRebalanceThreshold(uint256 rebalanceThreshold) external;
 
     /**
      * @notice Returns the target asset of the leveraged token.

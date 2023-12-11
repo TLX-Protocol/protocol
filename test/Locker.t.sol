@@ -20,7 +20,8 @@ contract LockerTest is IntegrationTest {
     address public accountC = makeAddr("accountC");
     address public accountD = makeAddr("accountD");
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         reward = IERC20Metadata(Config.REWARD_TOKEN);
         rewardDecimals = reward.decimals();
         rewardAmount = 100 * 10 ** rewardDecimals;
