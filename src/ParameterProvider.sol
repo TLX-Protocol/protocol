@@ -21,10 +21,6 @@ contract ParameterProvider is IParameterProvider, Ownable {
     EnumerableMap.Bytes32ToUintMap internal _parameters;
     mapping(address => uint256) internal _rebalanceThresholds;
 
-    constructor(address addressProvider_) {
-        _addressProvider = IAddressProvider(addressProvider_);
-    }
-
     modifier onlyOwnerOrFactory() {
         if (
             msg.sender != owner() &&
@@ -33,6 +29,10 @@ contract ParameterProvider is IParameterProvider, Ownable {
             revert Errors.NotAuthorized();
         }
         _;
+    }
+
+    constructor(address addressProvider_) {
+        _addressProvider = IAddressProvider(addressProvider_);
     }
 
     function updateParameter(
