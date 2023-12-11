@@ -10,7 +10,6 @@ interface IAirdrop {
     error InvalidMerkleProof();
     error AlreadyClaimed();
     error AirdropCompleted();
-    error InvalidTreasury();
     error EverythingClaimed();
     error ClaimStillOngoing();
 

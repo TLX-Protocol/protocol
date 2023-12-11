@@ -63,7 +63,6 @@ contract Airdrop is IAirdrop, Ownable {
     function mintUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
         address treasury_ = _addressProvider.treasury();
-        if (treasury_ == address(0)) revert InvalidTreasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         _addressProvider.tlx().transfer(treasury_, unclaimed_);
