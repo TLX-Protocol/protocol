@@ -5,6 +5,7 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
@@ -24,6 +25,8 @@ contract AddressProvider is IAddressProvider, Ownable {
         bytes32 key_,
         address value_
     ) external override onlyOwner {
+        if (value_ == address(0)) revert Errors.ZeroAddress();
+        if (value_ == _addresses[key_]) revert Errors.SameAsCurrent();
         _addresses[key_] = value_;
         emit AddressUpdated(key_, value_);
     }

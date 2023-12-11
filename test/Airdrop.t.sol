@@ -88,13 +88,6 @@ contract AirdropTest is IntegrationTest {
         airdrop.mintUnclaimed();
     }
 
-    function testMintUnclaimedRevertsForInvalidTreasury() public {
-        addressProvider.updateAddress(AddressKeys.TREASURY, address(0));
-        skip(200 days);
-        vm.expectRevert(IAirdrop.InvalidTreasury.selector);
-        airdrop.mintUnclaimed();
-    }
-
     function testMintUnclaimed() public {
         skip(200 days);
         airdrop.mintUnclaimed();
