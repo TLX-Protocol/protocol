@@ -50,7 +50,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     function mint(
         uint256 baseAmountIn_,
         uint256 minLeveragedTokenAmountOut_
-    ) external override returns (uint256) {
+    ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
         _ensureNoPendingLeverageUpdate();
 
@@ -81,7 +81,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     function redeem(
         uint256 leveragedTokenAmount_,
         uint256 minBaseAmountReceived_
-    ) external override returns (uint256) {
+    ) public override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
         _ensureNoPendingLeverageUpdate();
 
@@ -153,7 +153,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         return totalValue.div(totalSupply_);
     }
 
-    function isActive() external view override returns (bool) {
+    function isActive() public view override returns (bool) {
         return exchangeRate() > 0;
     }
 
@@ -211,15 +211,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         _lastRebalanceTimestamp = block.timestamp;
     }
 
-    function _ensureNoPendingLeverageUpdate() internal {
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                targetAsset,
-                address(this)
-            )
-        ) revert LeverageUpdatePending();
-    }
-
     function _depositMargin(uint256 amount_) internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
             abi.encodeWithSignature(
@@ -249,5 +240,14 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
                 isLong
             )
         );
+    }
+
+    function _ensureNoPendingLeverageUpdate() internal view {
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                targetAsset,
+                address(this)
+            )
+        ) revert LeverageUpdatePending();
     }
 }
