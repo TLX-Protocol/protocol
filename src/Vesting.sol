@@ -56,6 +56,12 @@ contract Vesting is IVesting {
         isDelegate[msg.sender][delegate_] = false;
     }
 
+    function allocated(
+        address account_
+    ) public view override returns (uint256) {
+        return _amounts[account_];
+    }
+
     function claimable(
         address account_
     ) public view override returns (uint256) {

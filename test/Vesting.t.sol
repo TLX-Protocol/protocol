@@ -15,10 +15,14 @@ contract Vesting is IntegrationTest {
         assertEq(vesting.claimed(bob), 0, "claimed");
         assertEq(vesting.vesting(alice), 100e18, "vesting");
         assertEq(vesting.vesting(bob), 200e18, "vesting");
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
     }
 
     function testClaiming() public {
         skip(365 days / 2);
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 50e18, "claimable");
         assertEq(vesting.claimable(bob), 100e18, "claimable");
         assertEq(vesting.claimed(alice), 0, "claimed");
@@ -27,6 +31,8 @@ contract Vesting is IntegrationTest {
         assertEq(tlx.balanceOf(bob), 0, "balance");
         vm.prank(alice);
         vesting.claim();
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 0, "claimable");
         assertEq(vesting.claimable(bob), 100e18, "claimable");
         assertEq(vesting.claimed(alice), 50e18, "claimed");
@@ -35,6 +41,8 @@ contract Vesting is IntegrationTest {
         assertEq(tlx.balanceOf(bob), 0, "balance");
         vm.prank(bob);
         vesting.claim();
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 0, "claimable");
         assertEq(vesting.claimable(bob), 0, "claimable");
         assertEq(vesting.claimed(alice), 50e18, "claimed");
@@ -43,6 +51,8 @@ contract Vesting is IntegrationTest {
         assertEq(tlx.balanceOf(bob), 100e18, "balance");
 
         skip(365 days);
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 50e18, "claimable");
         assertEq(vesting.claimable(bob), 100e18, "claimable");
         assertEq(vesting.claimed(alice), 50e18, "claimed");
@@ -51,6 +61,8 @@ contract Vesting is IntegrationTest {
         assertEq(tlx.balanceOf(bob), 100e18, "balance");
         vm.prank(alice);
         vesting.claim();
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 0, "claimable");
         assertEq(vesting.claimable(bob), 100e18, "claimable");
         assertEq(vesting.claimed(alice), 100e18, "claimed");
@@ -59,6 +71,8 @@ contract Vesting is IntegrationTest {
         assertEq(tlx.balanceOf(bob), 100e18, "balance");
         vm.prank(bob);
         vesting.claim();
+        assertEq(vesting.allocated(alice), 100e18, "allocated");
+        assertEq(vesting.allocated(bob), 200e18, "allocated");
         assertEq(vesting.claimable(alice), 0, "claimable");
         assertEq(vesting.claimable(bob), 0, "claimable");
         assertEq(vesting.claimed(alice), 100e18, "claimed");
