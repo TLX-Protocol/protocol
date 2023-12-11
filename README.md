@@ -7,7 +7,3 @@ This repository contains the core smart contracts for the TLX Protocol.
 ## Licensing
 
 The primary license for TLX is `GPL-3.0`.
-
-- REbalance threshold
-- setRebatePercent
-- setEarningsPercent
