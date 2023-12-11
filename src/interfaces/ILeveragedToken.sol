@@ -3,22 +3,56 @@ pragma solidity ^0.8.13;
 
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {IPositionManager} from "./IPositionManager.sol";
-
 interface ILeveragedToken is IERC20Metadata {
-    /**
-     * @notice Mint leveraged tokens to the specified account.
-     * @param account The account to mint to.
-     * @param amount The amount to mint.
-     */
-    function mint(address account, uint256 amount) external;
+    event Minted(
+        address indexed account,
+        uint256 leveragedTokenAmount,
+        uint256 baseAssetAmount
+    );
+    event Redeemed(
+        address indexed account,
+        uint256 leveragedTokenAmount,
+        uint256 baseAssetAmount
+    );
+
+    error InsufficientAmount();
+    error CannotRebalance();
+    error LeverageUpdatePending();
+    error InvalidRebalanceThreshold();
 
     /**
-     * @notice Burn leveraged tokens from the specified account.
-     * @param account The account to burn from.
-     * @param amount The amount to burn.
+     * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
+     * @param baseAmountIn The amount of the base asset to mint with.
+     * @param minLeveragedTokenAmountOut The minimum amount of leveragedTokens to mint (reverts otherwise).
+     * @return leveragedTokenAmountOut The amount of leveragedTokens minted.
      */
-    function burn(address account, uint256 amount) external;
+    function mint(
+        uint256 baseAmountIn,
+        uint256 minLeveragedTokenAmountOut
+    ) external returns (uint256 leveragedTokenAmountOut);
+
+    /**
+     * @notice Redeems leveragedTokenAmount of the leveraged token and returns the base asset.
+     * @param leveragedTokenAmount The amount of the leveraged token to redeem.
+     * @param minBaseAmountReceived The minimum amount of the base asset to receive (reverts otherwise).
+     * @return baseAmountReceived The amount of the base asset received.
+     */
+    function redeem(
+        uint256 leveragedTokenAmount,
+        uint256 minBaseAmountReceived
+    ) external returns (uint256 baseAmountReceived);
+
+    /**
+     * @notice Rebalances the position to the target leverage.
+     */
+    function rebalance() external;
+
+    /**
+     * @notice Sets the rebalance threshold.
+     * @dev Represented as a percent in 18 decimals, e.g. 20% = 0.2e18.
+     * @param rebalanceThreshold The rebalance threshold to set.
+     */
+    function setRebalanceThreshold(uint256 rebalanceThreshold) external;
 
     /**
      * @notice Returns the target asset of the leveraged token.
@@ -39,18 +73,32 @@ interface ILeveragedToken is IERC20Metadata {
     function isLong() external view returns (bool isLong);
 
     /**
-     * @notice Returns the position manager of the leveraged token.
-     * @return positionManager The position manager of the leveraged token.
-     */
-    function positionManager()
-        external
-        view
-        returns (IPositionManager positionManager);
-
-    /**
      * @notice Returns if the leveraged token is active,
      * @dev A token is active if it still has some positive exchange rate (i.e. has not been liquidated).
      * @return isActive If the leveraged token is active.
      */
     function isActive() external view returns (bool isActive);
+
+    /**
+     * @notice Returns the rebalance threshold.
+     * @dev Represented as a percent in 18 decimals, e.g. 20% = 0.2e18.
+     * @return rebalanceThreshold The rebalance threshold.
+     */
+    function rebalanceThreshold()
+        external
+        view
+        returns (uint256 rebalanceThreshold);
+
+    /**
+     * @notice Returns the exchange rate from one leveraged token to one base asset.
+     * @dev In 18 decimals.
+     * @return exchangeRate The exchange rate.
+     */
+    function exchangeRate() external view returns (uint256 exchangeRate);
+
+    /**
+     * @notice Returns if the leveraged token can be rebalanced.
+     * @return canRebalance If the leveraged token can be rebalanced.
+     */
+    function canRebalance() external view returns (bool canRebalance);
 }
