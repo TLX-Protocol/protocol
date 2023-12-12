@@ -19,9 +19,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     using ScaledNumber for uint256;
     using Address for address;
 
-    uint256 internal constant _MIN_REBALANCE_THRESHOLD = 0.01e18;
-    uint256 internal constant _MAX_REBALANCE_THRESHOLD = 0.8e18;
-
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal _lastRebalanceTimestamp;
@@ -29,7 +26,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     string public override targetAsset;
     uint256 public immutable override targetLeverage;
     bool public immutable override isLong;
-    uint256 public override rebalanceThreshold;
 
     constructor(
         string memory name_,
@@ -37,14 +33,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         string memory targetAsset_,
         uint256 targetLeverage_,
         bool isLong_,
-        address addressProvider_,
-        uint256 rebalanceThreshold_
+        address addressProvider_
     ) ERC20(name_, symbol_) {
         targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;
         _addressProvider = IAddressProvider(addressProvider_);
-        rebalanceThreshold = rebalanceThreshold_;
     }
 
     function mint(
@@ -128,21 +122,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         _rebalance();
     }
 
-    function setRebalanceThreshold(
-        uint256 rebalanceThreshold_
-    ) public override onlyOwner {
-        if (rebalanceThreshold_ < _MIN_REBALANCE_THRESHOLD) {
-            revert InvalidRebalanceThreshold();
-        }
-        if (rebalanceThreshold_ > _MAX_REBALANCE_THRESHOLD) {
-            revert InvalidRebalanceThreshold();
-        }
-        if (rebalanceThreshold_ == rebalanceThreshold) {
-            revert InvalidRebalanceThreshold();
-        }
-        rebalanceThreshold = rebalanceThreshold_;
-    }
-
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = totalSupply();
         uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
@@ -184,7 +163,14 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
             ? current_ - target_
             : target_ - current_;
         uint256 percentDiff_ = diff_.div(target_);
-        return percentDiff_ >= rebalanceThreshold;
+        return percentDiff_ >= rebalanceThreshold();
+    }
+
+    function rebalanceThreshold() public view override returns (uint256) {
+        return
+            _addressProvider.parameterProvider().rebalanceThreshold(
+                address(this)
+            );
     }
 
     function _rebalance() internal {
