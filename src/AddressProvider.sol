@@ -20,19 +20,31 @@ import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 
 contract AddressProvider is IAddressProvider, Ownable {
     mapping(bytes32 => address) internal _addresses;
+    mapping(bytes32 => bool) internal _frozenAddresses;
 
     function updateAddress(
         bytes32 key_,
         address value_
     ) external override onlyOwner {
+        if (_frozenAddresses[key_]) revert AddressIsFrozen(key_);
         if (value_ == address(0)) revert Errors.ZeroAddress();
         if (value_ == _addresses[key_]) revert Errors.SameAsCurrent();
         _addresses[key_] = value_;
         emit AddressUpdated(key_, value_);
     }
 
+    function freezeAddress(bytes32 key_) external override onlyOwner {
+        if (_frozenAddresses[key_]) revert AddressIsFrozen(key_);
+        _frozenAddresses[key_] = true;
+        emit AddressFrozen(key_);
+    }
+
     function addressOf(bytes32 key_) external view override returns (address) {
         return _addresses[key_];
+    }
+
+    function isAddressFrozen(bytes32 key_) external view returns (bool) {
+        return _frozenAddresses[key_];
     }
 
     function leveragedTokenFactory()

@@ -15,6 +15,9 @@ import {IParameterProvider} from "./IParameterProvider.sol";
 
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
+    event AddressFrozen(bytes32 indexed key);
+
+    error AddressIsFrozen(bytes32 key);
 
     /**
      * @notice Updates an address for the given key.
@@ -24,11 +27,24 @@ interface IAddressProvider {
     function updateAddress(bytes32 key, address value) external;
 
     /**
+     * @notice Freezes an address for the given key, making it immutable.
+     * @param key The key of the address to be frozen.
+     */
+    function freezeAddress(bytes32 key) external;
+
+    /**
      * @notice Returns the address for a kiven key.
      * @param key The key of the address to be returned.
      * @return value The address for the given key.
      */
     function addressOf(bytes32 key) external view returns (address value);
+
+    /**
+     * @notice Returns whether an address is frozen.
+     * @param key The key of the address to be checked.
+     * @return Whether the address is frozen.
+     */
+    function isAddressFrozen(bytes32 key) external view returns (bool);
 
     /**
      * @notice Returns the LeveragedTokenFactory contract.
