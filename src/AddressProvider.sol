@@ -5,6 +5,7 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
@@ -40,40 +41,40 @@ contract AddressProvider is IAddressProvider, Ownable {
     {
         return
             ILeveragedTokenFactory(
-                _addresses[AddressKeys.LEVERAGED_TOKEN_FACTORY]
+                _getAddress(AddressKeys.LEVERAGED_TOKEN_FACTORY)
             );
     }
 
     function referrals() external view override returns (IReferrals) {
-        return IReferrals(_addresses[AddressKeys.REFERRALS]);
+        return IReferrals(_getAddress(AddressKeys.REFERRALS));
     }
 
     function airdrop() external view override returns (IAirdrop) {
-        return IAirdrop(_addresses[AddressKeys.AIRDROP]);
+        return IAirdrop(_getAddress(AddressKeys.AIRDROP));
     }
 
     function bonding() external view override returns (IBonding) {
-        return IBonding(_addresses[AddressKeys.BONDING]);
+        return IBonding(_getAddress(AddressKeys.BONDING));
     }
 
     function treasury() external view override returns (address) {
-        return _addresses[AddressKeys.TREASURY];
+        return _getAddress(AddressKeys.TREASURY);
     }
 
     function vesting() external view override returns (IVesting) {
-        return IVesting(_addresses[AddressKeys.VESTING]);
+        return IVesting(_getAddress(AddressKeys.VESTING));
     }
 
     function tlx() external view override returns (ITlxToken) {
-        return ITlxToken(_addresses[AddressKeys.TLX]);
+        return ITlxToken(_getAddress(AddressKeys.TLX));
     }
 
     function locker() external view override returns (ILocker) {
-        return ILocker(_addresses[AddressKeys.LOCKER]);
+        return ILocker(_getAddress(AddressKeys.LOCKER));
     }
 
     function baseAsset() external view override returns (IERC20Metadata) {
-        return IERC20Metadata(_addresses[AddressKeys.BASE_ASSET]);
+        return IERC20Metadata(_getAddress(AddressKeys.BASE_ASSET));
     }
 
     function synthetixHandler()
@@ -82,11 +83,11 @@ contract AddressProvider is IAddressProvider, Ownable {
         override
         returns (ISynthetixHandler)
     {
-        return ISynthetixHandler(_addresses[AddressKeys.SYNTHETIX_HANDLER]);
+        return ISynthetixHandler(_getAddress(AddressKeys.SYNTHETIX_HANDLER));
     }
 
     function pol() external view override returns (address) {
-        return _addresses[AddressKeys.POL];
+        return _getAddress(AddressKeys.POL);
     }
 
     function parameterProvider()
@@ -95,6 +96,12 @@ contract AddressProvider is IAddressProvider, Ownable {
         override
         returns (IParameterProvider)
     {
-        return IParameterProvider(_addresses[AddressKeys.PARAMETER_PROVIDER]);
+        return IParameterProvider(_getAddress(AddressKeys.PARAMETER_PROVIDER));
+    }
+
+    function _getAddress(bytes32 key_) internal view returns (address) {
+        address value_ = _addresses[key_];
+        if (value_ == address(0)) revert Errors.ZeroAddress();
+        return value_;
     }
 }
