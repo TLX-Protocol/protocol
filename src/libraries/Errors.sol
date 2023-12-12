@@ -5,4 +5,5 @@ library Errors {
     error NotAuthorized();
     error AlreadyExists();
     error ZeroAddress();
+    error SameAsCurrent();
 }

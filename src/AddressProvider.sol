@@ -25,6 +25,8 @@ contract AddressProvider is IAddressProvider, Ownable {
         bytes32 key_,
         address value_
     ) external override onlyOwner {
+        if (value_ == address(0)) revert Errors.ZeroAddress();
+        if (value_ == _addresses[key_]) revert Errors.SameAsCurrent();
         _addresses[key_] = value_;
         emit AddressUpdated(key_, value_);
     }
