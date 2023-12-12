@@ -43,6 +43,13 @@ interface IVesting {
     function removeDelegate(address delegate) external;
 
     /**
+     * @notice Get the amount of tokens that were allocated for vesting for `account`.
+     * @param account The address to get the allocated amount for.
+     * @return amount The amount of tokens allocated for vesting for `account`.
+     */
+    function allocated(address account) external view returns (uint256 amount);
+
+    /**
      * @notice Get the amount of tokens that have vested for `account`.
      * @param account The address to get the vested amount for.
      * @return amount The amount of tokens vested to `account`.

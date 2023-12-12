@@ -9,6 +9,7 @@ import {AddressKeys} from "../src/libraries/AddressKeys.sol";
 import {IAddressProvider} from "../src/interfaces/IAddressProvider.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 contract AddressProviderTest is IntegrationTest {
     using Expectations for Vm;
@@ -36,10 +37,26 @@ contract AddressProviderTest is IntegrationTest {
         addressProvider.freezeAddress(AddressKeys.REFERRALS);
         assertTrue(addressProvider.isAddressFrozen(AddressKeys.REFERRALS));
 
-        vm.expectRevertWith(IAddressProvider.AddressIsFrozen.selector, AddressKeys.REFERRALS);
+        vm.expectRevertWith(
+            IAddressProvider.AddressIsFrozen.selector,
+            AddressKeys.REFERRALS
+        );
         addressProvider.updateAddress(AddressKeys.REFERRALS, Tokens.UNI);
 
-        vm.expectRevertWith(IAddressProvider.AddressIsFrozen.selector, AddressKeys.REFERRALS);
+        vm.expectRevertWith(
+            IAddressProvider.AddressIsFrozen.selector,
+            AddressKeys.REFERRALS
+        );
         addressProvider.freezeAddress(AddressKeys.REFERRALS);
+    }
+
+    function testRevertsWhenSameAsCurrent() public {
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
+    }
+
+    function testRevertsWhenZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        addressProvider.updateAddress(AddressKeys.AIRDROP, address(0));
     }
 }
