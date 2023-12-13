@@ -23,18 +23,6 @@ contract Referrals is IReferrals, Ownable {
     uint256 public override rebatePercent;
     uint256 public override earningsPercent;
 
-    modifier onlyLeveragedToken() {
-        if (
-            !_addressProvider.leveragedTokenFactory().isLeveragedToken(
-                msg.sender
-            )
-        ) {
-            revert NotLeveragedToken();
-        }
-
-        _;
-    }
-
     constructor(
         address addressProvider_,
         uint256 rebatePercent_,
@@ -92,13 +80,6 @@ contract Referrals is IReferrals, Ownable {
 
     function updateReferral(bytes32 code_) external override {
         _updateCodeFor(code_, msg.sender);
-    }
-
-    function updateReferralFor(
-        address user_,
-        bytes32 code_
-    ) external override onlyLeveragedToken {
-        _updateCodeFor(code_, user_);
     }
 
     function setRebatePercent(

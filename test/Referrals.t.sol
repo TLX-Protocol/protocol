@@ -134,33 +134,6 @@ contract ReferralsTest is IntegrationTest {
         referrals.setEarningsPercent(0.9e18);
     }
 
-    function testUpdateReferralFor() public {
-        referrals.register(alice, CODE);
-
-        leveragedTokenFactory.createLeveragedTokens(
-            Symbols.UNI,
-            2.12e18,
-            Config.REBALANCE_THRESHOLD
-        );
-        vm.prank(leveragedTokenFactory.longTokens(Symbols.UNI)[0]);
-        referrals.updateReferralFor(bob, CODE);
-
-        assertEq(referrals.codeRebate(CODE), 0.5e18);
-        assertEq(referrals.userRebate(alice), 0);
-        assertEq(referrals.userRebate(bob), 0.5e18);
-        assertEq(referrals.referrer(CODE), alice);
-        assertEq(referrals.code(alice), CODE);
-        assertEq(referrals.code(bob), bytes32(0));
-        assertEq(referrals.referral(alice), bytes32(0));
-        assertEq(referrals.referral(bob), CODE);
-    }
-
-    function testUpdateReferralForRevertsForNonLeveragedToken() public {
-        vm.expectRevert(IReferrals.NotLeveragedToken.selector);
-        vm.prank(alice);
-        referrals.updateReferralFor(bob, CODE);
-    }
-
     function testTakeEarnings() public {
         referrals.register(alice, CODE);
 
