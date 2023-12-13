@@ -8,6 +8,9 @@ interface IParameterProvider {
     }
 
     event ParameterUpdated(bytes32 indexed key, uint256 value);
+    event RebalanceThresholdUpdated(address leveragedToken, uint256 value);
+
+    error InvalidRebalanceThreshold();
 
     /**
      * @notice Updates a parameter for the given key.
@@ -15,6 +18,16 @@ interface IParameterProvider {
      * @param value The value of the parameter to be updated.
      */
     function updateParameter(bytes32 key, uint256 value) external;
+
+    /**
+     * @notice Updates the rebalance threshold for the `leveragedToken`.
+     * @param leveragedToken The address of the leveraged token.
+     * @param value The new rebalance threshold.
+     */
+    function updateRebalanceThreshold(
+        address leveragedToken,
+        uint256 value
+    ) external;
 
     /**
      * @notice Returns the parameter for a given key.
@@ -40,4 +53,13 @@ interface IParameterProvider {
      * @return parameters All parameters.
      */
     function parameters() external view returns (Parameter[] memory parameters);
+
+    /**
+     * @notice Returns the rebalance threshold for the `leveragedToken`.
+     * @param leveragedToken The address of the leveraged token.
+     * @param rebalanceThreshold The rebalance threshold of the `leveragedToken`.
+     */
+    function rebalanceThreshold(
+        address leveragedToken
+    ) external view returns (uint256 rebalanceThreshold);
 }

@@ -7,7 +7,6 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IPositionManager} from "./interfaces/IPositionManager.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
 contract Referrals is IReferrals, Ownable {
@@ -24,13 +23,13 @@ contract Referrals is IReferrals, Ownable {
     uint256 public override rebatePercent;
     uint256 public override earningsPercent;
 
-    modifier onlyPositionManager() {
+    modifier onlyLeveragedToken() {
         if (
-            !_addressProvider.leveragedTokenFactory().isPositionManager(
+            !_addressProvider.leveragedTokenFactory().isLeveragedToken(
                 msg.sender
             )
         ) {
-            revert NotPositionManager();
+            revert NotLeveragedToken();
         }
 
         _;
@@ -98,7 +97,7 @@ contract Referrals is IReferrals, Ownable {
     function updateReferralFor(
         address user_,
         bytes32 code_
-    ) external override onlyPositionManager {
+    ) external override onlyLeveragedToken {
         _updateCodeFor(code_, user_);
     }
 

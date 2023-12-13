@@ -18,7 +18,8 @@ contract BondingTest is IntegrationTest {
 
     address public leveragedToken;
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         leveragedTokenFactory.createLeveragedTokens(
             Symbols.UNI,
             2.12e18,

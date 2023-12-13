@@ -12,7 +12,7 @@ interface IReferrals {
     error CodeTaken();
     error SameCode();
     error AlreadyOpen();
-    error NotPositionManager();
+    error NotLeveragedToken();
     error NotChanged();
     error InvalidAmount();
 

@@ -60,7 +60,7 @@ contract IntegrationTest is Test {
     Vesting public vesting;
     SynthetixHandler public synthetixHandler;
 
-    constructor() {
+    function setUp() public virtual {
         vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 113_220_646));
 
         // AddressProvider Setup
@@ -69,7 +69,7 @@ contract IntegrationTest is Test {
         addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.SUSD);
 
         // ParameterProvider Setup
-        parameterProvider = new ParameterProvider();
+        parameterProvider = new ParameterProvider(address(addressProvider));
         parameterProvider.updateParameter(
             ParameterKeys.REDEMPTION_FEE,
             Config.REDEMPTION_FEE

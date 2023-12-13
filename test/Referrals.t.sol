@@ -142,13 +142,7 @@ contract ReferralsTest is IntegrationTest {
             2.12e18,
             Config.REBALANCE_THRESHOLD
         );
-        vm.prank(
-            address(
-                ILeveragedToken(
-                    leveragedTokenFactory.longTokens(Symbols.UNI)[0]
-                ).positionManager()
-            )
-        );
+        vm.prank(leveragedTokenFactory.longTokens(Symbols.UNI)[0]);
         referrals.updateReferralFor(bob, CODE);
 
         assertEq(referrals.codeRebate(CODE), 0.5e18);
@@ -161,8 +155,8 @@ contract ReferralsTest is IntegrationTest {
         assertEq(referrals.referral(bob), CODE);
     }
 
-    function testUpdateReferralForRevertsForNonPositionManager() public {
-        vm.expectRevert(IReferrals.NotPositionManager.selector);
+    function testUpdateReferralForRevertsForNonLeveragedToken() public {
+        vm.expectRevert(IReferrals.NotLeveragedToken.selector);
         vm.prank(alice);
         referrals.updateReferralFor(bob, CODE);
     }
