@@ -12,8 +12,6 @@ import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.s
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenFactoryTest is IntegrationTest {
-    function setUp() public {}
-
     function testDeployTokens() public {
         (
             address longTokenAddress_,

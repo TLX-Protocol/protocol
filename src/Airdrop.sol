@@ -33,10 +33,9 @@ contract Airdrop is IAirdrop, Ownable {
         bytes32[] calldata merkleProof_
     ) external override {
         // Checking claim is valid
-        address account_ = msg.sender;
         if (block.timestamp > deadline) revert ClaimPeriodOver();
-        if (hasClaimed[account_]) revert AlreadyClaimed();
-        if (!_isValid(account_, amount_, merkleProof_)) {
+        if (hasClaimed[msg.sender]) revert AlreadyClaimed();
+        if (!_isValid(msg.sender, amount_, merkleProof_)) {
             revert InvalidMerkleProof();
         }
         uint256 totalClaimed_ = totalClaimed;
@@ -49,10 +48,10 @@ contract Airdrop is IAirdrop, Ownable {
         }
 
         // Updating state
-        hasClaimed[account_] = true;
+        hasClaimed[msg.sender] = true;
         totalClaimed += amount_;
-        _addressProvider.tlx().transfer(account_, amount_);
-        emit Claimed(account_, amount_);
+        _addressProvider.tlx().transfer(msg.sender, amount_);
+        emit Claimed(msg.sender, amount_);
     }
 
     function updateMerkleRoot(bytes32 merkleRoot_) external override onlyOwner {
@@ -63,7 +62,6 @@ contract Airdrop is IAirdrop, Ownable {
     function mintUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
         address treasury_ = _addressProvider.treasury();
-        if (treasury_ == address(0)) revert InvalidTreasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         _addressProvider.tlx().transfer(treasury_, unclaimed_);

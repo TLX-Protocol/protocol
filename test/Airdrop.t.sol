@@ -18,7 +18,8 @@ contract AirdropTest is IntegrationTest {
             0x805205e4cf7a5e483078d8f80da53ff73f9830b97b11bfcffe69d5423490c794
         );
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         airdrop.updateMerkleRoot(MERKLE_ROOT);
     }
 
@@ -85,13 +86,6 @@ contract AirdropTest is IntegrationTest {
 
     function testMintUnclaimedFailsWhenStillOngoing() public {
         vm.expectRevert(IAirdrop.ClaimStillOngoing.selector);
-        airdrop.mintUnclaimed();
-    }
-
-    function testMintUnclaimedRevertsForInvalidTreasury() public {
-        addressProvider.updateAddress(AddressKeys.TREASURY, address(0));
-        skip(200 days);
-        vm.expectRevert(IAirdrop.InvalidTreasury.selector);
         airdrop.mintUnclaimed();
     }
 
