@@ -21,6 +21,7 @@ import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 contract AddressProvider is IAddressProvider, Ownable {
     mapping(bytes32 => address) internal _addresses;
     mapping(bytes32 => bool) internal _frozenAddresses;
+    mapping(address => bool) internal _rebalancer;
 
     function updateAddress(
         bytes32 key_,
@@ -37,6 +38,16 @@ contract AddressProvider is IAddressProvider, Ownable {
         if (_frozenAddresses[key_]) revert AddressIsFrozen(key_);
         _frozenAddresses[key_] = true;
         emit AddressFrozen(key_);
+    }
+
+    function addRebalancer(address account_) external override onlyOwner {
+        if (_rebalancer[account_]) revert Errors.AlreadyExists();
+        _rebalancer[account_] = true;
+    }
+
+    function removeRebalancer(address account_) external override onlyOwner {
+        if (!_rebalancer[account_]) revert Errors.DoesNotExist();
+        delete _rebalancer[account_];
     }
 
     function addressOf(bytes32 key_) external view override returns (address) {
@@ -111,6 +122,12 @@ contract AddressProvider is IAddressProvider, Ownable {
         returns (IParameterProvider)
     {
         return IParameterProvider(_getAddress(AddressKeys.PARAMETER_PROVIDER));
+    }
+
+    function isRebalancer(
+        address account_
+    ) external view override returns (bool) {
+        return _rebalancer[account_];
     }
 
     function _getAddress(bytes32 key_) internal view returns (address) {
