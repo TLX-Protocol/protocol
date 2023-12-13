@@ -10,7 +10,8 @@ import {ChainlinkAutomation} from "../src/ChainlinkAutomation.sol";
 contract ChainlinkAutomationTest is IntegrationTest {
     ChainlinkAutomation internal chainlinkAutomation;
 
-    function setUp() public {
+    function setUp() public override {
+        super.setUp();
         chainlinkAutomation = new ChainlinkAutomation(address(addressProvider));
     }
 
