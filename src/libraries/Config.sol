@@ -4,13 +4,20 @@ pragma solidity ^0.8.13;
 import {Tokens} from "./Tokens.sol";
 
 library Config {
+    // Addresses
+    address public constant REWARD_TOKEN = Tokens.SUSD; // sUSD
+
+    // Strings
+    string public constant TOKEN_NAME = "TLX DAO Token"; // TLX DAO Token
+    string public constant TOKEN_SYMBOL = "TLX"; // TLX
+
+    // Values
     uint256 public constant AIRDROP_AMOUNT = 1_000_000e18; // 1 million TLX
     uint256 public constant BONDING_AMOUNT = 7_500_000e18; // 7.5 million TLX
     uint256 public constant TREASURY_AMOUNT = 500_000e18; // 500k TLX
     uint256 public constant VESTING_AMOUNT = 1_000_000e18; // 1 million TLX
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
     uint256 public constant LOCKER_UNLOCK_DELAY = 7 days; // 1 week
-    address public constant REWARD_TOKEN = Tokens.SUSD; // sUSD
     uint256 public constant INITIAL_TLX_PER_SECOND = 0.09645061728e18; // 250k TLX in first month / 30 days (in seconds)
     uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.966666666666666667e18; // Very roughly gives 30% of supply in first year
     uint256 public constant PERIOD_DURATION = 30 days; // 1 month
