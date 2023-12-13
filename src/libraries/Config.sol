@@ -22,4 +22,5 @@ library Config {
     uint256 public constant EARNINGS_PERCENT = 0.5e18; // 50%
     uint256 public constant REBALANCE_THRESHOLD = 0.25e18; // 25%
     uint256 public constant STREAMING_FEE = 0.02e18; // 2%
+    uint256 public constant MAX_REBALANCES = 20; // The maximum number of rebalances that can be performed in a single transaction
 }
