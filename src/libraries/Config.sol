@@ -4,6 +4,11 @@ pragma solidity ^0.8.13;
 import {Tokens} from "./Tokens.sol";
 
 library Config {
+    // Addresses
+    address public constant TREASURY = address(1); // Our multisig
+    address public constant REBALANCE_FEE_RECEIVER = address(2); // Receiver of rebalance fees (may be treasury to start)
+
+    // Values
     uint256 public constant AIRDROP_AMOUNT = 1_000_000e18; // 1 million TLX
     uint256 public constant BONDING_AMOUNT = 7_500_000e18; // 7.5 million TLX
     uint256 public constant TREASURY_AMOUNT = 500_000e18; // 500k TLX
@@ -17,6 +22,7 @@ library Config {
     uint256 public constant BASE_FOR_ALL_TLX = 75_000e18; // Very roughly means it is 'worth' executing once every 3 days
     uint256 public constant VESTING_DURATION = 365 days; // 1 year
     uint256 public constant MAX_LEVERAGE = 100e18; // 100x
+    uint256 public constant REBALANCE_FEE = 2e18; // 2 sUSD
     uint256 public constant REDEMPTION_FEE = 0.005e18; // 0.05%
     uint256 public constant REBATE_PERCENT = 0.5e18; // 50%
     uint256 public constant EARNINGS_PERCENT = 0.5e18; // 50%
