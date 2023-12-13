@@ -119,11 +119,20 @@ interface IAddressProvider {
     function pol() external view returns (address pol);
 
     /**
-     * @notice Returns the address for the Parameter Provider.
-     * @return parameterProvider The address of the Parameter Provider.
+     * @notice Returns the Parameter Provider contract.
+     * @return parameterProvider The Parameter Provider contract.
      */
     function parameterProvider()
         external
         view
         returns (IParameterProvider parameterProvider);
+
+    /**
+     * @notice Returns the address for the Rebalance Fee Receiver.
+     * @return rebalanceFeeReceiver The address of the Rebalance Fee Receiver.
+     */
+    function rebalanceFeeReceiver()
+        external
+        view
+        returns (address rebalanceFeeReceiver);
 }
