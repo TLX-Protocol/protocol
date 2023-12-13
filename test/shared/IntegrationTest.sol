@@ -67,6 +67,7 @@ contract IntegrationTest is Test {
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
         addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.SUSD);
+        addressProvider.addRebalancer(address(this));
 
         // ParameterProvider Setup
         parameterProvider = new ParameterProvider(address(addressProvider));
