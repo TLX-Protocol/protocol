@@ -118,6 +118,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     }
 
     function rebalance() public override {
+        bool canRebalance_ = _addressProvider.isRebalancer(msg.sender);
+        if (!canRebalance_) revert Errors.NotAuthorized();
         if (!canRebalance()) revert CannotRebalance();
         _rebalance();
     }
