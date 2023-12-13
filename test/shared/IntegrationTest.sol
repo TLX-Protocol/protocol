@@ -192,9 +192,10 @@ contract IntegrationTest is Test {
     }
 
     function _executeOrder(address account_) internal {
-        uint256 currentTime = block.timestamp;
-        uint256 searchTime = currentTime + 5;
-        string memory vaa = _getVaa(searchTime);
+        // uint256 currentTime = block.timestamp;
+        // uint256 searchTime = currentTime + 5;
+        // string memory vaa = _getVaa(searchTime);
+        string memory vaa = _getVaa();
         bytes memory decoded = Base64.decode(vaa);
         bytes memory hexData = abi.encodePacked(decoded);
         bytes[] memory priceUpdateData = new bytes[](1);
@@ -211,21 +212,25 @@ contract IntegrationTest is Test {
     // Realised that the timestamp is always roughly the same, so we can just hard code the VAA.
     // Although this will break when we update the block number, meaning we have to manually update the VAA again.
     // Not ideal long term, but hopefully we can switch back to the API when it's more stable.
-    function _getVaa(uint256 publishTime) internal returns (string memory) {
-        // string memory url = string.concat(
-        //     PYTH_URL,
-        //     "?id=",
-        //     PYTH_ID,
-        //     "&publish_time=",
-        //     Strings.toString(publishTime)
-        // );
-        // console.log(url);
-        // string[] memory inputs = new string[](3);
-        // inputs[0] = "curl";
-        // inputs[1] = url;
-        // inputs[2] = "-s";
-        // bytes memory res = vm.ffi(inputs);
-        // return abi.decode(string(res).parseRaw(".vaa"), (string));
+
+    // function _getVaa(uint256 publishTime) internal returns (string memory) {
+    // string memory url = string.concat(
+    //     PYTH_URL,
+    //     "?id=",
+    //     PYTH_ID,
+    //     "&publish_time=",
+    //     Strings.toString(publishTime)
+    // );
+    // console.log(url);
+    // string[] memory inputs = new string[](3);
+    // inputs[0] = "curl";
+    // inputs[1] = url;
+    // inputs[2] = "-s";
+    // bytes memory res = vm.ffi(inputs);
+    // return abi.decode(string(res).parseRaw(".vaa"), (string));
+    // }
+
+    function _getVaa() internal pure returns (string memory) {
         return VAA;
     }
 
