@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -19,9 +20,11 @@ import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 
 contract AddressProvider is IAddressProvider, Ownable {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     mapping(bytes32 => address) internal _addresses;
     mapping(bytes32 => bool) internal _frozenAddresses;
-    mapping(address => bool) internal _rebalancer;
+    EnumerableSet.AddressSet internal _rebalancer;
 
     function updateAddress(
         bytes32 key_,
@@ -41,13 +44,11 @@ contract AddressProvider is IAddressProvider, Ownable {
     }
 
     function addRebalancer(address account_) external override onlyOwner {
-        if (_rebalancer[account_]) revert Errors.AlreadyExists();
-        _rebalancer[account_] = true;
+        _rebalancer.add(account_);
     }
 
     function removeRebalancer(address account_) external override onlyOwner {
-        if (!_rebalancer[account_]) revert Errors.DoesNotExist();
-        delete _rebalancer[account_];
+        _rebalancer.remove(account_);
     }
 
     function addressOf(bytes32 key_) external view override returns (address) {
@@ -127,7 +128,11 @@ contract AddressProvider is IAddressProvider, Ownable {
     function isRebalancer(
         address account_
     ) external view override returns (bool) {
-        return _rebalancer[account_];
+        return _rebalancer.contains(account_);
+    }
+
+    function rebalancers() external view override returns (address[] memory) {
+        return _rebalancer.values();
     }
 
     function _getAddress(bytes32 key_) internal view returns (address) {

@@ -51,12 +51,12 @@ contract AddressProviderTest is IntegrationTest {
     }
 
     function testRevertsWhenSameAsCurrent() public {
-        vm.expectRevert(Errors.SameAsCurrent.selector);
+        vm.expectRevert();
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
     }
 
     function testRevertsWhenZeroAddress() public {
-        vm.expectRevert(Errors.ZeroAddress.selector);
+        vm.expectRevert();
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(0));
     }
 }

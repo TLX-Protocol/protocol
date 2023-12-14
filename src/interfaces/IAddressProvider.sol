@@ -149,4 +149,10 @@ interface IAddressProvider {
     function isRebalancer(
         address account
     ) external view returns (bool isRebalancer);
+
+    /**
+     * @notice Returns the list of rebalancers.
+     * @return rebalancers The list of rebalancers.
+     */
+    function rebalancers() external view returns (address[] memory rebalancers);
 }
