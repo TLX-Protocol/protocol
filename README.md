@@ -48,11 +48,11 @@ The `LeveragedToken` contract can be considered the 'core' contract of the produ
 
 The goal of the Leveraged Token is to stay within a range of leverage, it should be between the `targetLeverage` plus and minus the `rebalanceThreshold` for that leveraged Token. When the token is outside that range, the `canRebalance` view should generally return `true`. This will then be handled by the keeper to call the `rebalance` function.
 
-Rebalancing should do a few key steps. First it should verify that we actually can rebalance. Next it should charge the `rebalanceFee`, which is a flat fee charged to the Leveraged Token holders per rebalance to cover keeper maintenance costs. It should then charge a streaming fee and send that to the locker. Finally it should submit an update on Synthetix to bring the leverage back in line with the target.
+Rebalancing should do a few key steps. First, it should verify that we actually can rebalance. Next, it should charge the `rebalanceFee`, which is a flat fee charged to the Leveraged Token holders per rebalance to cover keeper maintenance costs. It should then charge a streaming fee and send that to the locker. Finally, it should submit an update on Synthetix to bring the leverage back in line with the target.
 
-When minting new Leveraged Tokens, the contract should mint an amount of Leveraged Tokens based on the exchange rate of the Leveraged Tokens relative to the Base Asset (sUSD). It then deposits the users sUSD as additional margin. Finally, if the Leveraged Token is not balanced, it should rebalance it. Not that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
+When minting new Leveraged Tokens, the contract should mint an amount of Leveraged Tokens based on the exchange rate of the Leveraged Tokens relative to the Base Asset (sUSD). It then deposits the users' sUSD as additional margin. Finally, if the Leveraged Token is not balanced, it should rebalance it. Note that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
 
-When redeeming Leveraged Tokens, the contract should send them an amount of sUSD back depending on the exchange rate. It should charge a redemption fee and send that to the lock. Finally, if the Leveraged Token is not balanced, it should rebalance it. Not that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
+When redeeming Leveraged Tokens, the contract sends the user an amount of sUSD back dependent on the exchange rate. It charges a redemption fee and sends that to the locker. Finally, if the Leveraged Token is not balanced, it rebalances it. Note that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
 
 ### Leveraged Token Factory
 
@@ -68,11 +68,11 @@ The `TlxToken` contract is the governance token of the TLX protocol. It will be 
 
 ### Airdrop
 
-The `Airdrop` contract is responsible for allowing users to claim an airdrop of `TLX` tokens. Users have until a deadline to claim their tokens, after that the owner can claim the remaining tokens to the treasury.
+The `Airdrop` contract is responsible for allowing users to claim an airdrop of `TLX` tokens. Users have until a deadline to claim their tokens, after that, the owner can claim the remaining tokens to the treasury.
 
 ### Vesting
 
-The `Vesting` contract is responsible for distributing vested tokens to the team and investors. It has several views to help users see how many tokens they have vesting and their status. And a `claim` function for claiming `TLX` tokens. There is also a system for adding a delegate that can claim tokens on a users behalf.
+The `Vesting` contract is responsible for distributing vested tokens to the team and investors. It has several views to help users see how many tokens they have vesting and their status. And a `claim` function for claiming `TLX` tokens. There is also a system for adding a delegate that can claim tokens on a user's behalf.
 
 ### Bonding
 
@@ -80,8 +80,8 @@ Bonding is one of the main ways `TLX` tokens are distributed to users. The `Bond
 
 ### Locker
 
-The locker is where users can stake their `TLX`. Staked `TLX` is staked indefinitely, but at any time a user can call `prepareUnlock` to prepare an unlock. After the delay period, users can call `unlock` to receive their `TLX` tokens back. If they change their mind during an unlock and would like to relock, they can do so with the `relock` function. When staking `TLX`, users receive a share of fees that accrue in the Locker, they can claim these any time with the `claim` function. Users do not earn fees while they have a lock prepared. Claiming will be disabled by default, but can be enabled through governance. Staked `TLX` has a `balanceOf` function, similar to an ERC20, which returns how many `TLX` tokens they have staked, this will be used on Snapshot for governance.
+The locker is where users can stake their `TLX`. Staked `TLX` is staked indefinitely, but at any time a user can call `prepareUnlock` to prepare an unlock. After the delay period, users can call `unlock` to receive their `TLX` tokens back. If they change their mind during an unlock and would like to relock, they can do so with the `relock` function. When staking `TLX`, users receive a share of fees that accrue in the Locker, they can claim these at any time with the `claim` function. Users do not earn fees while they have an unlock prepared. Claiming will be disabled by default, but can be enabled through governance. Staked `TLX` has a `balanceOf` function, similar to an ERC20, which returns how many `TLX` tokens they have staked, this will be used on Snapshot for governance.
 
 ### Timelock
 
-The `Timelock` contract will be set as the owner for all other contracts. It is responsible for adding a delay to function calls so that users have time to review the changes. It has functions for creating a new proposed change, cancelling a proposed change, and executing a proposed change. As well as several views for seeing the current state. The delays can be set for different function calls so there is granular control over these.
+The `Timelock` contract will be set as the owner for all other contracts. It is responsible for adding a delay to function calls so that users have time to review the changes. It has functions for creating a new proposed change, cancelling a proposed change, and executing a proposed change. It also has several views for seeing the current state. The delays can be set for different function calls so there is granular control over these.
