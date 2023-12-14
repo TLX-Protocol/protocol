@@ -53,6 +53,8 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
         if (rebalancableTokensCount_ == 0) return (false, "");
         upkeepNeeded = true;
+
+        // solhint-disable-next-line
         assembly {
             mstore(rebalancableTokens_, rebalancableTokensCount_)
         }
