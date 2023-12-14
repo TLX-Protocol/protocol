@@ -62,4 +62,11 @@ contract ChainlinkAutomationTest is IntegrationTest {
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
+
+    function testRevertsWithNoRebalanceTokens() public {
+        address[] memory rebalancableTokens = new address[](0);
+        bytes memory performData = abi.encode(rebalancableTokens);
+        vm.expectRevert(ChainlinkAutomation.NoRebalancableTokens.selector);
+        chainlinkAutomation.performUpkeep(performData);
+    }
 }
