@@ -22,11 +22,12 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
     }
 
     function performUpkeep(bytes calldata performData) external onlyOwner {
-        (
-            uint256 rebalancableTokensCount_,
-            address[] memory rebalancableTokens_
-        ) = abi.decode(performData, (uint256, address[]));
+        address[] memory rebalancableTokens_ = abi.decode(
+            performData,
+            (address[])
+        );
 
+        uint256 rebalancableTokensCount_ = rebalancableTokens_.length;
         if (rebalancableTokensCount_ == 0) revert NoRebalancableTokens();
 
         for (uint256 i; i < rebalancableTokensCount_; i++) {
@@ -52,6 +53,11 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
         if (rebalancableTokensCount_ == 0) return (false, "");
         upkeepNeeded = true;
-        performData = abi.encode(rebalancableTokensCount_, rebalancableTokens_);
+
+        // solhint-disable-next-line
+        assembly {
+            mstore(rebalancableTokens_, rebalancableTokensCount_)
+        }
+        performData = abi.encode(rebalancableTokens_);
     }
 }
