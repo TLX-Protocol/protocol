@@ -62,9 +62,7 @@ abstract contract DeploymentScript is Script {
             Strings.toHexString(uint160(addr), 20),
             '"'
         );
-        if (lineCount != 2) {
-            newLine = string.concat(",", newLine);
-        }
+        if (lineCount != 2) newLine = string.concat(",", newLine);
         lines[lineCount - 1] = newLine;
         lines[lineCount] = "}";
         lineCount++;
@@ -79,7 +77,7 @@ abstract contract DeploymentScript is Script {
         string memory name
     ) internal view returns (address) {
         string memory json = vm.readFile(DEPLOYMENTS_PATH);
-        string memory value = string.concat(".", name);
-        return abi.decode(json.parseRaw(value), (address));
+        string memory key = string.concat(".", name);
+        return abi.decode(json.parseRaw(key), (address));
     }
 }
