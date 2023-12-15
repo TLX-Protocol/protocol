@@ -79,7 +79,10 @@ contract Referrals is IReferrals, Ownable {
     }
 
     function updateReferral(bytes32 code_) external override {
-        _updateCodeFor(code_, msg.sender);
+        if (_referrals[msg.sender] == code_) revert SameCode();
+        if (_referrers[code_] == address(0)) revert InvalidCode();
+        _referrals[msg.sender] = code_;
+        emit UpdatedReferral(msg.sender, code_);
     }
 
     function setRebatePercent(
@@ -131,13 +134,6 @@ contract Referrals is IReferrals, Ownable {
         address referrer_
     ) external view override returns (uint256) {
         return _earnings[referrer_];
-    }
-
-    function _updateCodeFor(bytes32 code_, address user_) internal {
-        if (_referrals[user_] == code_) revert SameCode();
-        if (_referrers[code_] == address(0)) revert InvalidCode();
-        _referrals[user_] = code_;
-        emit UpdatedReferral(user_, code_);
     }
 
     function _codeRebate(bytes32 code_) internal view returns (uint256) {
