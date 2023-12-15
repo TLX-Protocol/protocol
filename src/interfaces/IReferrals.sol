@@ -6,6 +6,8 @@ interface IReferrals {
     event UpdatedReferral(address indexed user, bytes32 code);
     event RebateSet(uint256 rebate);
     event EarningsSet(uint256 earnings);
+    event EarningsTaken(address indexed user, uint256 amount);
+    event EarningsClaimed(address indexed user, uint256 amount);
 
     error AlreadyRegistered();
     error InvalidCode();

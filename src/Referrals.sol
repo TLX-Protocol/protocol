@@ -67,6 +67,7 @@ contract Referrals is IReferrals, Ownable {
         );
         _earnings[referrer_] += earningsAmount_;
         _earnings[user_] += rebateAmount_;
+        emit EarningsTaken(user_, fees_);
         return totalAmount_;
     }
 
@@ -75,6 +76,7 @@ contract Referrals is IReferrals, Ownable {
         if (amount_ == 0) return 0;
         delete _earnings[msg.sender];
         _addressProvider.baseAsset().transfer(msg.sender, amount_);
+        emit EarningsClaimed(msg.sender, amount_);
         return amount_;
     }
 

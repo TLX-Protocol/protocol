@@ -197,6 +197,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Rebalancing
         _submitLeverageUpdate();
         _lastRebalanceTimestamp = block.timestamp;
+        emit Rebalanced();
     }
 
     function _depositMargin(uint256 amount_) internal {

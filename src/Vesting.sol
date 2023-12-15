@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
+import {Errors} from "./libraries/Errors.sol";
+
 import {IVesting} from "./interfaces/IVesting.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
@@ -49,11 +51,17 @@ contract Vesting is IVesting {
     }
 
     function addDelegate(address delegate_) public override {
+        if (delegate_ == address(0)) revert Errors.ZeroAddress();
+        if (isDelegate[msg.sender][delegate_]) revert Errors.AlreadyExists();
         isDelegate[msg.sender][delegate_] = true;
+        emit DelegateAdded(msg.sender, delegate_);
     }
 
     function removeDelegate(address delegate_) public override {
+        if (delegate_ == address(0)) revert Errors.ZeroAddress();
+        if (!isDelegate[msg.sender][delegate_]) revert Errors.DoesNotExist();
         delete isDelegate[msg.sender][delegate_];
+        emit DelegateRemoved(msg.sender, delegate_);
     }
 
     function allocated(
