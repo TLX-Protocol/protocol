@@ -16,6 +16,8 @@ import {IParameterProvider} from "./IParameterProvider.sol";
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
     event AddressFrozen(bytes32 indexed key);
+    event RebalancerAdded(address indexed account);
+    event RebalancerRemoved(address indexed account);
 
     error AddressIsFrozen(bytes32 key);
 

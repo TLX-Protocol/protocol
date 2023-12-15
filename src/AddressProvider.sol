@@ -45,10 +45,12 @@ contract AddressProvider is IAddressProvider, Ownable {
 
     function addRebalancer(address account_) external override onlyOwner {
         _rebalancer.add(account_);
+        emit RebalancerAdded(account_);
     }
 
     function removeRebalancer(address account_) external override onlyOwner {
         _rebalancer.remove(account_);
+        emit RebalancerRemoved(account_);
     }
 
     function addressOf(bytes32 key_) external view override returns (address) {
