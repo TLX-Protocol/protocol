@@ -75,6 +75,8 @@ jobs:
         run: forge test -vv --match-path script/deployments/01_Tokenomics.s.sol --fork-url http://localhost:8545
       - name: Deploy Protocol
         run: forge script script/deployments/02_Protocol.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Protocol
+        run: forge test -vv --match-path script/deployments/02_Protocol.s.sol --fork-url http://localhost:8545
       - name: Enable Fees
         run: forge script script/deployments/03_EnableFees.s.sol --fork-url http://localhost:8545 --broadcast
       - name: Deploy Timelock
