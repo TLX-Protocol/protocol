@@ -83,3 +83,5 @@ jobs:
         run: forge test -vv --match-path script/deployments/03_EnableFees.s.sol --fork-url http://localhost:8545
       - name: Deploy Timelock
         run: forge script script/deployments/04_Timelock.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Timelock
+        run: forge test -vv --match-path script/deployments/04_Timelock.s.sol --fork-url http://localhost:8545
