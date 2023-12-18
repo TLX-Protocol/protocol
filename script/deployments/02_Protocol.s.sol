@@ -3,33 +3,18 @@ pragma solidity ^0.8.13;
 
 import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-
-import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
-import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
-import {Symbols} from "../../src/libraries/Symbols.sol";
+import {LeveragedTokens} from "../../src/libraries/LeveragedTokens.sol";
 
-import {IVesting} from "../../src/interfaces/IVesting.sol";
-import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
-import {IPerpsV2MarketConsolidated} from "../../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
+import {IBonding} from "../../src/interfaces/IBonding.sol";
 
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
-import {AddressProvider} from "../../src/AddressProvider.sol";
-import {ParameterProvider} from "../../src/ParameterProvider.sol";
 import {Referrals} from "../../src/Referrals.sol";
-import {TlxToken} from "../../src/TlxToken.sol";
-import {Airdrop} from "../../src/Airdrop.sol";
-import {Locker} from "../../src/Locker.sol";
-import {Bonding} from "../../src/Bonding.sol";
-import {Vesting} from "../../src/Vesting.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
-
-import {Base64} from "../../src/testing/Base64.sol";
+import {ChainlinkAutomation} from "../../src/ChainlinkAutomation.sol";
 
 contract ProtocolDeployment is DeploymentScript {
     function _run() internal override {
@@ -37,8 +22,9 @@ contract ProtocolDeployment is DeploymentScript {
         IAddressProvider addressProvider = IAddressProvider(
             _getDeployedAddress("AddressProvider")
         );
+        IBonding bonding = IBonding(_getDeployedAddress("Bonding"));
 
-        // Deploying Leveraged Token Factory
+        // Leveraged Token Factory Deployment
         LeveragedTokenFactory leveragedTokenFactory = new LeveragedTokenFactory(
             address(addressProvider),
             Config.MAX_LEVERAGE
@@ -51,6 +37,53 @@ contract ProtocolDeployment is DeploymentScript {
             AddressKeys.LEVERAGED_TOKEN_FACTORY,
             address(leveragedTokenFactory)
         );
-        revert("meow");
+
+        // Referrals Deployment
+        Referrals referrals = new Referrals(
+            address(addressProvider),
+            Config.REBATE_PERCENT,
+            Config.EARNINGS_PERCENT
+        );
+        _deployedAddress("Referrals", address(referrals));
+        addressProvider.updateAddress(
+            AddressKeys.REFERRALS,
+            address(referrals)
+        );
+
+        // SynthetixHandler Deployment
+        SynthetixHandler synthetixHandler = new SynthetixHandler(
+            address(addressProvider),
+            address(Contracts.PERPS_V2_MARKET_DATA)
+        );
+        _deployedAddress("SynthetixHandler", address(synthetixHandler));
+        addressProvider.updateAddress(
+            AddressKeys.SYNTHETIX_HANDLER,
+            address(synthetixHandler)
+        );
+
+        // ChainlinkAutomation Deployment
+        ChainlinkAutomation chainlinkAutomation = new ChainlinkAutomation(
+            address(addressProvider),
+            Config.MAX_REBALANCES
+        );
+        _deployedAddress("ChainlinkAutomation", address(chainlinkAutomation));
+
+        // Deploying Leveraged Tokens
+        LeveragedTokens.LeveragedTokenData[]
+            memory leveragedTokenData = LeveragedTokens.tokens();
+        for (uint256 i; i < leveragedTokenData.length; i++) {
+            uint256[] memory leverageOptions_ = leveragedTokenData[i]
+                .leverageOptions;
+            for (uint256 j; j < leverageOptions_.length; j++) {
+                leveragedTokenFactory.createLeveragedTokens(
+                    leveragedTokenData[i].targetAsset,
+                    leverageOptions_[j],
+                    leveragedTokenData[i].rebalanceThreshold
+                );
+            }
+        }
+
+        // Launching bonding
+        bonding.launch();
     }
 }
