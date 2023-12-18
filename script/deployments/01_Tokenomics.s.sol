@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {Test} from "forge-std/Test.sol";
+
 import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
@@ -19,8 +21,6 @@ import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 
 import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
-
-import {Test} from "forge-std/Test.sol";
 
 contract TokenomicsDeployment is DeploymentScript, Test {
     function _run() internal override {
@@ -106,7 +106,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
     }
 
-    function testDeployment() public {
+    function testTokenomicsDeployment() public {
         IAddressProvider addressProvider = IAddressProvider(
             _getDeployedAddress("AddressProvider")
         );
