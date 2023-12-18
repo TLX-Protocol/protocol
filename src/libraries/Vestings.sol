@@ -17,43 +17,43 @@ library Vestings {
 
         // Sam
         vestings_[0] = IVesting.VestingAmount({
-            account: address(1), // TODO
+            account: address(770), // TODO
             amount: Config.VESTING_AMOUNT // TODO
         });
 
         // Max
         vestings_[1] = IVesting.VestingAmount({
-            account: address(2), // TODO
+            account: address(771), // TODO
             amount: 0 // TODO
         });
 
         // Louis
         vestings_[2] = IVesting.VestingAmount({
-            account: address(3), // TODO
+            account: address(772), // TODO
             amount: 0 // TODO
         });
 
         // Olivier
         vestings_[3] = IVesting.VestingAmount({
-            account: address(4), // TODO
+            account: address(773), // TODO
             amount: 0 // TODO
         });
 
         // Chase
         vestings_[4] = IVesting.VestingAmount({
-            account: address(5), // TODO
+            account: address(774), // TODO
             amount: 0 // TODO
         });
 
         // Daniel
         vestings_[5] = IVesting.VestingAmount({
-            account: address(6), // TODO
+            account: address(775), // TODO
             amount: 0 // TODO
         });
 
         // Paul
         vestings_[6] = IVesting.VestingAmount({
-            account: address(7), // TODO
+            account: address(776), // TODO
             amount: 0 // TODO
         });
 
