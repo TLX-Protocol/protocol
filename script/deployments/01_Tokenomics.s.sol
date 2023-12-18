@@ -18,7 +18,11 @@ import {Locker} from "../../src/Locker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 
-contract TokenomicsDeployment is DeploymentScript {
+import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
+
+import {Test} from "forge-std/Test.sol";
+
+contract TokenomicsDeployment is DeploymentScript, Test {
     function _run() internal override {
         // AddressProvider Deployment
         AddressProvider addressProvider = new AddressProvider();
@@ -100,5 +104,52 @@ contract TokenomicsDeployment is DeploymentScript {
         );
         _deployedAddress("TLX", address(tlx));
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
+    }
+
+    function testDeployment() public {
+        IAddressProvider addressProvider = IAddressProvider(
+            _getDeployedAddress("AddressProvider")
+        );
+        address teamMember = Vestings.vestings()[0].account;
+        vm.startPrank(teamMember);
+
+        skip(10 days);
+        assertEq(
+            addressProvider.tlx().balanceOf(teamMember),
+            0,
+            "tlx balance starts at 0"
+        );
+        addressProvider.vesting().claim();
+        uint256 tlxBalance = addressProvider.tlx().balanceOf(teamMember);
+        assertGt(tlxBalance, 0, "greater than 0");
+        uint256 lockAmount = tlxBalance / 2;
+        addressProvider.tlx().approve(
+            address(addressProvider.locker()),
+            lockAmount
+        );
+        addressProvider.locker().lock(lockAmount);
+        assertEq(
+            addressProvider.tlx().balanceOf(address(addressProvider.locker())),
+            lockAmount,
+            "locker balance goes up"
+        );
+        assertEq(
+            addressProvider.tlx().balanceOf(teamMember),
+            lockAmount,
+            "tlx balance goes down"
+        );
+        addressProvider.locker().prepareUnlock();
+        skip(Config.LOCKER_UNLOCK_DELAY);
+        addressProvider.locker().unlock();
+        assertEq(
+            addressProvider.tlx().balanceOf(address(addressProvider.locker())),
+            0,
+            "locker balance goes down"
+        );
+        assertEq(
+            addressProvider.tlx().balanceOf(teamMember),
+            tlxBalance,
+            "tlx balance goes up"
+        );
     }
 }
