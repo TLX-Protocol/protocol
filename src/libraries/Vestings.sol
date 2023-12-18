@@ -60,12 +60,12 @@ library Vestings {
         // TODO: Investors/Advisors
 
         // Validating amounts
-        _validateAmounts(vestings_);
+        validateAmounts(vestings_);
 
         return vestings_;
     }
 
-    function _validateAmounts(
+    function validateAmounts(
         IVesting.VestingAmount[] memory vestings_
     ) internal pure {
         uint256 totalAmount_;
