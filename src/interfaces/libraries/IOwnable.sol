@@ -7,4 +7,10 @@ interface IOwnable {
      * @param newOwner The account to transfer ownership to.
      */
     function transferOwnership(address newOwner) external;
+
+    /**
+     * @notice Returns the current owner of the contract.
+     * @return owner The current owner of the contract.
+     */
+    function owner() external view returns (address owner);
 }
