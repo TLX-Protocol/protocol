@@ -139,7 +139,6 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             token_,
             rebalanceThreshold_
         );
-        LeveragedToken(token_).transferOwnership(msg.sender);
         isLeveragedToken[token_] = true;
         _tokens[targetAsset_][targetLeverage_][isLong_] = token_;
         _allTokens.push(token_);
