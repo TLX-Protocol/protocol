@@ -46,14 +46,6 @@ interface IReferrals {
     function updateReferral(bytes32 code) external;
 
     /**
-     * @notice Updates the referral code for the given user.
-     * @dev Can only be called by the position manager.
-     * @param user The user to update the code for.
-     * @param code The code to update to.
-     */
-    function updateReferralFor(address user, bytes32 code) external;
-
-    /**
      * @notice Sets the rebate percent.
      * @dev Can only be called by the owner.
      * @param rebatePercent The rebate percent to set.

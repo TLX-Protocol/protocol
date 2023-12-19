@@ -10,8 +10,8 @@ import {ITlxToken} from "../src/interfaces/ITlxToken.sol";
 
 contract TlxTokenTest is IntegrationTest {
     function testInit() public {
-        assertEq(tlx.name(), "TLX DAO Token");
-        assertEq(tlx.symbol(), "TLX");
+        assertEq(tlx.name(), Config.TOKEN_NAME);
+        assertEq(tlx.symbol(), Config.TOKEN_SYMBOL);
         assertEq(tlx.decimals(), 18);
         assertEq(
             tlx.totalSupply(),
