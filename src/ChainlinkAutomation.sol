@@ -14,6 +14,8 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
     IAddressProvider internal immutable _addressProvider;
 
+    event UpkeepPerformed(address indexed leveragedToken);
+
     error NoRebalancableTokens();
 
     constructor(address addressProvider_, uint256 maxReblances_) {
@@ -32,6 +34,7 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
         for (uint256 i; i < rebalancableTokensCount_; i++) {
             ILeveragedToken(rebalancableTokens_[i]).rebalance();
+            emit UpkeepPerformed(rebalancableTokens_[i]);
         }
     }
 

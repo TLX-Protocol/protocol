@@ -197,6 +197,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Rebalancing
         _submitLeverageUpdate();
         _lastRebalanceTimestamp = block.timestamp;
+        uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
+            targetAsset,
+            address(this)
+        );
+        emit Rebalanced(currentLeverage_);
     }
 
     function _depositMargin(uint256 amount_) internal {
