@@ -14,7 +14,7 @@ interface ILeveragedToken is IERC20Metadata {
         uint256 leveragedTokenAmount,
         uint256 baseAssetAmount
     );
-    event Rebalanced();
+    event Rebalanced(uint256 currentLeverage);
 
     error InsufficientAmount();
     error CannotRebalance();
