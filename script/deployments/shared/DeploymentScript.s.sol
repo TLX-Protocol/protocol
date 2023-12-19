@@ -14,15 +14,10 @@ abstract contract DeploymentScript is Script {
 
     string public constant DEPLOYMENTS_PATH = "deployments.json";
 
-    string[] public lines = new string[](1000);
-    uint256 public lineCount;
-
     function run() external {
         uint256 deployerPrivateKey_ = vm.envOr("PRIVATE_KEY", uint256(0));
         if (deployerPrivateKey_ == 0) vm.startBroadcast(Config.BINANCE);
         else vm.startBroadcast(deployerPrivateKey_);
-        _loadLines();
-
         _run();
 
         vm.stopBroadcast();
@@ -35,42 +30,12 @@ abstract contract DeploymentScript is Script {
         console.log("%s: %s", name, Strings.toHexString(uint160(addr), 20));
     }
 
-    function _loadLines() internal {
-        lineCount = 0;
-        while (true) {
-            string memory line = vm.readLine(DEPLOYMENTS_PATH);
-            string memory empty = "";
-            if (
-                keccak256(abi.encodePacked(line)) ==
-                keccak256(abi.encodePacked(empty))
-            ) break;
-            lines[lineCount] = line;
-            lineCount++;
-        }
-        if (lineCount == 1) {
-            lines[0] = "{";
-            lines[1] = "}";
-            lineCount = 2;
-        }
-    }
-
     function _writeDeployedAddress(string memory name, address addr) internal {
-        string memory newLine = string.concat(
-            '"',
-            name,
-            '": "',
-            Strings.toHexString(uint160(addr), 20),
-            '"'
-        );
-        if (lineCount != 2) newLine = string.concat(",", newLine);
-        lines[lineCount - 1] = newLine;
-        lines[lineCount] = "}";
-        lineCount++;
-
-        vm.writeFile(DEPLOYMENTS_PATH, "");
-        for (uint256 i; i < lineCount; i++) {
-            vm.writeLine(DEPLOYMENTS_PATH, lines[i]);
+        if (vm.isFile(DEPLOYMENTS_PATH)) {
+            vm.serializeJson("contracts", vm.readFile(DEPLOYMENTS_PATH));
         }
+        string memory newJson = vm.serializeAddress("contracts", name, addr);
+        vm.writeJson(newJson, DEPLOYMENTS_PATH);
     }
 
     function _getDeployedAddress(
@@ -78,6 +43,6 @@ abstract contract DeploymentScript is Script {
     ) internal view returns (address) {
         string memory json = vm.readFile(DEPLOYMENTS_PATH);
         string memory key = string.concat(".", name);
-        return abi.decode(json.parseRaw(key), (address));
+        return json.readAddress(key);
     }
 }
