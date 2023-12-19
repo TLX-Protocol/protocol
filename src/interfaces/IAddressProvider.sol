@@ -16,6 +16,8 @@ import {IParameterProvider} from "./IParameterProvider.sol";
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
     event AddressFrozen(bytes32 indexed key);
+    event RebalancerAdded(address indexed account);
+    event RebalancerRemoved(address indexed account);
 
     error AddressIsFrozen(bytes32 key);
 
@@ -31,6 +33,20 @@ interface IAddressProvider {
      * @param key The key of the address to be frozen.
      */
     function freezeAddress(bytes32 key) external;
+
+    /**
+     * @notice Gives the `account` permissions to rebalance leveraged tokens.
+     * @dev Reverts if the `account` is already a rebalancer.
+     * @param account The address of the account to be added.
+     */
+    function addRebalancer(address account) external;
+
+    /**
+     * @notice Removes the `account` permissions to rebalance leveraged tokens.
+     * @dev Reverts if the `account` is not a rebalancer.
+     * @param account The address of the account to be removed.
+     */
+    function removeRebalancer(address account) external;
 
     /**
      * @notice Returns the address for a kiven key.
@@ -126,4 +142,19 @@ interface IAddressProvider {
         external
         view
         returns (IParameterProvider parameterProvider);
+
+    /**
+     * @notice Returns if the given `account` is permitted to rebalance leveraged tokens.
+     * @param account The address of the account to be checked.
+     * @return isRebalancer Whether the account is permitted to rebalance leveraged tokens.
+     */
+    function isRebalancer(
+        address account
+    ) external view returns (bool isRebalancer);
+
+    /**
+     * @notice Returns the list of rebalancers.
+     * @return rebalancers The list of rebalancers.
+     */
+    function rebalancers() external view returns (address[] memory rebalancers);
 }

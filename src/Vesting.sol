@@ -53,7 +53,7 @@ contract Vesting is IVesting {
     }
 
     function removeDelegate(address delegate_) public override {
-        isDelegate[msg.sender][delegate_] = false;
+        delete isDelegate[msg.sender][delegate_];
     }
 
     function allocated(

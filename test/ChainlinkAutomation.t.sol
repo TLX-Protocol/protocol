@@ -20,6 +20,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
             address(addressProvider),
             Config.MAX_REBALANCES
         );
+        addressProvider.addRebalancer(address(chainlinkAutomation));
     }
 
     function testInit() public {
