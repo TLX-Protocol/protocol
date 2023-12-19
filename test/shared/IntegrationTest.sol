@@ -159,6 +159,8 @@ contract IntegrationTest is Test {
 
         // TLX Token Setup
         tlx = new TlxToken(
+            Config.TOKEN_NAME,
+            Config.TOKEN_SYMBOL,
             address(addressProvider),
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
