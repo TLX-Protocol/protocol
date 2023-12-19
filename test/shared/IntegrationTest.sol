@@ -46,7 +46,8 @@ contract IntegrationTest is Test {
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
     address public bob = 0x787626366D8a4B8a0175ea011EdBE25e77290Dd1;
-    address public treasury = makeAddr("treasury");
+    address public treasury = Config.TREASURY;
+    address public rebalanceFeeReceiver = Config.REBALANCE_FEE_RECEIVER;
 
     // Contracts
     LeveragedTokenFactory public leveragedTokenFactory;
@@ -67,6 +68,10 @@ contract IntegrationTest is Test {
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
         addressProvider.updateAddress(
+            AddressKeys.REBALANCE_FEE_RECEIVER,
+            rebalanceFeeReceiver
+        );
+        addressProvider.updateAddress(
             AddressKeys.BASE_ASSET,
             Config.BASE_ASSET
         );
@@ -80,6 +85,10 @@ contract IntegrationTest is Test {
         parameterProvider.updateParameter(
             ParameterKeys.STREAMING_FEE,
             Config.STREAMING_FEE
+        );
+        parameterProvider.updateParameter(
+            ParameterKeys.REBALANCE_FEE,
+            Config.REBALANCE_FEE
         );
         addressProvider.updateAddress(
             AddressKeys.PARAMETER_PROVIDER,
