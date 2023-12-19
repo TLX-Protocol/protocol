@@ -67,6 +67,7 @@ contract IntegrationTest is Test {
         // AddressProvider Setup
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
+        addressProvider.addRebalancer(address(this));
         addressProvider.updateAddress(
             AddressKeys.REBALANCE_FEE_RECEIVER,
             rebalanceFeeReceiver
@@ -140,9 +141,6 @@ contract IntegrationTest is Test {
         );
 
         // Airdrop Setup
-        bytes32[] memory leaves = new bytes32[](2);
-        leaves[0] = keccak256(abi.encodePacked(alice, uint256(100e18)));
-        leaves[1] = keccak256(abi.encodePacked(bob, uint256(200e18)));
         airdrop = new Airdrop(
             address(addressProvider),
             bytes32(0),

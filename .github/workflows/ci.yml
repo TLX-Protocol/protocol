@@ -12,7 +12,6 @@ jobs:
   tests:
     strategy:
       fail-fast: true
-
     name: Tests
     runs-on: ubuntu-latest
     env:
@@ -21,22 +20,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-
       - name: Run Forge build
         run: |
           forge --version
           forge build --sizes
         id: build
-
       - name: Run Forge tests
-        run: |
-          forge test -vv
+        run: forge test -vv --match-path "test/*.t.sol"
         id: test
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -44,9 +40,48 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-
       - name: Install Dependencies
         run: yarn
-
       - name: Lint
         run: yarn lint
+
+  deploy:
+    strategy:
+      fail-fast: true
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+      - name: Start Anvil
+        run: anvil --fork-url ${{ secrets.OPTIMISM_RPC }} &
+      - name: Wait for Anvil to start running
+        run: sleep 10
+      - name: Deploy Tokenomics
+        run: forge script script/deployments/01_Tokenomics.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Tokenomics
+        run: forge test -vv --match-path script/deployments/01_Tokenomics.s.sol --fork-url http://localhost:8545
+      - name: Deploy Protocol
+        run: forge script script/deployments/02_Protocol.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Protocol
+        run: forge test -vv --match-path script/deployments/02_Protocol.s.sol --fork-url http://localhost:8545
+      - name: Enable Fees
+        run: forge script script/deployments/03_EnableFees.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Enable Fees
+        run: forge test -vv --match-path script/deployments/03_EnableFees.s.sol --fork-url http://localhost:8545
+      - name: Deploy Timelock
+        run: forge script script/deployments/04_Timelock.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test Timelock
+        run: forge test -vv --match-path script/deployments/04_Timelock.s.sol --fork-url http://localhost:8545

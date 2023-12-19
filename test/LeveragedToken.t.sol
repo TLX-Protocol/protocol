@@ -8,6 +8,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Config} from "../src/libraries/Config.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
@@ -160,6 +161,12 @@ contract LeveragedTokenTest is IntegrationTest {
             2e18 / 2,
             0.05e18
         );
+    }
+
+    function testCanNotRebalanceIfNotRebalancer() public {
+        vm.startPrank(alice);
+        vm.expectRevert(Errors.NotAuthorized.selector);
+        leveragedToken.rebalance();
     }
 
     function _mintTokens() public {
