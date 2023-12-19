@@ -137,6 +137,10 @@ contract AddressProvider is IAddressProvider, Ownable {
         return _rebalancer.values();
     }
 
+    function rebalanceFeeReceiver() external view override returns (address) {
+        return _getAddress(AddressKeys.REBALANCE_FEE_RECEIVER);
+    }
+
     function _getAddress(bytes32 key_) internal view returns (address) {
         address value_ = _addresses[key_];
         if (value_ == address(0)) revert Errors.ZeroAddress();

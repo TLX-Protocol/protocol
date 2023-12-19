@@ -30,7 +30,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         addressProvider.updateAddress(AddressKeys.TREASURY, Config.TREASURY);
         addressProvider.updateAddress(
             AddressKeys.BASE_ASSET,
-            Config.REWARD_TOKEN
+            Config.BASE_ASSET
         );
 
         // ParameterProvider Deployment
@@ -87,7 +87,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         Locker locker = new Locker(
             address(addressProvider),
             Config.LOCKER_UNLOCK_DELAY,
-            Config.REWARD_TOKEN
+            Config.BASE_ASSET
         );
         _deployedAddress("Locker", address(locker));
         addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));

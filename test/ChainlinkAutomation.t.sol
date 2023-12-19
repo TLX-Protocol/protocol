@@ -52,8 +52,8 @@ contract ChainlinkAutomationTest is IntegrationTest {
             leveragedTokenFactory.allTokens()[0]
         );
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Config.REWARD_TOKEN, address(this), baseAmountIn);
-        IERC20(Config.REWARD_TOKEN).approve(
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
             address(leveragedToken),
             baseAmountIn
         );

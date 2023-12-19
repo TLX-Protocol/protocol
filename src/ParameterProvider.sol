@@ -78,6 +78,10 @@ contract ParameterProvider is IParameterProvider, Ownable {
         return _parameters.get(ParameterKeys.STREAMING_FEE);
     }
 
+    function rebalanceFee() external view override returns (uint256) {
+        return _parameters.get(ParameterKeys.REBALANCE_FEE);
+    }
+
     function parameters() external view override returns (Parameter[] memory) {
         uint256 length = _parameters.length();
         Parameter[] memory _params = new Parameter[](length);

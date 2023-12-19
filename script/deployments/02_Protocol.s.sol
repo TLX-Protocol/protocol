@@ -104,8 +104,8 @@ contract ProtocolDeployment is DeploymentScript, Test {
             addressProvider.leveragedTokenFactory().allTokens()[0]
         );
         uint256 baseAssetAmmount = 100_000e18;
-        _mintTokensFor(Config.REWARD_TOKEN, address(this), baseAssetAmmount);
-        IERC20(Config.REWARD_TOKEN).approve(
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAssetAmmount);
+        IERC20(Config.BASE_ASSET).approve(
             address(leveragedToken),
             baseAssetAmmount
         );
