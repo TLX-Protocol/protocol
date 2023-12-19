@@ -14,7 +14,7 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
     IAddressProvider internal immutable _addressProvider;
 
-    event UpkeepPerformed(address[] rebalancableTokens_);
+    event UpkeepPerformed(address indexed leveragedToken);
 
     error NoRebalancableTokens();
 
@@ -34,9 +34,8 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
         for (uint256 i; i < rebalancableTokensCount_; i++) {
             ILeveragedToken(rebalancableTokens_[i]).rebalance();
+            emit UpkeepPerformed(rebalancableTokens_[i]);
         }
-
-        emit UpkeepPerformed(rebalancableTokens_);
     }
 
     function checkUpkeep(
