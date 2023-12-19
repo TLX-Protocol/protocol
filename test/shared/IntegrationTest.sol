@@ -66,8 +66,11 @@ contract IntegrationTest is Test {
         // AddressProvider Setup
         addressProvider = new AddressProvider();
         addressProvider.updateAddress(AddressKeys.TREASURY, treasury);
-        addressProvider.updateAddress(AddressKeys.BASE_ASSET, Tokens.SUSD);
         addressProvider.addRebalancer(address(this));
+        addressProvider.updateAddress(
+            AddressKeys.BASE_ASSET,
+            Config.BASE_ASSET
+        );
 
         // ParameterProvider Setup
         parameterProvider = new ParameterProvider(address(addressProvider));
@@ -144,7 +147,7 @@ contract IntegrationTest is Test {
         locker = new Locker(
             address(addressProvider),
             Config.LOCKER_UNLOCK_DELAY,
-            Config.REWARD_TOKEN
+            Config.BASE_ASSET
         );
         addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
 
@@ -160,6 +163,8 @@ contract IntegrationTest is Test {
 
         // TLX Token Setup
         tlx = new TlxToken(
+            Config.TOKEN_NAME,
+            Config.TOKEN_SYMBOL,
             address(addressProvider),
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,

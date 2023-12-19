@@ -7,7 +7,7 @@ import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
 import {Symbols} from "../src/libraries/Symbols.sol";
-import {Tokens} from "../src/libraries/Tokens.sol";
+import {Config} from "../src/libraries/Config.sol";
 import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import "forge-std/console.sol";
@@ -17,48 +17,56 @@ contract SynthetixHandlerTest is IntegrationTest {
     using ScaledNumber for uint256;
 
     function testDepositMargin() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
-        uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
+        uint256 balanceBefore = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
         _depositMargin(100e18);
-        uint256 balanceAfter = IERC20(Tokens.SUSD).balanceOf(address(this));
+        uint256 balanceAfter = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
         assertEq(balanceBefore - balanceAfter, 100e18);
     }
 
     function testWithdrawMargin() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
-        uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
+        uint256 balanceBefore = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
         _withdrawMargin(50e18);
-        uint256 balanceAfter = IERC20(Tokens.SUSD).balanceOf(address(this));
+        uint256 balanceAfter = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
         assertEq(balanceAfter - balanceBefore, 50e18);
     }
 
     function testSubmitLeverageUpdate() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
     }
 
     function testExecuteOrder() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
     }
 
     function testSubmitLeverageUpdateTwice() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
     }
 
     function testHasPendingLeverageUpdate() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertFalse(
             synthetixHandler.hasPendingLeverageUpdate(
@@ -80,7 +88,7 @@ contract SynthetixHandlerTest is IntegrationTest {
                 address(this)
             )
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertFalse(
             synthetixHandler.hasPendingLeverageUpdate(
@@ -105,7 +113,7 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testCancelLeverageUpdate() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         assertTrue(
@@ -140,7 +148,7 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testHasOpenPosition() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         assertFalse(
@@ -154,7 +162,7 @@ contract SynthetixHandlerTest is IntegrationTest {
 
     function testTotalValue() public {
         assertEq(synthetixHandler.totalValue(Symbols.ETH, address(this)), 0);
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertEq(
             synthetixHandler.totalValue(Symbols.ETH, address(this)),
@@ -167,7 +175,7 @@ contract SynthetixHandlerTest is IntegrationTest {
             100e18,
             0.01e18
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
             synthetixHandler.totalValue(Symbols.ETH, address(this)),
@@ -185,7 +193,7 @@ contract SynthetixHandlerTest is IntegrationTest {
 
     function testNotional() public {
         assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
         _submitLeverageUpdate(2e18, true);
@@ -195,7 +203,7 @@ contract SynthetixHandlerTest is IntegrationTest {
             100e18 * 2,
             0.01e18
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
             synthetixHandler.notionalValue(Symbols.ETH, address(this)),
@@ -212,7 +220,7 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testLeverage() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
@@ -221,7 +229,7 @@ contract SynthetixHandlerTest is IntegrationTest {
             2e18,
             0.01e18
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
@@ -233,12 +241,12 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testIsLongTrue() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertTrue(synthetixHandler.isLong(Symbols.ETH, address(this)));
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
@@ -246,12 +254,12 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testIsLongFalse() public {
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, false);
         _executeOrder();
         assertFalse(synthetixHandler.isLong(Symbols.ETH, address(this)));
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         _submitLeverageUpdate(2e18, false);
         _executeOrder();
@@ -263,7 +271,7 @@ contract SynthetixHandlerTest is IntegrationTest {
             synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
             0
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertEq(
             synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
@@ -276,7 +284,7 @@ contract SynthetixHandlerTest is IntegrationTest {
             100e18,
             0.01e18
         );
-        _mintTokensFor(Tokens.SUSD, address(this), 100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
         assertApproxEqRel(
             synthetixHandler.remainingMargin(Symbols.ETH, address(this)),
