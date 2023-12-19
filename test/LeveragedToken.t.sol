@@ -36,8 +36,11 @@ contract LeveragedTokenTest is IntegrationTest {
 
     function testMint() public {
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
-        IERC20(Tokens.SUSD).approve(address(leveragedToken), baseAmountIn);
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
         uint256 minLeveragedTokenAmountOut = 95e18;
         uint256 leveragedTokenAmountOut = leveragedToken.mint(
             baseAmountIn,
@@ -46,7 +49,10 @@ contract LeveragedTokenTest is IntegrationTest {
         assertEq(leveragedTokenAmountOut, 100e18);
         assertEq(leveragedToken.totalSupply(), 100e18);
         assertEq(leveragedToken.balanceOf(address(this)), 100e18);
-        assertEq(IERC20(Tokens.SUSD).balanceOf(address(leveragedToken)), 0);
+        assertEq(
+            IERC20(Config.BASE_ASSET).balanceOf(address(leveragedToken)),
+            0
+        );
         assertApproxEqRel(
             synthetixHandler.remainingMargin(
                 Symbols.ETH,
@@ -55,13 +61,16 @@ contract LeveragedTokenTest is IntegrationTest {
             100e18,
             0.05e18
         );
-        assertEq(IERC20(Tokens.SUSD).balanceOf(address(this)), 0);
+        assertEq(IERC20(Config.BASE_ASSET).balanceOf(address(this)), 0);
     }
 
     function testMintRevertsForInsufficientAmount() public {
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
-        IERC20(Tokens.SUSD).approve(address(leveragedToken), baseAmountIn);
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
         uint256 minLeveragedTokenAmountOut = 110e18;
         vm.expectRevert(ILeveragedToken.InsufficientAmount.selector);
         leveragedToken.mint(baseAmountIn, minLeveragedTokenAmountOut);
@@ -70,8 +79,11 @@ contract LeveragedTokenTest is IntegrationTest {
     function testMintRevertsDuringLeverageUpdate() public {
         _mintTokens();
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
-        IERC20(Tokens.SUSD).approve(address(leveragedToken), baseAmountIn);
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
         vm.expectRevert(ILeveragedToken.LeverageUpdatePending.selector);
         leveragedToken.mint(baseAmountIn, 0);
     }
@@ -79,9 +91,12 @@ contract LeveragedTokenTest is IntegrationTest {
     function testRedeem() public {
         // Minting Leveraged Tokens
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
         uint256 minLeveragedTokenAmountOut = 100e18;
-        IERC20(Tokens.SUSD).approve(address(leveragedToken), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
         leveragedToken.mint(baseAmountIn, minLeveragedTokenAmountOut);
         _executeOrder(address(leveragedToken));
         assertEq(leveragedToken.balanceOf(address(this)), 100e18);
@@ -89,12 +104,16 @@ contract LeveragedTokenTest is IntegrationTest {
         // Redeeming Leveraged Tokens
         uint256 leveragedTokenAmountIn = 1e18;
         uint256 minBaseAmountOut = 0.9e18;
-        uint256 balanceBefore = IERC20(Tokens.SUSD).balanceOf(address(this));
+        uint256 balanceBefore = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
         uint256 baseAmountOut = leveragedToken.redeem(
             leveragedTokenAmountIn,
             minBaseAmountOut
         );
-        uint256 balanceAfter = IERC20(Tokens.SUSD).balanceOf(address(this));
+        uint256 balanceAfter = IERC20(Config.BASE_ASSET).balanceOf(
+            address(this)
+        );
 
         assertApproxEqRel(baseAmountOut, 1e18, 0.05e18, "1");
         assertEq(leveragedToken.totalSupply(), 99e18);
@@ -145,8 +164,11 @@ contract LeveragedTokenTest is IntegrationTest {
 
     function _mintTokens() public {
         uint256 baseAmountIn = 100e18;
-        _mintTokensFor(Tokens.SUSD, address(this), baseAmountIn);
-        IERC20(Tokens.SUSD).approve(address(leveragedToken), baseAmountIn);
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
         leveragedToken.mint(baseAmountIn, 0);
     }
 }

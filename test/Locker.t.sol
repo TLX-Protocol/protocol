@@ -22,7 +22,7 @@ contract LockerTest is IntegrationTest {
 
     function setUp() public override {
         super.setUp();
-        reward = IERC20Metadata(Config.REWARD_TOKEN);
+        reward = IERC20Metadata(Config.BASE_ASSET);
         rewardDecimals = reward.decimals();
         rewardAmount = 100 * 10 ** rewardDecimals;
     }
@@ -38,7 +38,7 @@ contract LockerTest is IntegrationTest {
         assertEq(locker.unlockTime(address(this)), 0, "unlockTime");
         assertEq(locker.isUnlocked(address(this)), false, "isUnlocked");
         assertEq(locker.unlockDelay(), Config.LOCKER_UNLOCK_DELAY);
-        assertEq(locker.rewardToken(), Config.REWARD_TOKEN, "rewardToken");
+        assertEq(locker.rewardToken(), Config.BASE_ASSET, "rewardToken");
     }
 
     function testLock() public {
