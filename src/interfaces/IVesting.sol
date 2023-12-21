@@ -13,6 +13,8 @@ interface IVesting {
     }
 
     event Claimed(address indexed account, address indexed to, uint256 amount);
+    event DelegateAdded(address indexed account, address indexed delegate);
+    event DelegateRemoved(address indexed account, address indexed delegate);
 
     error NothingToClaim();
     error InvalidDuration();

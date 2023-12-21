@@ -49,6 +49,12 @@ interface IParameterProvider {
     function streamingFee() external view returns (uint256);
 
     /**
+     * @notice Returns the rebalance fee charged for rebalances in baseAsset.
+     * @return rebalanceFee The rebalance fee.
+     */
+    function rebalanceFee() external view returns (uint256 rebalanceFee);
+
+    /**
      * @notice Returns all parameters.
      * @return parameters All parameters.
      */
@@ -57,7 +63,7 @@ interface IParameterProvider {
     /**
      * @notice Returns the rebalance threshold for the `leveragedToken`.
      * @param leveragedToken The address of the leveraged token.
-     * @param rebalanceThreshold The rebalance threshold of the `leveragedToken`.
+     * @return rebalanceThreshold The rebalance threshold of the `leveragedToken`.
      */
     function rebalanceThreshold(
         address leveragedToken

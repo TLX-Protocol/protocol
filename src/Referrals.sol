@@ -23,18 +23,6 @@ contract Referrals is IReferrals, Ownable {
     uint256 public override rebatePercent;
     uint256 public override earningsPercent;
 
-    modifier onlyLeveragedToken() {
-        if (
-            !_addressProvider.leveragedTokenFactory().isLeveragedToken(
-                msg.sender
-            )
-        ) {
-            revert NotLeveragedToken();
-        }
-
-        _;
-    }
-
     constructor(
         address addressProvider_,
         uint256 rebatePercent_,
@@ -67,6 +55,7 @@ contract Referrals is IReferrals, Ownable {
         );
         _earnings[referrer_] += earningsAmount_;
         _earnings[user_] += rebateAmount_;
+        emit EarningsTaken(user_, fees_);
         return totalAmount_;
     }
 
@@ -75,6 +64,7 @@ contract Referrals is IReferrals, Ownable {
         if (amount_ == 0) return 0;
         delete _earnings[msg.sender];
         _addressProvider.baseAsset().transfer(msg.sender, amount_);
+        emit EarningsClaimed(msg.sender, amount_);
         return amount_;
     }
 
@@ -91,14 +81,10 @@ contract Referrals is IReferrals, Ownable {
     }
 
     function updateReferral(bytes32 code_) external override {
-        _updateCodeFor(code_, msg.sender);
-    }
-
-    function updateReferralFor(
-        address user_,
-        bytes32 code_
-    ) external override onlyLeveragedToken {
-        _updateCodeFor(code_, user_);
+        if (_referrals[msg.sender] == code_) revert SameCode();
+        if (_referrers[code_] == address(0)) revert InvalidCode();
+        _referrals[msg.sender] = code_;
+        emit UpdatedReferral(msg.sender, code_);
     }
 
     function setRebatePercent(
@@ -150,13 +136,6 @@ contract Referrals is IReferrals, Ownable {
         address referrer_
     ) external view override returns (uint256) {
         return _earnings[referrer_];
-    }
-
-    function _updateCodeFor(bytes32 code_, address user_) internal {
-        if (_referrals[user_] == code_) revert SameCode();
-        if (_referrers[code_] == address(0)) revert InvalidCode();
-        _referrals[user_] = code_;
-        emit UpdatedReferral(user_, code_);
     }
 
     function _codeRebate(bytes32 code_) internal view returns (uint256) {

@@ -5,7 +5,6 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
@@ -15,7 +14,7 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILocker} from "./interfaces/ILocker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 
-contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
+contract LeveragedToken is ILeveragedToken, ERC20 {
     using ScaledNumber for uint256;
     using Address for address;
 
@@ -118,7 +117,10 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     }
 
     function rebalance() public override {
+        bool canRebalance_ = _addressProvider.isRebalancer(msg.sender);
+        if (!canRebalance_) revert Errors.NotAuthorized();
         if (!canRebalance()) revert CannotRebalance();
+        _chargeRebalanceFee();
         _rebalance();
     }
 
@@ -195,6 +197,22 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Rebalancing
         _submitLeverageUpdate();
         _lastRebalanceTimestamp = block.timestamp;
+        uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
+            targetAsset,
+            address(this)
+        );
+        emit Rebalanced(currentLeverage_);
+    }
+
+    function _chargeRebalanceFee() internal {
+        uint256 fee_ = _addressProvider.parameterProvider().rebalanceFee();
+        uint256 remainingMargin_ = _addressProvider
+            .synthetixHandler()
+            .remainingMargin(targetAsset, address(this));
+        if (fee_ >= remainingMargin_) return;
+        _withdrawMargin(fee_);
+        address receiver_ = _addressProvider.rebalanceFeeReceiver();
+        _addressProvider.baseAsset().transfer(receiver_, fee_);
     }
 
     function _depositMargin(uint256 amount_) internal {
