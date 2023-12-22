@@ -32,6 +32,10 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             AddressKeys.BASE_ASSET,
             Config.BASE_ASSET
         );
+        addressProvider.updateAddress(
+            AddressKeys.REBALANCE_FEE_RECEIVER,
+            Config.REBALANCE_FEE_RECEIVER
+        );
 
         // ParameterProvider Deployment
         ParameterProvider parameterProvider = new ParameterProvider(
@@ -45,6 +49,10 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         parameterProvider.updateParameter(
             ParameterKeys.STREAMING_FEE,
             Config.STREAMING_FEE
+        );
+        parameterProvider.updateParameter(
+            ParameterKeys.REBALANCE_FEE,
+            Config.REBALANCE_FEE
         );
         addressProvider.updateAddress(
             AddressKeys.PARAMETER_PROVIDER,
