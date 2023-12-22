@@ -76,6 +76,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
             Config.MAX_REBALANCES
         );
         _deployedAddress("ChainlinkAutomation", address(chainlinkAutomation));
+        addressProvider.addRebalancer(address(chainlinkAutomation));
 
         // Deploying Leveraged Tokens
         LeveragedTokens.LeveragedTokenData[]
