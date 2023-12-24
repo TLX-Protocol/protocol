@@ -8,29 +8,26 @@ import {ILeveragedToken} from "../interfaces/ILeveragedToken.sol";
 
 import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-contract ZapSwapUSDC is IZapSwap {
-    string internal _zapAsset;
-    IERC20 internal immutable _USDC;
+contract ZapSwapDirect is IZapSwap {
+    IERC20 internal immutable _zapAsset;
     IAddressProvider internal immutable _addressProvider;
     IVelodromeRouter internal immutable _velodromeRouter;
     address internal immutable _velodromeDefaultFactory;
 
     constructor(
-        string memory zapAsset_,
-        address usdcAddress_,
+        address zapAsset_,
         address addressProvider_,
         address velodromeRouter_,
         address defaultFactory_
     ) {
-        _zapAsset = zapAsset_;
-        _USDC = IERC20(usdcAddress_);
+        _zapAsset = IERC20(zapAsset_);
         _addressProvider = IAddressProvider(addressProvider_);
         _velodromeRouter = IVelodromeRouter(velodromeRouter_);
         _velodromeDefaultFactory = defaultFactory_;
     }
 
-    function zapAsset() public view override returns (string memory) {
-        return _zapAsset;
+    function zapAsset() public view override returns (address) {
+        return address(_zapAsset);
     }
 
     function mint(
@@ -41,17 +38,17 @@ contract ZapSwapUSDC is IZapSwap {
         // Zero amountIn handling
         if (amountIn_ == 0) return 0;
 
-        //  Verifying valid leveraged token address
+        //  Verify valid leveraged token address
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
         if (!valid_) revert InvalidAddress();
 
         // Get USDC from user
-        _USDC.transferFrom(msg.sender, address(this), amountIn_);
+        _zapAsset.transferFrom(msg.sender, address(this), amountIn_);
 
         // Swap for baseAsset
-        _swapUSDCForBaseAsset(amountIn_, 0);
+        _swapZapAssetForBaseAsset(amountIn_);
 
         uint256 baseAmountIn_ = _addressProvider.baseAsset().balanceOf(
             address(this)
@@ -79,7 +76,7 @@ contract ZapSwapUSDC is IZapSwap {
         emit Minted(
             msg.sender,
             leveragedTokenAddress_,
-            address(_USDC),
+            address(_zapAsset),
             amountIn_,
             leveragedTokenAmount_
         );
@@ -90,11 +87,11 @@ contract ZapSwapUSDC is IZapSwap {
     function redeem(
         address leveragedTokenAddress_,
         uint256 leveragedTokenAmount_,
-        uint256 minAmountOut_
+        uint256 minZapAssetAmountOut_
     ) public override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
 
-        //  Verifying valid leveraged token address
+        //  Verify valid leveraged token address
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
@@ -112,67 +109,65 @@ contract ZapSwapUSDC is IZapSwap {
         );
 
         // Redeem leveraged token for baseAsset
-        targetLeveragedToken.redeem(leveragedTokenAmount_, minAmountOut_);
-
-        // Swap base asset into USDC
-        _swapBaseAssetForUSDC(
-            _addressProvider.baseAsset().balanceOf(address(this)),
-            minAmountOut_
+        targetLeveragedToken.redeem(
+            leveragedTokenAmount_,
+            minZapAssetAmountOut_
         );
 
-        uint256 amountOut = _USDC.balanceOf(address(this));
+        // Swap baseAsset into zapAsset
+        uint256 balanceBefore = _zapAsset.balanceOf(address(this));
+        _swapBaseAssetForZapAsset(
+            _addressProvider.baseAsset().balanceOf(address(this))
+        );
+        uint256 balanceOut = _zapAsset.balanceOf(address(this));
+
+        bool sufficient_ = (balanceOut - balanceBefore) >=
+            minZapAssetAmountOut_;
+        if (!sufficient_) revert InsufficientAmount();
 
         // Send USDC back to user
-        _USDC.transfer(msg.sender, amountOut);
+        _zapAsset.transfer(msg.sender, balanceOut);
 
         emit Redeemed(
             msg.sender,
             leveragedTokenAddress_,
             leveragedTokenAmount_,
-            address(_USDC),
-            amountOut
+            address(_zapAsset),
+            balanceOut
         );
 
-        // Return USDC received
-        return amountOut;
+        return balanceOut;
     }
 
-    function _swapUSDCForBaseAsset(
-        uint256 amountIn_,
-        uint256 minAmountOut_
-    ) internal {
+    function _swapZapAssetForBaseAsset(uint256 amountIn_) internal virtual {
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](1);
 
         routeList[0] = IVelodromeRouter.Route(
-            address(_USDC),
+            address(_zapAsset),
             address(_addressProvider.baseAsset()),
             true,
             _velodromeDefaultFactory
         );
 
-        _USDC.approve(address(_velodromeRouter), amountIn_);
+        _zapAsset.approve(address(_velodromeRouter), amountIn_);
 
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
-            minAmountOut_,
+            0,
             routeList,
             address(this),
             block.timestamp
         );
     }
 
-    function _swapBaseAssetForUSDC(
-        uint256 amountIn_,
-        uint256 minAmountOut_
-    ) internal {
-        uint256 balanceBefore = _USDC.balanceOf(address(this));
+    function _swapBaseAssetForZapAsset(uint256 amountIn_) internal virtual {
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](1);
 
         routeList[0] = IVelodromeRouter.Route(
             address(_addressProvider.baseAsset()),
-            address(_USDC),
+            address(_zapAsset),
             true,
             _velodromeDefaultFactory
         );
@@ -184,14 +179,10 @@ contract ZapSwapUSDC is IZapSwap {
 
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
-            minAmountOut_,
+            0,
             routeList,
             address(this),
             block.timestamp
         );
-        uint256 balanceAfter = _USDC.balanceOf(address(this));
-
-        bool sufficient_ = (balanceAfter - balanceBefore) >= minAmountOut_;
-        if (!sufficient_) revert InsufficientAmount();
     }
 }

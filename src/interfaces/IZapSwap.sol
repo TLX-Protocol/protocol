@@ -24,7 +24,7 @@ interface IZapSwap {
      * @notice Returns the asset being swapped for the baseAsset.
      * @return asset The asset being swapped for the baseAsset.
      */
-    function zapAsset() external returns (string memory asset);
+    function zapAsset() external returns (address asset);
 
     /**
      * @notice Mints the target leveraged tokens to the caller with the given amountIn of the specific stablecoin.
@@ -43,12 +43,12 @@ interface IZapSwap {
      * @notice Redeems the target leveraged tokens and swaps the baseAsset for the specific stablecoin.
      * @param leveragedTokenAddress Address of target leveraged token to redeem
      * @param leveragedTokenAmountIn The amount of the leveraged tokens to redeem.
-     * @param minAmountOut The minimum amount of the stablecoin to receive (reverts otherwise).
+     * @param minZapAssetAmountOut The minimum amount of the zapAsset to receive (reverts otherwise).
      * @return amountOut The amount of stablecoin received.
      */
     function redeem(
         address leveragedTokenAddress,
         uint256 leveragedTokenAmountIn,
-        uint256 minAmountOut
+        uint256 minZapAssetAmountOut
     ) external returns (uint256 amountOut);
 }
