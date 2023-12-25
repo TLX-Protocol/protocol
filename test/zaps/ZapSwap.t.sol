@@ -32,11 +32,11 @@ contract WrappedZapSwapDirect is ZapSwapDirect {
     {}
 
     function swapZapAssetForBaseAsset(uint256 amountIn_) public {
-        return _swapZapAssetForBaseAsset(amountIn_);
+        _swapZapAssetForBaseAsset(amountIn_);
     }
 
     function swapBaseAssetForZapAsset(uint256 amountIn_) public {
-        return _swapBaseAssetForZapAsset(amountIn_);
+        _swapBaseAssetForZapAsset(amountIn_);
     }
 }
 
@@ -58,11 +58,11 @@ contract WrappedZapSwapIndirect is ZapSwapIndirect {
     {}
 
     function swapZapAssetForBaseAsset(uint256 amountIn_) public {
-        return _swapZapAssetForBaseAsset(amountIn_);
+        _swapZapAssetForBaseAsset(amountIn_);
     }
 
     function swapBaseAssetForZapAsset(uint256 amountIn_) public {
-        return _swapBaseAssetForZapAsset(amountIn_);
+        _swapBaseAssetForZapAsset(amountIn_);
     }
 }
 
@@ -74,16 +74,12 @@ contract ZapSwapUSDCTest is IntegrationTest {
     ZapSwapIndirect public zapSwapUSDT;
     ZapSwapIndirect public zapSwapDAI;
 
-    // Wrapped ZapSwaps for testing internal swap functions
+    // Wrapped ZapSwaps for testing internal swap functionality
     WrappedZapSwapDirect public wrappedZapSwapUSDC;
     WrappedZapSwapIndirect public wrappedZapSwapUSDT;
     WrappedZapSwapIndirect public wrappedZapSwapDAI;
 
     ILeveragedToken public leveragedToken;
-    IERC20 internal constant _USDC = IERC20(Tokens.USDC);
-    IERC20 internal constant _SUSD = IERC20(Tokens.SUSD);
-    IERC20 internal constant _USDT = IERC20(Tokens.USDT);
-    IERC20 internal constant _DAI = IERC20(Tokens.DAI);
 
     function setUp() public override {
         super.setUp();
@@ -109,24 +105,24 @@ contract ZapSwapUSDCTest is IntegrationTest {
             Tokens.USDC // bridgeAsset
         );
         wrappedZapSwapUSDC = new WrappedZapSwapDirect(
-            Tokens.USDC,
+            Tokens.USDC, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY
         );
         wrappedZapSwapUSDT = new WrappedZapSwapIndirect(
-            Tokens.USDT,
+            Tokens.USDT, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC
+            Tokens.USDC // bridgeAsset
         );
         wrappedZapSwapDAI = new WrappedZapSwapIndirect(
-            Tokens.DAI,
+            Tokens.DAI, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC
+            Tokens.USDC // bridgeAsset
         );
 
         (address longTokenAddress_, ) = leveragedTokenFactory
@@ -165,22 +161,17 @@ contract ZapSwapUSDCTest is IntegrationTest {
         _mintTokensFor(address(zapAsset), address(this), amountIn);
         zapAsset.approve(address(zapSwap), amountIn);
         zapSwap.mint(address(leveragedToken), amountIn, 0);
-        assertGt(
-            leveragedToken.balanceOf(address(this)),
-            0,
-            "No leveraged token was minted."
-        );
+        // Assert amount of leveraged tokens minted is correct
         assertApproxEqRel(
             leveragedToken.balanceOf(address(this)),
             expectedAmountOut,
             0.01e18,
-            "Number of leveraged tokens minted too low"
+            "Number of leveraged tokens minted incorrect"
         );
-
+        // Assert baseAsset value of leveraged tokens is correct
         uint256 leveragedTokenValue = leveragedToken
             .balanceOf(address(this))
             .mul(leveragedToken.exchangeRate());
-
         assertApproxEqRel(
             expectedAmountOut,
             leveragedTokenValue,
@@ -206,7 +197,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
         _mintTokensFor(address(zapAsset), address(this), amountIn);
         zapAsset.approve(address(zapSwap), amountIn);
 
-        // Mint with 0 USDC
+        // Mint with 0 zapAsset
         assertEq(zapSwap.mint(address(leveragedToken), 0, 0), 0);
 
         // Mint with wrong lt address
@@ -240,8 +231,9 @@ contract ZapSwapUSDCTest is IntegrationTest {
         uint256 zapAssetAmountOut
     ) public {
         // Mint leveraged tokens with baseAsset and without using the zap
-        _mintTokensFor(address(_SUSD), address(this), baseAssetAmountIn);
-        _SUSD.approve(address(leveragedToken), baseAssetAmountIn);
+        IERC20 baseAsset = IERC20(addressProvider.baseAsset());
+        _mintTokensFor(address(baseAsset), address(this), baseAssetAmountIn);
+        baseAsset.approve(address(leveragedToken), baseAssetAmountIn);
         leveragedToken.mint(baseAssetAmountIn, 0);
         _executeOrder(address(leveragedToken));
         assertEq(leveragedToken.balanceOf(address(this)), 1000e18);
@@ -258,7 +250,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
         );
 
         // Redeem half of the owned leveraged tokens for zapAsset
-        // Temp using half until issue with LT is resolved
+        // Temp using half amount until full redeem issue with LT is resolved
         IERC20 zapAsset = IERC20(zapSwap.zapAsset());
         uint256 leveragedTokenAmountToRedeem = leveragedToken.balanceOf(
             address(this)
@@ -273,6 +265,12 @@ contract ZapSwapUSDCTest is IntegrationTest {
             minZapAssetAmountOut
         );
 
+        // Assert still holding 1/2 of the leveraged tokens
+        assertEq(
+            leveragedToken.balanceOf(address(this)),
+            leveragedTokenAmountToRedeem, // Is equal to half of the original amount
+            "Holding an incorrect amount of leveraged tokens after redemption."
+        );
         // Verify zapAsset balance received from redemption has a max 2% deviation from baseAssetAmountIn
         uint256 zapAssetBalanceAfterRedeem = zapAsset.balanceOf(address(this)) -
             zapAssetBalanceBeforeRedeem;
@@ -280,7 +278,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
             halfZapAssetAmountOut,
             zapAssetBalanceAfterRedeem,
             0.02e18,
-            "Didn't receive enough of the zapAsset from leveraged token redemption."
+            "Didn't receive enough zapAsset from leveraged token redemption."
         );
     }
 
@@ -294,19 +292,29 @@ contract ZapSwapUSDCTest is IntegrationTest {
 
     function redeemRevert(IZapSwap zapSwap, uint256 amountIn) public {
         // Mint some leveraged tokens
-        mintLeveragedTokenWithZapAsset(zapSwap, amountIn);
+        uint256 leveragedTokenAmount = mintLeveragedTokenWithZapAsset(
+            zapSwap,
+            amountIn
+        );
         _executeOrder(address(leveragedToken));
+        leveragedToken.approve(address(zapSwap), leveragedTokenAmount);
+
         // Redeem with amount zero
         assertEq(zapSwap.redeem(address(leveragedToken), 0, 0), 0);
         // Redeem with wrong address
         vm.expectRevert();
-        zapSwap.redeem(address(5), 900e18, 0);
+        zapSwap.redeem(address(5), leveragedTokenAmount, 0);
         // Redeem more than owned
         vm.expectRevert();
-        zapSwapUSDC.redeem(address(leveragedToken), 1100e6, 0);
-        // Redeem with higher minAmountOut
+        zapSwap.redeem(address(leveragedToken), leveragedTokenAmount * 2, 0);
+        // Redeem with higher minAmountOut: 50% of leveraged tokens, 60% of amountIn
         vm.expectRevert();
-        zapSwapUSDC.redeem(address(leveragedToken), 500e18, 600e18);
+        uint256 tooLargeAmountOut = (amountIn / 10) * 6;
+        zapSwap.redeem(
+            address(leveragedToken),
+            leveragedTokenAmount / 2,
+            tooLargeAmountOut
+        );
     }
 
     function testMultipleUserActivity() public {
@@ -329,33 +337,33 @@ contract ZapSwapUSDCTest is IntegrationTest {
         _mintTokensFor(address(dai), alice, aliceIn);
         _mintTokensFor(address(usdt), bob, bobIn);
 
-        // TestSuite mints
+        // TestSuite mints for 4000 USDC
         usdc.approve(address(zapSwapUSDC), suiteIn);
         zapSwapUSDC.mint(address(leveragedToken), suiteIn, 0);
         _executeOrder(address(leveragedToken));
 
-        // Alice mints
+        // Alice mints for 2000 DAI
         vm.prank(alice);
         dai.approve(address(zapSwapDAI), aliceIn);
         vm.prank(alice);
         zapSwapDAI.mint(address(leveragedToken), aliceIn, 0);
         _executeOrder(address(leveragedToken));
 
-        // Bob mints
+        // Bob mints for 5000USDT
         vm.prank(bob);
         usdt.approve(address(zapSwapUSDT), bobIn);
         vm.prank(bob);
         zapSwapUSDT.mint(address(leveragedToken), bobIn, 0);
         _executeOrder(address(leveragedToken));
 
-        // TestSuite withdraws 1/4 of its leveraged tokens
+        // TestSuite redeems 1/4 of its leveraged tokens for USDT
         uint256 suiteLeveragedTokenOut = leveragedToken
             .balanceOf(address(this))
             .div(4e18);
         leveragedToken.approve(address(zapSwapUSDT), suiteLeveragedTokenOut);
         zapSwapUSDT.redeem(address(leveragedToken), suiteLeveragedTokenOut, 0);
 
-        // Bob withdraws 1/2 his leveraged tokens for DAI
+        // Bob redeems 1/2 of his leveraged tokens for DAI
         uint256 bobLeveragedTokenOut = leveragedToken.balanceOf(bob).div(2e18);
         vm.prank(bob);
         leveragedToken.approve(address(zapSwapDAI), bobLeveragedTokenOut);
@@ -367,7 +375,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
             leveragedToken.exchangeRate()
         );
         assertApproxEqRel(3000e18, suiteLtValue, 0.03e18);
-        assertApproxEqAbs(1000e6, usdt.balanceOf(address(this)), 0.03e18);
+        assertApproxEqRel(1000e6, usdt.balanceOf(address(this)), 0.03e18);
 
         // Verify Alice's leveraged token value
         uint256 aliceLtValue = leveragedToken.balanceOf(alice).mul(
@@ -384,7 +392,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
     }
 
     // The following tests are testing the internal swap functions
-    // of the direct and indirect ZapSwaps using the WrappedZapSwap
+    // of the direct and indirect ZapSwaps using the WrappedZapSwap contracts
 
     function testSwapUSDCforBaseAsset() public {
         swapDirectZapAssetForBaseAsset(wrappedZapSwapUSDC, 10000e6, 10000e18);
@@ -395,11 +403,15 @@ contract ZapSwapUSDCTest is IntegrationTest {
         uint256 zapAssetAmountIn,
         uint256 baseAssetAmountOut
     ) public {
-        // Mint and transfer tokens to wrapped zapSwap
+        // Mint zapAsset to wrapped zapSwap
         IERC20 zapAsset = IERC20(wrappedZapSwap.zapAsset());
-        mintAndTransferTo(zapAsset, zapAssetAmountIn, address(wrappedZapSwap));
+        _mintTokensFor(
+            address(zapAsset),
+            address(wrappedZapSwap),
+            zapAssetAmountIn
+        );
         assertEq(zapAsset.balanceOf(address(wrappedZapSwap)), zapAssetAmountIn);
-
+        
         // Swap zapAsset for baseAsset
         wrappedZapSwap.swapZapAssetForBaseAsset(zapAssetAmountIn);
         assertApproxEqRel(
@@ -418,12 +430,13 @@ contract ZapSwapUSDCTest is IntegrationTest {
         uint256 baseAssetAmountIn,
         uint256 zapAssetAmountOut
     ) public {
-        // Mint and transfer baseAsset to wrapped zapSwap
-        mintAndTransferTo(
-            addressProvider.baseAsset(),
-            baseAssetAmountIn,
-            address(wrappedZapSwap)
+        // Mint baseAsset to wrapped zapSwap
+        _mintTokensFor(
+            address(addressProvider.baseAsset()),
+            address(wrappedZapSwap),
+            baseAssetAmountIn
         );
+
         assertEq(
             addressProvider.baseAsset().balanceOf(address(wrappedZapSwap)),
             baseAssetAmountIn
@@ -452,9 +465,13 @@ contract ZapSwapUSDCTest is IntegrationTest {
         uint256 zapAssetAmountIn,
         uint256 baseAssetAmountOut
     ) public {
-        // Mint and transfer tokens to wrapped zapSwap
+        // Mint zapAsset to wrapped zapSwap
         IERC20 zapAsset = IERC20(wrappedZapSwap.zapAsset());
-        mintAndTransferTo(zapAsset, zapAssetAmountIn, address(wrappedZapSwap));
+        _mintTokensFor(
+            address(zapAsset),
+            address(wrappedZapSwap),
+            zapAssetAmountIn
+        );
         assertEq(zapAsset.balanceOf(address(wrappedZapSwap)), zapAssetAmountIn);
 
         // Swap zapAsset for baseAsset
@@ -479,11 +496,11 @@ contract ZapSwapUSDCTest is IntegrationTest {
         uint256 baseAssetAmountIn,
         uint256 zapAssetAmountOut
     ) public {
-        // Mint and transfer baseAsset to wrapped zapSwap
-        mintAndTransferTo(
-            addressProvider.baseAsset(),
-            baseAssetAmountIn,
-            address(wrappedZapSwap)
+        // Mint baseAsset to wrapped zapSwap
+        _mintTokensFor(
+            address(addressProvider.baseAsset()),
+            address(wrappedZapSwap),
+            baseAssetAmountIn
         );
         assertEq(
             addressProvider.baseAsset().balanceOf(address(wrappedZapSwap)),
@@ -500,18 +517,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
         );
     }
 
-    // The following functions are helpers to reduce code duplication
-
-    // Replace this function and just directly mint to the receiver
-    function mintAndTransferTo(
-        IERC20 asset,
-        uint256 amount,
-        address receiver
-    ) public {
-        _mintTokensFor(address(asset), address(this), amount);
-        asset.approve(receiver, amount);
-        asset.transfer(receiver, amount);
-    }
+    // Helper functions
 
     function mintLeveragedTokenWithZapAsset(
         IZapSwap zapSwap,

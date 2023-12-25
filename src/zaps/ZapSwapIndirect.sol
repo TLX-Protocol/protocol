@@ -23,20 +23,20 @@ contract ZapSwapIndirect is ZapSwapDirect {
             defaultFactory_
         )
     {
+        // Set the bridgeAsset used in the path of an indirect swap
         _bridgeAsset = IERC20(bridgeAsset_);
     }
 
     function _swapZapAssetForBaseAsset(uint256 amountIn_) internal override {
+        // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](2);
-
         routeList[0] = IVelodromeRouter.Route(
             address(_zapAsset),
             address(_bridgeAsset),
             true,
             _velodromeDefaultFactory
         );
-
         routeList[1] = IVelodromeRouter.Route(
             address(_bridgeAsset),
             address(_addressProvider.baseAsset()),
@@ -44,8 +44,7 @@ contract ZapSwapIndirect is ZapSwapDirect {
             _velodromeDefaultFactory
         );
 
-        _zapAsset.approve(address(_velodromeRouter), amountIn_);
-
+        // Executing the swap
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
             0,
@@ -56,16 +55,15 @@ contract ZapSwapIndirect is ZapSwapDirect {
     }
 
     function _swapBaseAssetForZapAsset(uint256 amountIn_) internal override {
+        // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](2);
-
         routeList[0] = IVelodromeRouter.Route(
             address(_addressProvider.baseAsset()),
             address(_bridgeAsset),
             true,
             _velodromeDefaultFactory
         );
-
         routeList[1] = IVelodromeRouter.Route(
             address(_bridgeAsset),
             address(_zapAsset),
@@ -73,11 +71,7 @@ contract ZapSwapIndirect is ZapSwapDirect {
             _velodromeDefaultFactory
         );
 
-        _addressProvider.baseAsset().approve(
-            address(_velodromeRouter),
-            amountIn_
-        );
-
+        // Executing the swap
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
             0,

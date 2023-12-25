@@ -21,34 +21,34 @@ interface IZapSwap {
     error InsufficientAmount();
 
     /**
-     * @notice Returns the asset being swapped for the baseAsset.
-     * @return asset The asset being swapped for the baseAsset.
+     * @notice Returns the asset supported by the zap.
+     * @return asset The asset supported by the zap.
      */
     function zapAsset() external returns (address asset);
 
     /**
-     * @notice Mints the target leveraged tokens to the caller with the given amountIn of the specific stablecoin.
-     * @param leveragedTokenAddress Address of target leveraged token to mint
-     * @param amountIn The amount of the stablecoin to mint with.
+     * @notice Mints the target leveraged tokens to the caller with the provided amountIn of the zapAsset.
+     * @param leveragedTokenAddress Address of target leveraged token to mint.
+     * @param zapAssetAmountIn The amount of the zapAsset to mint with.
      * @param minLeveragedTokenAmountOut The minimum amount of leveragedTokens to mint (reverts otherwise).
      * @return leveragedTokenAmountOut The amount of leveragedTokens minted.
      */
     function mint(
         address leveragedTokenAddress,
-        uint256 amountIn,
+        uint256 zapAssetAmountIn,
         uint256 minLeveragedTokenAmountOut
     ) external returns (uint256 leveragedTokenAmountOut);
 
     /**
-     * @notice Redeems the target leveraged tokens and swaps the baseAsset for the specific stablecoin.
-     * @param leveragedTokenAddress Address of target leveraged token to redeem
+     * @notice Redeems the target leveraged tokens and swaps the baseAsset for the zapAsset.
+     * @param leveragedTokenAddress Address of target leveraged token to redeem.
      * @param leveragedTokenAmountIn The amount of the leveraged tokens to redeem.
      * @param minZapAssetAmountOut The minimum amount of the zapAsset to receive (reverts otherwise).
-     * @return amountOut The amount of stablecoin received.
+     * @return zapAssetAmountOut The amount of zapAsset received.
      */
     function redeem(
         address leveragedTokenAddress,
         uint256 leveragedTokenAmountIn,
         uint256 minZapAssetAmountOut
-    ) external returns (uint256 amountOut);
+    ) external returns (uint256 zapAssetAmountOut);
 }

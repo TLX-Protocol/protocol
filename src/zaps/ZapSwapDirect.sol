@@ -24,6 +24,13 @@ contract ZapSwapDirect is IZapSwap {
         _addressProvider = IAddressProvider(addressProvider_);
         _velodromeRouter = IVelodromeRouter(velodromeRouter_);
         _velodromeDefaultFactory = defaultFactory_;
+
+        // Approve velodrome router once to minimize gas costs
+        _zapAsset.approve(address(_velodromeRouter), type(uint256).max);
+        _addressProvider.baseAsset().approve(
+            address(_velodromeRouter),
+            type(uint256).max
+        );
     }
 
     function zapAsset() public view override returns (address) {
@@ -32,106 +39,101 @@ contract ZapSwapDirect is IZapSwap {
 
     function mint(
         address leveragedTokenAddress_,
-        uint256 amountIn_,
+        uint256 zapAssetAmountIn_,
         uint256 minLeveragedTokenAmountOut_
     ) public override returns (uint256) {
-        // Zero amountIn handling
-        if (amountIn_ == 0) return 0;
+        if (zapAssetAmountIn_ == 0) return 0;
 
-        //  Verify valid leveraged token address
+        //  Verifying valid leveraged token address
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
         if (!valid_) revert InvalidAddress();
 
-        // Get USDC from user
-        _zapAsset.transferFrom(msg.sender, address(this), amountIn_);
+        // Receiving zapAsset from user
+        _zapAsset.transferFrom(msg.sender, address(this), zapAssetAmountIn_);
 
-        // Swap for baseAsset
-        _swapZapAssetForBaseAsset(amountIn_);
+        // Swapping zapAsset for baseAsset
+        _swapZapAssetForBaseAsset(zapAssetAmountIn_);
 
         uint256 baseAmountIn_ = _addressProvider.baseAsset().balanceOf(
             address(this)
         );
 
+        // Minting leveraged tokens using baseAsset
         ILeveragedToken targetLeveragedToken = ILeveragedToken(
             leveragedTokenAddress_
         );
-
-        // Approve LT for baseAmount
         _addressProvider.baseAsset().approve(
             address(targetLeveragedToken),
             baseAmountIn_
         );
-
-        // Mint leveraged tokens using baseAsset
-        uint256 leveragedTokenAmount_ = targetLeveragedToken.mint(
+        uint256 leveragedTokenAmountOut_ = targetLeveragedToken.mint(
             baseAmountIn_,
             minLeveragedTokenAmountOut_
         );
 
-        // Transfer leveraged tokens to user
-        targetLeveragedToken.transfer(msg.sender, leveragedTokenAmount_);
-
+        // Transferring leveraged tokens to user
+        targetLeveragedToken.transfer(msg.sender, leveragedTokenAmountOut_);
         emit Minted(
             msg.sender,
             leveragedTokenAddress_,
             address(_zapAsset),
-            amountIn_,
-            leveragedTokenAmount_
+            zapAssetAmountIn_,
+            leveragedTokenAmountOut_
         );
 
-        return leveragedTokenAmount_;
+        return leveragedTokenAmountOut_;
     }
 
     function redeem(
         address leveragedTokenAddress_,
-        uint256 leveragedTokenAmount_,
+        uint256 leveragedTokenAmountIn_,
         uint256 minZapAssetAmountOut_
     ) public override returns (uint256) {
-        if (leveragedTokenAmount_ == 0) return 0;
+        if (leveragedTokenAmountIn_ == 0) return 0;
 
-        //  Verify valid leveraged token address
+        //  Verifying valid leveraged token address
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
         if (!valid_) revert InvalidAddress();
 
+        // Transferring leveraged token from user to zap
         ILeveragedToken targetLeveragedToken = ILeveragedToken(
             leveragedTokenAddress_
         );
-
-        // Transfer leveraged token from user to zap
         targetLeveragedToken.transferFrom(
             msg.sender,
             address(this),
-            leveragedTokenAmount_
+            leveragedTokenAmountIn_
         );
 
-        // Redeem leveraged token for baseAsset
+        // Redeeming leveraged token for baseAsset
         targetLeveragedToken.redeem(
-            leveragedTokenAmount_,
+            leveragedTokenAmountIn_,
             minZapAssetAmountOut_
         );
 
-        // Swap baseAsset into zapAsset
+        // Swapping baseAsset for zapAsset
         uint256 balanceBefore = _zapAsset.balanceOf(address(this));
         _swapBaseAssetForZapAsset(
             _addressProvider.baseAsset().balanceOf(address(this))
         );
         uint256 balanceOut = _zapAsset.balanceOf(address(this));
 
+        // Verifying sufficient amount
         bool sufficient_ = (balanceOut - balanceBefore) >=
             minZapAssetAmountOut_;
         if (!sufficient_) revert InsufficientAmount();
 
-        // Send USDC back to user
+        // Send zapAsset back to user
         _zapAsset.transfer(msg.sender, balanceOut);
 
         emit Redeemed(
             msg.sender,
             leveragedTokenAddress_,
-            leveragedTokenAmount_,
+            leveragedTokenAmountIn_,
             address(_zapAsset),
             balanceOut
         );
@@ -140,9 +142,9 @@ contract ZapSwapDirect is IZapSwap {
     }
 
     function _swapZapAssetForBaseAsset(uint256 amountIn_) internal virtual {
+        // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](1);
-
         routeList[0] = IVelodromeRouter.Route(
             address(_zapAsset),
             address(_addressProvider.baseAsset()),
@@ -150,8 +152,7 @@ contract ZapSwapDirect is IZapSwap {
             _velodromeDefaultFactory
         );
 
-        _zapAsset.approve(address(_velodromeRouter), amountIn_);
-
+        // Executing the swap
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
             0,
@@ -162,9 +163,9 @@ contract ZapSwapDirect is IZapSwap {
     }
 
     function _swapBaseAssetForZapAsset(uint256 amountIn_) internal virtual {
+        // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](1);
-
         routeList[0] = IVelodromeRouter.Route(
             address(_addressProvider.baseAsset()),
             address(_zapAsset),
@@ -172,11 +173,7 @@ contract ZapSwapDirect is IZapSwap {
             _velodromeDefaultFactory
         );
 
-        _addressProvider.baseAsset().approve(
-            address(_velodromeRouter),
-            amountIn_
-        );
-
+        // Executing the swap
         _velodromeRouter.swapExactTokensForTokens(
             amountIn_,
             0,
