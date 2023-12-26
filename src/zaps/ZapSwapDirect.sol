@@ -54,7 +54,11 @@ contract ZapSwapDirect is IZapSwap {
         _zapAsset.transferFrom(msg.sender, address(this), zapAssetAmountIn_);
 
         // Swapping zapAsset for baseAsset
-        _swapZapAssetForBaseAsset(zapAssetAmountIn_);
+        _swapAssetForAsset(
+            zapAssetAmountIn_,
+            address(_zapAsset),
+            address(_addressProvider.baseAsset())
+        );
 
         uint256 baseAmountIn_ = _addressProvider.baseAsset().balanceOf(
             address(this)
@@ -117,8 +121,10 @@ contract ZapSwapDirect is IZapSwap {
 
         // Swapping baseAsset for zapAsset
         uint256 balanceBefore = _zapAsset.balanceOf(address(this));
-        _swapBaseAssetForZapAsset(
-            _addressProvider.baseAsset().balanceOf(address(this))
+        _swapAssetForAsset(
+            _addressProvider.baseAsset().balanceOf(address(this)),
+            address(_addressProvider.baseAsset()),
+            address(_zapAsset)
         );
         uint256 balanceOut = _zapAsset.balanceOf(address(this));
 
@@ -141,34 +147,17 @@ contract ZapSwapDirect is IZapSwap {
         return balanceOut;
     }
 
-    function _swapZapAssetForBaseAsset(uint256 amountIn_) internal virtual {
+    function _swapAssetForAsset(
+        uint256 amountIn_,
+        address assetIn_,
+        address assetOut_
+    ) internal virtual {
         // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](1);
         routeList[0] = IVelodromeRouter.Route(
-            address(_zapAsset),
-            address(_addressProvider.baseAsset()),
-            true,
-            _velodromeDefaultFactory
-        );
-
-        // Executing the swap
-        _velodromeRouter.swapExactTokensForTokens(
-            amountIn_,
-            0,
-            routeList,
-            address(this),
-            block.timestamp
-        );
-    }
-
-    function _swapBaseAssetForZapAsset(uint256 amountIn_) internal virtual {
-        // Setting the swap route
-        IVelodromeRouter.Route[]
-            memory routeList = new IVelodromeRouter.Route[](1);
-        routeList[0] = IVelodromeRouter.Route(
-            address(_addressProvider.baseAsset()),
-            address(_zapAsset),
+            assetIn_,
+            assetOut_,
             true,
             _velodromeDefaultFactory
         );

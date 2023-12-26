@@ -27,11 +27,11 @@ interface IZapSwap {
     function zapAsset() external returns (address asset);
 
     /**
-     * @notice Mints the target leveraged tokens to the caller with the provided amountIn of the zapAsset.
+     * @notice Swaps the zap asset for the base asset and mints the target leveraged tokens for the caller.
      * @param leveragedTokenAddress Address of target leveraged token to mint.
-     * @param zapAssetAmountIn The amount of the zapAsset to mint with.
-     * @param minLeveragedTokenAmountOut The minimum amount of leveragedTokens to mint (reverts otherwise).
-     * @return leveragedTokenAmountOut The amount of leveragedTokens minted.
+     * @param zapAssetAmountIn The amount of the zap asset to mint with.
+     * @param minLeveragedTokenAmountOut The minimum amount of leveraged tokens to receive (reverts otherwise).
+     * @return leveragedTokenAmountOut The amount of leveraged tokens minted.
      */
     function mint(
         address leveragedTokenAddress,
@@ -40,11 +40,11 @@ interface IZapSwap {
     ) external returns (uint256 leveragedTokenAmountOut);
 
     /**
-     * @notice Redeems the target leveraged tokens and swaps the baseAsset for the zapAsset.
-     * @param leveragedTokenAddress Address of target leveraged token to redeem.
+     * @notice Redeems the target leveraged tokens, swaps the base asset for the zap asset and returns the zap asset to the caller.
+     * @param leveragedTokenAddress The address of the target leveraged token to redeem.
      * @param leveragedTokenAmountIn The amount of the leveraged tokens to redeem.
-     * @param minZapAssetAmountOut The minimum amount of the zapAsset to receive (reverts otherwise).
-     * @return zapAssetAmountOut The amount of zapAsset received.
+     * @param minZapAssetAmountOut The minimum amount of the zap asset to receive (reverts otherwise).
+     * @return zapAssetAmountOut The amount of zap asset received.
      */
     function redeem(
         address leveragedTokenAddress,

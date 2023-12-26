@@ -7,7 +7,7 @@ import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IER
 import {IVelodromeRouter} from "../interfaces/velodrome/IVelodromeRouter.sol";
 
 contract ZapSwapIndirect is ZapSwapDirect {
-    IERC20 internal immutable _bridgeAsset;
+    address internal immutable _bridgeAsset;
 
     constructor(
         address zapAsset_,
@@ -23,50 +23,27 @@ contract ZapSwapIndirect is ZapSwapDirect {
             defaultFactory_
         )
     {
-        // Set the bridgeAsset used in the path of an indirect swap
-        _bridgeAsset = IERC20(bridgeAsset_);
+        // Set the bridgeAsset used in the route of an indirect swap
+        _bridgeAsset = bridgeAsset_;
     }
 
-    function _swapZapAssetForBaseAsset(uint256 amountIn_) internal override {
+    function _swapAssetForAsset(
+        uint256 amountIn_,
+        address assetIn_,
+        address assetOut_
+    ) internal override {
         // Setting the swap route
         IVelodromeRouter.Route[]
             memory routeList = new IVelodromeRouter.Route[](2);
         routeList[0] = IVelodromeRouter.Route(
-            address(_zapAsset),
-            address(_bridgeAsset),
+            assetIn_,
+            _bridgeAsset,
             true,
             _velodromeDefaultFactory
         );
         routeList[1] = IVelodromeRouter.Route(
-            address(_bridgeAsset),
-            address(_addressProvider.baseAsset()),
-            true,
-            _velodromeDefaultFactory
-        );
-
-        // Executing the swap
-        _velodromeRouter.swapExactTokensForTokens(
-            amountIn_,
-            0,
-            routeList,
-            address(this),
-            block.timestamp
-        );
-    }
-
-    function _swapBaseAssetForZapAsset(uint256 amountIn_) internal override {
-        // Setting the swap route
-        IVelodromeRouter.Route[]
-            memory routeList = new IVelodromeRouter.Route[](2);
-        routeList[0] = IVelodromeRouter.Route(
-            address(_addressProvider.baseAsset()),
-            address(_bridgeAsset),
-            true,
-            _velodromeDefaultFactory
-        );
-        routeList[1] = IVelodromeRouter.Route(
-            address(_bridgeAsset),
-            address(_zapAsset),
+            _bridgeAsset,
+            assetOut_,
             true,
             _velodromeDefaultFactory
         );

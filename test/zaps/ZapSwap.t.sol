@@ -31,12 +31,12 @@ contract WrappedZapSwapDirect is ZapSwapDirect {
         )
     {}
 
-    function swapZapAssetForBaseAsset(uint256 amountIn_) public {
-        _swapZapAssetForBaseAsset(amountIn_);
-    }
-
-    function swapBaseAssetForZapAsset(uint256 amountIn_) public {
-        _swapBaseAssetForZapAsset(amountIn_);
+    function swapAssetForAsset(
+        uint256 amountIn_,
+        address assetIn_,
+        address assetOut_
+    ) public {
+        _swapAssetForAsset(amountIn_, assetIn_, assetOut_);
     }
 }
 
@@ -57,12 +57,12 @@ contract WrappedZapSwapIndirect is ZapSwapIndirect {
         )
     {}
 
-    function swapZapAssetForBaseAsset(uint256 amountIn_) public {
-        _swapZapAssetForBaseAsset(amountIn_);
-    }
-
-    function swapBaseAssetForZapAsset(uint256 amountIn_) public {
-        _swapBaseAssetForZapAsset(amountIn_);
+    function swapAssetForAsset(
+        uint256 amountIn_,
+        address assetIn_,
+        address assetOut_
+    ) public {
+        _swapAssetForAsset(amountIn_, assetIn_, assetOut_);
     }
 }
 
@@ -250,7 +250,6 @@ contract ZapSwapUSDCTest is IntegrationTest {
         );
 
         // Redeem half of the owned leveraged tokens for zapAsset
-        // Temp using half amount until full redeem issue with LT is resolved
         IERC20 zapAsset = IERC20(zapSwap.zapAsset());
         uint256 leveragedTokenAmountToRedeem = leveragedToken.balanceOf(
             address(this)
@@ -308,8 +307,8 @@ contract ZapSwapUSDCTest is IntegrationTest {
         vm.expectRevert();
         zapSwap.redeem(address(leveragedToken), leveragedTokenAmount * 2, 0);
         // Redeem with higher minAmountOut: 50% of leveraged tokens, 60% of amountIn
-        vm.expectRevert();
         uint256 tooLargeAmountOut = (amountIn / 10) * 6;
+        vm.expectRevert();
         zapSwap.redeem(
             address(leveragedToken),
             leveragedTokenAmount / 2,
@@ -411,9 +410,13 @@ contract ZapSwapUSDCTest is IntegrationTest {
             zapAssetAmountIn
         );
         assertEq(zapAsset.balanceOf(address(wrappedZapSwap)), zapAssetAmountIn);
-        
+
         // Swap zapAsset for baseAsset
-        wrappedZapSwap.swapZapAssetForBaseAsset(zapAssetAmountIn);
+        wrappedZapSwap.swapAssetForAsset(
+            zapAssetAmountIn,
+            address(zapAsset),
+            address(addressProvider.baseAsset())
+        );
         assertApproxEqRel(
             baseAssetAmountOut,
             addressProvider.baseAsset().balanceOf(address(wrappedZapSwap)),
@@ -443,8 +446,12 @@ contract ZapSwapUSDCTest is IntegrationTest {
         );
 
         // Swap baseAsset for zapAsset
-        wrappedZapSwap.swapBaseAssetForZapAsset(baseAssetAmountIn);
         IERC20 zapAsset = IERC20(wrappedZapSwap.zapAsset());
+        wrappedZapSwap.swapAssetForAsset(
+            baseAssetAmountIn,
+            address(addressProvider.baseAsset()),
+            address(zapAsset)
+        );
         assertApproxEqRel(
             zapAssetAmountOut,
             zapAsset.balanceOf(address(wrappedZapSwap)),
@@ -475,7 +482,11 @@ contract ZapSwapUSDCTest is IntegrationTest {
         assertEq(zapAsset.balanceOf(address(wrappedZapSwap)), zapAssetAmountIn);
 
         // Swap zapAsset for baseAsset
-        wrappedZapSwap.swapZapAssetForBaseAsset(zapAssetAmountIn);
+        wrappedZapSwap.swapAssetForAsset(
+            zapAssetAmountIn,
+            address(zapAsset),
+            address(addressProvider.baseAsset())
+        );
         assertApproxEqRel(
             baseAssetAmountOut,
             addressProvider.baseAsset().balanceOf(address(wrappedZapSwap)),
@@ -508,8 +519,12 @@ contract ZapSwapUSDCTest is IntegrationTest {
         );
 
         // Swap baseAsset for zapAsset
-        wrappedZapSwap.swapBaseAssetForZapAsset(baseAssetAmountIn);
         IERC20 zapAsset = IERC20(wrappedZapSwap.zapAsset());
+        wrappedZapSwap.swapAssetForAsset(
+            baseAssetAmountIn,
+            address(addressProvider.baseAsset()),
+            address(zapAsset)
+        );
         assertApproxEqRel(
             zapAssetAmountOut,
             zapAsset.balanceOf(address(wrappedZapSwap)),
