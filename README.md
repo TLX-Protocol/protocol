@@ -88,4 +88,4 @@ The `Timelock` contract will be set as the owner for all other contracts. It is 
 
 ### ZapSwap
 
-The `ZapSwapDirect` and `ZapSwapIndirect` contracts enable minting and redeeming leveraged tokens with assets other than the base asset. Swaps are executed exclusively through `Velodrome`. The `ZapSwapDirect` contract is used where the zap asset and the base asset are swapped directly through one liquidity pool. The `ZapSwapIndirect` contract is used for assets that require two swaps.
+The `ZapSwapDirect` and `ZapSwapIndirect` contracts enable the minting and redeeming of leveraged tokens with assets other than the base asset. Swaps are executed exclusively through `Velodrome`. The `ZapSwapDirect` contract is used when the zap asset and the base asset are swapped directly through one liquidity pool. The `ZapSwapIndirect` contract is used for assets that require two swaps.
