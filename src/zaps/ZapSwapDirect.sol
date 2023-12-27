@@ -33,10 +33,6 @@ contract ZapSwapDirect is IZapSwap {
         );
     }
 
-    function zapAsset() public view override returns (address) {
-        return address(_zapAsset);
-    }
-
     function mint(
         address leveragedTokenAddress_,
         uint256 zapAssetAmountIn_,
@@ -145,6 +141,10 @@ contract ZapSwapDirect is IZapSwap {
         );
 
         return balanceOut;
+    }
+
+    function zapAsset() public view override returns (address) {
+        return address(_zapAsset);
     }
 
     function _swapAssetForAsset(
