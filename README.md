@@ -85,3 +85,7 @@ The locker is where users can stake their `TLX`. Staked `TLX` is staked indefini
 ### Timelock
 
 The `Timelock` contract will be set as the owner for all other contracts. It is responsible for adding a delay to function calls so that users have time to review the changes. It has functions for creating a new proposed change, cancelling a proposed change, and executing a proposed change. It also has several views for seeing the current state. The delays can be set for different function calls so there is granular control over these.
+
+## Helpers
+
+The helpers in directory `src/helpers` are not considered part of the core protocol. They are lightweight wrappers used to help with integration of off-chain components such as the UI or analytics ect.
