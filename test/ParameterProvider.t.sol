@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {Vm} from "forge-std/Test.sol";
+
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
+import {Expectations} from "./shared/Expectations.sol";
 
 import {ParameterKeys} from "../src/libraries/ParameterKeys.sol";
 import {Tokens} from "../src/libraries/Tokens.sol";
@@ -11,6 +14,8 @@ import {Errors} from "../src/libraries/Errors.sol";
 import {IParameterProvider} from "../src/interfaces/IParameterProvider.sol";
 
 contract ParameterProviderTest is IntegrationTest {
+    using Expectations for Vm;
+
     function testInit() public {
         assertEq(parameterProvider.streamingFee(), Config.STREAMING_FEE);
     }
@@ -40,6 +45,13 @@ contract ParameterProviderTest is IntegrationTest {
             Config.STREAMING_FEE
         );
     }
+
+    function testNonExistentQueryParameter() public {
+        bytes32 key = "non existent";
+        vm.expectRevertWith(IParameterProvider.NonExistentParameter.selector, key);
+        parameterProvider.parameterOf(key);
+    }
+
 
     function testParameters() public {
         uint256 oldLength_ = parameterProvider.parameters().length;

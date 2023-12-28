@@ -99,7 +99,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
     }
 
     function _getParameter(bytes32 key_) internal view returns (uint256) {
-        if (!_parameters.contains(key_)) revert Errors.DoesNotExist();
+        if (!_parameters.contains(key_)) revert NonExistentParameter(key_);
         return _parameters.get(key_);
     }
 }
