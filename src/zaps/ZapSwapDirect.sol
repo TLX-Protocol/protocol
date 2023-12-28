@@ -6,24 +6,29 @@ import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 import {IVelodromeRouter} from "../interfaces/velodrome/IVelodromeRouter.sol";
 import {ILeveragedToken} from "../interfaces/ILeveragedToken.sol";
 
-import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
+import {Errors} from "../libraries/Errors.sol";
 
 contract ZapSwapDirect is IZapSwap {
     IERC20 internal immutable _zapAsset;
     IAddressProvider internal immutable _addressProvider;
     IVelodromeRouter internal immutable _velodromeRouter;
-    address internal immutable _velodromeDefaultFactory;
+    address internal immutable _velodromeFactory;
+    bool internal immutable _stable;
 
     constructor(
         address zapAsset_,
         address addressProvider_,
         address velodromeRouter_,
-        address defaultFactory_
+        address velodromeFactory_,
+        bool stable_
     ) {
         _zapAsset = IERC20(zapAsset_);
         _addressProvider = IAddressProvider(addressProvider_);
         _velodromeRouter = IVelodromeRouter(velodromeRouter_);
-        _velodromeDefaultFactory = defaultFactory_;
+        _velodromeFactory = velodromeFactory_;
+        _stable = stable_;
 
         // Approve velodrome router once to minimize gas costs
         _zapAsset.approve(address(_velodromeRouter), type(uint256).max);
@@ -44,7 +49,9 @@ contract ZapSwapDirect is IZapSwap {
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
-        if (!valid_) revert InvalidAddress();
+        if (!valid_) revert Errors.InvalidAddress();
+
+        IERC20 baseAsset_ = _addressProvider.baseAsset();
 
         // Receiving zapAsset from user
         _zapAsset.transferFrom(msg.sender, address(this), zapAssetAmountIn_);
@@ -53,21 +60,16 @@ contract ZapSwapDirect is IZapSwap {
         _swapAssetForAsset(
             zapAssetAmountIn_,
             address(_zapAsset),
-            address(_addressProvider.baseAsset())
+            address(baseAsset_)
         );
 
-        uint256 baseAmountIn_ = _addressProvider.baseAsset().balanceOf(
-            address(this)
-        );
+        uint256 baseAmountIn_ = baseAsset_.balanceOf(address(this));
 
         // Minting leveraged tokens using baseAsset
         ILeveragedToken targetLeveragedToken = ILeveragedToken(
             leveragedTokenAddress_
         );
-        _addressProvider.baseAsset().approve(
-            address(targetLeveragedToken),
-            baseAmountIn_
-        );
+        baseAsset_.approve(address(targetLeveragedToken), baseAmountIn_);
         uint256 leveragedTokenAmountOut_ = targetLeveragedToken.mint(
             baseAmountIn_,
             minLeveragedTokenAmountOut_
@@ -97,7 +99,7 @@ contract ZapSwapDirect is IZapSwap {
         bool valid_ = _addressProvider.leveragedTokenFactory().isLeveragedToken(
             leveragedTokenAddress_
         );
-        if (!valid_) revert InvalidAddress();
+        if (!valid_) revert Errors.InvalidAddress();
 
         // Transferring leveraged token from user to zap
         ILeveragedToken targetLeveragedToken = ILeveragedToken(
@@ -116,31 +118,30 @@ contract ZapSwapDirect is IZapSwap {
         );
 
         // Swapping baseAsset for zapAsset
-        uint256 balanceBefore = _zapAsset.balanceOf(address(this));
+        IERC20 baseAsset_ = _addressProvider.baseAsset();
         _swapAssetForAsset(
-            _addressProvider.baseAsset().balanceOf(address(this)),
-            address(_addressProvider.baseAsset()),
+            baseAsset_.balanceOf(address(this)),
+            address(baseAsset_),
             address(_zapAsset)
         );
-        uint256 balanceOut = _zapAsset.balanceOf(address(this));
+        uint256 zapAssetAmountOut = _zapAsset.balanceOf(address(this));
 
         // Verifying sufficient amount
-        bool sufficient_ = (balanceOut - balanceBefore) >=
-            minZapAssetAmountOut_;
-        if (!sufficient_) revert InsufficientAmount();
+        bool sufficient_ = zapAssetAmountOut >= minZapAssetAmountOut_;
+        if (!sufficient_) revert Errors.InsufficientAmount();
 
         // Send zapAsset back to user
-        _zapAsset.transfer(msg.sender, balanceOut);
+        _zapAsset.transfer(msg.sender, zapAssetAmountOut);
 
         emit Redeemed(
             msg.sender,
             leveragedTokenAddress_,
             leveragedTokenAmountIn_,
             address(_zapAsset),
-            balanceOut
+            zapAssetAmountOut
         );
 
-        return balanceOut;
+        return zapAssetAmountOut;
     }
 
     function zapAsset() public view override returns (address) {
@@ -158,8 +159,8 @@ contract ZapSwapDirect is IZapSwap {
         routeList[0] = IVelodromeRouter.Route(
             assetIn_,
             assetOut_,
-            true,
-            _velodromeDefaultFactory
+            _stable,
+            _velodromeFactory
         );
 
         // Executing the swap

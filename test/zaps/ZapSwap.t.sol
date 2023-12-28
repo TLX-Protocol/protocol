@@ -21,13 +21,15 @@ contract WrappedZapSwapDirect is ZapSwapDirect {
         address zapAsset_,
         address addressProvider_,
         address velodromeRouter_,
-        address defaultFactory_
+        address defaultFactory_,
+        bool stable_
     )
         ZapSwapDirect(
             zapAsset_,
             addressProvider_,
             velodromeRouter_,
-            defaultFactory_
+            defaultFactory_,
+            stable_
         )
     {}
 
@@ -46,14 +48,16 @@ contract WrappedZapSwapIndirect is ZapSwapIndirect {
         address addressProvider_,
         address velodromeRouter_,
         address defaultFactory_,
-        address bridgeAsset_
+        address bridgeAsset_,
+        bool stable_
     )
         ZapSwapIndirect(
             zapAsset_,
             addressProvider_,
             velodromeRouter_,
             defaultFactory_,
-            bridgeAsset_
+            bridgeAsset_,
+            stable_
         )
     {}
 
@@ -88,41 +92,47 @@ contract ZapSwapUSDCTest is IntegrationTest {
             Tokens.USDC, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
-            Contracts.VELODROME_DEFAULT_FACTORY
+            Contracts.VELODROME_DEFAULT_FACTORY,
+            true //stable
         );
         zapSwapUSDT = new ZapSwapIndirect(
             Tokens.USDT, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC // bridgeAsset
+            Tokens.USDC, // bridgeAsset
+            true //stable
         );
         zapSwapDAI = new ZapSwapIndirect(
             Tokens.DAI, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC // bridgeAsset
+            Tokens.USDC, // bridgeAsset
+            true //stable
         );
         wrappedZapSwapUSDC = new WrappedZapSwapDirect(
             Tokens.USDC, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
-            Contracts.VELODROME_DEFAULT_FACTORY
+            Contracts.VELODROME_DEFAULT_FACTORY,
+            true //stable
         );
         wrappedZapSwapUSDT = new WrappedZapSwapIndirect(
             Tokens.USDT, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC // bridgeAsset
+            Tokens.USDC, // bridgeAsset
+            true //stable
         );
         wrappedZapSwapDAI = new WrappedZapSwapIndirect(
             Tokens.DAI, // zapAsset
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
             Contracts.VELODROME_DEFAULT_FACTORY,
-            Tokens.USDC // bridgeAsset
+            Tokens.USDC, // bridgeAsset
+            true //stable
         );
 
         (address longTokenAddress_, ) = leveragedTokenFactory
@@ -277,7 +287,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
             halfZapAssetAmountOut,
             zapAssetBalanceAfterRedeem,
             0.02e18,
-            "Didn't receive enough zapAsset from leveraged token redemption."
+            "Did not receive enough zapAsset from leveraged token redemption."
         );
     }
 
@@ -369,7 +379,7 @@ contract ZapSwapUSDCTest is IntegrationTest {
         vm.prank(bob);
         zapSwapDAI.redeem(address(leveragedToken), bobLeveragedTokenOut, 0);
 
-        // Verify testSuite's leveraged token and USDT holdings
+        // Verify testSuite leveraged token and USDT holdings
         uint256 suiteLtValue = leveragedToken.balanceOf(address(this)).mul(
             leveragedToken.exchangeRate()
         );

@@ -17,9 +17,6 @@ interface IZapSwap {
         uint256 amountOut
     );
 
-    error InvalidAddress();
-    error InsufficientAmount();
-
     /**
      * @notice Returns the asset supported by the zap.
      * @return asset The asset supported by the zap.

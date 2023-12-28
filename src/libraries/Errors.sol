@@ -7,4 +7,6 @@ library Errors {
     error DoesNotExist();
     error ZeroAddress();
     error SameAsCurrent();
+    error InvalidAddress();
+    error InsufficientAmount();
 }

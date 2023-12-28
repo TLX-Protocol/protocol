@@ -14,13 +14,15 @@ contract ZapSwapIndirect is ZapSwapDirect {
         address addressProvider_,
         address velodromeRouter_,
         address defaultFactory_,
-        address bridgeAsset_
+        address bridgeAsset_,
+        bool stable_
     )
         ZapSwapDirect(
             zapAsset_,
             addressProvider_,
             velodromeRouter_,
-            defaultFactory_
+            defaultFactory_,
+            stable_
         )
     {
         // Set the bridgeAsset used in the route of an indirect swap
@@ -38,14 +40,14 @@ contract ZapSwapIndirect is ZapSwapDirect {
         routeList[0] = IVelodromeRouter.Route(
             assetIn_,
             _bridgeAsset,
-            true,
-            _velodromeDefaultFactory
+            _stable,
+            _velodromeFactory
         );
         routeList[1] = IVelodromeRouter.Route(
             _bridgeAsset,
             assetOut_,
-            true,
-            _velodromeDefaultFactory
+            _stable,
+            _velodromeFactory
         );
 
         // Executing the swap
