@@ -11,6 +11,7 @@ interface IParameterProvider {
     event RebalanceThresholdUpdated(address leveragedToken, uint256 value);
 
     error InvalidRebalanceThreshold();
+    error NonExistentParameter(bytes32 key);
 
     /**
      * @notice Updates a parameter for the given key.
