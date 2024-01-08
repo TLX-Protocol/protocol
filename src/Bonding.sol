@@ -102,7 +102,7 @@ contract Bonding is IBonding, Ownable {
         _lastUpdate = block.timestamp;
     }
 
-    function migrate() external override {
+    function migrate() external override onlyOwner {
         address bonding_ = address(_addressProvider.bonding());
         if (address(bonding_) == address(this)) revert Errors.SameAsCurrent();
         IERC20 tlx_ = _addressProvider.tlx();

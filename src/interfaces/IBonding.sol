@@ -44,7 +44,7 @@ interface IBonding {
 
     /**
      * @notice Migrate the TLX tokens to the new bonding contract.
-     * @dev Used for upgrades.
+     * @dev Reverts if the caller is not the owner.
      */
     function migrate() external;
 

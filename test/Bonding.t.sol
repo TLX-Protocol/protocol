@@ -236,6 +236,9 @@ contract BondingTest is IntegrationTest {
         bonding.migrate();
         addressProvider.updateAddress(AddressKeys.BONDING, bob);
         uint256 bobBefore = tlx.balanceOf(bob);
+        vm.prank(alice);
+        vm.expectRevert();
+        bonding.migrate();
         bonding.migrate();
         assertEq(tlx.balanceOf(bob), bobBefore + bondingBefore_);
         assertEq(tlx.balanceOf(address(bonding)), 0);
