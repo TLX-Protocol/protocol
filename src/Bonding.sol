@@ -5,6 +5,7 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {IBonding} from "./interfaces/IBonding.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
@@ -101,9 +102,13 @@ contract Bonding is IBonding, Ownable {
         _lastUpdate = block.timestamp;
     }
 
-    function migrate(address target_) external override onlyOwner {
+    function migrate() external override {
+        address bonding_ = address(_addressProvider.bonding());
+        if (address(bonding_) == address(this)) revert Errors.SameAsCurrent();
         IERC20 tlx_ = _addressProvider.tlx();
-        tlx_.transfer(target_, tlx_.balanceOf(address(this)));
+        uint256 balance_ = tlx_.balanceOf(address(this));
+        if (balance_ == 0) revert AlreadyMigrated();
+        tlx_.transfer(bonding_, balance_);
     }
 
     function availableTlx() public view override returns (uint256) {

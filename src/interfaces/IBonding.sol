@@ -14,6 +14,7 @@ interface IBonding {
     error ExceedsAvailable();
     error BondingNotLive();
     error BondingAlreadyLive();
+    error AlreadyMigrated();
 
     /**
      * @notice Bond leveraged tokens for TLX.
@@ -42,10 +43,10 @@ interface IBonding {
     function launch() external;
 
     /**
-     * @notice Migrate the TLX tokens to a new bonding contract. (used for upgrades)
-     * @dev Reverts if the caller is not the owner.
+     * @notice Migrate the TLX tokens to the new bonding contract.
+     * @dev Used for upgrades.
      */
-    function migrate(address target) external;
+    function migrate() external;
 
     /**
      * @notice Returns if the bonding is live.
