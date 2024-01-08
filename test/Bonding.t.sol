@@ -227,4 +227,16 @@ contract BondingTest is IntegrationTest {
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
+
+    function testMigration() public {
+        uint256 bondingBefore = tlx.balanceOf(address(bonding));
+        assertGt(bondingBefore, 0);
+        vm.prank(alice);
+        vm.expectRevert();
+        bonding.migrate(bob);
+        uint256 bobBefore = tlx.balanceOf(bob);
+        bonding.migrate(bob);
+        assertEq(tlx.balanceOf(bob), bobBefore + bondingBefore);
+        assertEq(tlx.balanceOf(address(bonding)), 0);
+    }
 }

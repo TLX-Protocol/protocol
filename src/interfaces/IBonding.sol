@@ -42,6 +42,12 @@ interface IBonding {
     function launch() external;
 
     /**
+     * @notice Migrate the TLX tokens to a new bonding contract. (used for upgrades)
+     * @dev Reverts if the caller is not the owner.
+     */
+    function migrate(address target) external;
+
+    /**
      * @notice Returns if the bonding is live.
      * @return isLive If the bonding is live.
      */

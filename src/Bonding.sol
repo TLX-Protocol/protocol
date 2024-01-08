@@ -101,6 +101,11 @@ contract Bonding is IBonding, Ownable {
         _lastUpdate = block.timestamp;
     }
 
+    function migrate(address target_) external override onlyOwner {
+        IERC20 tlx_ = _addressProvider.tlx();
+        tlx_.transfer(target_, tlx_.balanceOf(address(this)));
+    }
+
     function availableTlx() public view override returns (uint256) {
         if (!isLive) return 0;
 
