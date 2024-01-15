@@ -12,7 +12,7 @@ The primary license for TLX is `GPL-3.0`.
 
 ### Overview
 
-TLX is a protocol that allows users to mint and redeem leveraged tokens. The liquidity for these tokens is provided by Synthetix. A referral system is in place that allows for discounts of fees for users, and a share of fees for the referrers. All protocol changes go through a Timelock that has a delay for key changes.
+TLX is a protocol that allows users to mint and redeem leveraged tokens. The liquidity for these tokens is provided by Synthetix. A referral system is in place that allows for discounts of fees for users, and a share of fees for the referrers. All protocol changes go through a timelock that has a delay for key changes.
 
 The native token of TLX is `TLX`. Leveraged Tokens can be bonded to receive `TLX` tokens. `TLX` tokens are also distributed to some team members and investors through a vesting schedule. A fee is charged on the Leveraged Tokens which is sent to the staker. Users can stake their TLX to receive a share of these fees. An airdrop will be held when the token is live for a set of users to be able to claim `TLX`.
 
