@@ -102,7 +102,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         // Sending fees to staker
         IStaker staker_ = _addressProvider.staker();
         uint256 amount_ = fee_ - referralAmount_;
-        if (amount_ != 0 && staker_.totalStakeed() != 0) {
+        if (amount_ != 0 && staker_.totalStaked() != 0) {
             _addressProvider.baseAsset().approve(address(staker_), amount_);
             staker_.donateRewards(amount_);
         }
@@ -191,7 +191,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
 
         // Sending fees to staker
         IStaker staker_ = _addressProvider.staker();
-        if (fee_ != 0 && staker_.totalStakeed() != 0) {
+        if (fee_ != 0 && staker_.totalStaked() != 0) {
             _addressProvider.baseAsset().approve(address(staker_), fee_);
             staker_.donateRewards(fee_);
         }

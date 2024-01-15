@@ -24,7 +24,7 @@ contract Staker is IStaker, Ownable {
     uint256 public immutable override unstakeDelay;
     address public immutable override rewardToken;
 
-    uint256 public override totalStakeed;
+    uint256 public override totalStaked;
     uint256 public override totalPrepared;
     bool public override claimingEnabled;
 
@@ -50,9 +50,9 @@ contract Staker is IStaker, Ownable {
         _checkpoint(msg.sender);
         _addressProvider.tlx().transferFrom(msg.sender, address(this), amount_);
         _balances[account_] += amount_;
-        totalStakeed += amount_;
+        totalStaked += amount_;
 
-        emit Stakeed(msg.sender, account_, amount_);
+        emit Staked(msg.sender, account_, amount_);
     }
 
     function prepareUnstake() public override {
@@ -78,7 +78,7 @@ contract Staker is IStaker, Ownable {
         delete _unstakeTimes[msg.sender];
         totalPrepared -= _balances[msg.sender];
 
-        emit Restakeed(msg.sender, _balances[msg.sender]);
+        emit Restaked(msg.sender, _balances[msg.sender]);
     }
 
     function unstakeFor(address account_) public override {
@@ -86,17 +86,17 @@ contract Staker is IStaker, Ownable {
         if (amount_ == 0) revert ZeroBalance();
         uint256 unstakeTime_ = _unstakeTimes[msg.sender];
         if (unstakeTime_ == 0) revert NoUnstakePrepared();
-        if (unstakeTime_ > block.timestamp) revert NotUnstakeed();
+        if (unstakeTime_ > block.timestamp) revert NotUnstaked();
 
         _checkpoint(msg.sender);
         delete _balances[msg.sender];
         delete _unstakeTimes[msg.sender];
-        totalStakeed -= amount_;
+        totalStaked -= amount_;
         totalPrepared -= amount_;
 
         _addressProvider.tlx().transfer(account_, amount_);
 
-        emit Unstakeed(msg.sender, account_, amount_);
+        emit Unstaked(msg.sender, account_, amount_);
     }
 
     function claim() public override {
@@ -115,7 +115,7 @@ contract Staker is IStaker, Ownable {
 
     function donateRewards(uint256 amount_) public override {
         if (amount_ == 0) revert ZeroAmount();
-        uint256 divisor_ = totalStakeed - totalPrepared;
+        uint256 divisor_ = totalStaked - totalPrepared;
         if (divisor_ == 0) revert ZeroBalance();
 
         IERC20(rewardToken).transferFrom(msg.sender, address(this), amount_);
@@ -147,7 +147,7 @@ contract Staker is IStaker, Ownable {
         return _unstakeTimes[account];
     }
 
-    function isUnstakeed(address account) public view override returns (bool) {
+    function isUnstaked(address account) public view override returns (bool) {
         if (!_hasPreparedUnstake(account)) return false;
         return _unstakeTimes[account] <= block.timestamp;
     }

@@ -32,11 +32,11 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.symbol(), "stTLX", "symbol");
         assertEq(staker.decimals(), 18, "decimals");
         assertEq(staker.balanceOf(address(this)), 0, "balanceOf");
-        assertEq(staker.totalStakeed(), 0, "totalStakeed");
+        assertEq(staker.totalStaked(), 0, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.unstakeTime(address(this)), 0, "unstakeTime");
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
         assertEq(staker.unstakeDelay(), Config.STAKER_UNSTAKE_DELAY);
         assertEq(staker.rewardToken(), Config.BASE_ASSET, "rewardToken");
     }
@@ -47,11 +47,11 @@ contract StakerTest is IntegrationTest {
         staker.stake(100e18);
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 100e18, "staker balance");
-        assertEq(staker.totalStakeed(), 100e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.unstakeTime(address(this)), 0, "unstakeTime");
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
     }
 
     function testStakeRevertsWithZeroAmount() public {
@@ -71,14 +71,14 @@ contract StakerTest is IntegrationTest {
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 0, "staker balance");
         assertEq(staker.balanceOf(bob), 100e18, "staker balance");
-        assertEq(staker.totalStakeed(), 100e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.claimable(bob), 0, "claimable");
         assertEq(staker.unstakeTime(address(this)), 0, "unstakeTime");
         assertEq(staker.unstakeTime(bob), 0, "unstakeTime");
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
-        assertEq(staker.isUnstakeed(bob), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
+        assertEq(staker.isUnstaked(bob), false, "isUnstaked");
     }
 
     function testPrepareUnstake() public {
@@ -88,7 +88,7 @@ contract StakerTest is IntegrationTest {
         staker.prepareUnstake();
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 100e18, "staker balance");
-        assertEq(staker.totalStakeed(), 100e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 100e18, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(
@@ -96,7 +96,7 @@ contract StakerTest is IntegrationTest {
             block.timestamp + Config.STAKER_UNSTAKE_DELAY,
             "unstakeTime"
         );
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
     }
 
     function testStakeFailsWhenUnstakePrepared() public {
@@ -121,12 +121,12 @@ contract StakerTest is IntegrationTest {
         staker.unstake();
     }
 
-    function testUnstakeFailsWithNotUnstakeed() public {
+    function testUnstakeFailsWithNotUnstaked() public {
         _mintTokensFor(address(tlx), address(this), 100e18);
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         staker.prepareUnstake();
-        vm.expectRevert(IStaker.NotUnstakeed.selector);
+        vm.expectRevert(IStaker.NotUnstaked.selector);
         staker.unstake();
     }
 
@@ -135,13 +135,13 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         staker.prepareUnstake();
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
         skip(Config.STAKER_UNSTAKE_DELAY);
-        assertEq(staker.isUnstakeed(address(this)), true, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), true, "isUnstaked");
         staker.unstake();
         assertEq(tlx.balanceOf(address(this)), 100e18, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 0, "staker balance");
-        assertEq(staker.totalStakeed(), 0, "totalStakeed");
+        assertEq(staker.totalStaked(), 0, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.unstakeTime(address(this)), 0, "unstakeTime");
@@ -152,17 +152,17 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         staker.prepareUnstake();
-        assertEq(staker.isUnstakeed(address(this)), false, "isUnstakeed");
-        assertEq(staker.isUnstakeed(bob), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), false, "isUnstaked");
+        assertEq(staker.isUnstaked(bob), false, "isUnstaked");
         skip(Config.STAKER_UNSTAKE_DELAY);
-        assertEq(staker.isUnstakeed(address(this)), true, "isUnstakeed");
-        assertEq(staker.isUnstakeed(bob), false, "isUnstakeed");
+        assertEq(staker.isUnstaked(address(this)), true, "isUnstaked");
+        assertEq(staker.isUnstaked(bob), false, "isUnstaked");
         staker.unstakeFor(bob);
         assertEq(tlx.balanceOf(bob), 100e18, "tlx balance");
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 0, "staker balance");
         assertEq(staker.balanceOf(bob), 0, "staker balance");
-        assertEq(staker.totalStakeed(), 0, "totalStakeed");
+        assertEq(staker.totalStaked(), 0, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.claimable(bob), 0, "claimable");
@@ -184,7 +184,7 @@ contract StakerTest is IntegrationTest {
         staker.restake();
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 100e18, "staker balance");
-        assertEq(staker.totalStakeed(), 100e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.unstakeTime(address(this)), 0, "unstakeTime");
@@ -273,7 +273,7 @@ contract StakerTest is IntegrationTest {
         // Check accounting
         assertEq(staker.balanceOf(accountA), 100e18, "accountA balance");
         assertEq(staker.balanceOf(accountB), 200e18, "accountB balance");
-        assertEq(staker.totalStakeed(), 300e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 300e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         uint256 expectedA = donateAmountA / 3;
         assertApproxEqAbs(staker.claimable(accountA), expectedA, tolerance_);
@@ -293,7 +293,7 @@ contract StakerTest is IntegrationTest {
         // Check accounting
         assertEq(staker.balanceOf(accountA), 100e18, "accountA balance");
         assertEq(staker.balanceOf(accountB), 200e18, "accountB balance");
-        assertEq(staker.totalStakeed(), 300e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 300e18, "totalStaked");
         assertEq(staker.totalPrepared(), 100e18, "totalPrepared");
         expectedA = donateAmountA / 3;
         assertApproxEqAbs(staker.claimable(accountA), expectedA, tolerance_);
@@ -311,7 +311,7 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.balanceOf(accountA), 100e18, "accountA balance");
         assertEq(staker.balanceOf(accountB), 200e18, "accountB balance");
         assertEq(staker.balanceOf(accountC), 300e18, "accountC balance");
-        assertEq(staker.totalStakeed(), 600e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 600e18, "totalStaked");
         assertEq(staker.totalPrepared(), 100e18, "totalPrepared");
         expectedA = donateAmountA / 3;
         assertApproxEqAbs(staker.claimable(accountA), expectedA, tolerance_);
@@ -335,7 +335,7 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.balanceOf(accountA), 0, "accountA balance");
         assertEq(staker.balanceOf(accountB), 200e18, "accountB balance");
         assertEq(staker.balanceOf(accountC), 300e18, "accountC balance");
-        assertEq(staker.totalStakeed(), 500e18, "totalStakeed");
+        assertEq(staker.totalStaked(), 500e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         expectedA = donateAmountA / 3;
         assertApproxEqAbs(staker.claimable(accountA), expectedA, tolerance_);

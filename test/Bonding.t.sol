@@ -139,7 +139,7 @@ contract BondingTest is IntegrationTest {
             staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "stakeed balance"
+            "staked balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
@@ -223,7 +223,7 @@ contract BondingTest is IntegrationTest {
             staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "stakeed balance"
+            "staked balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
