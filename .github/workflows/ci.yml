@@ -25,33 +25,21 @@ jobs:
         with:
           version: nightly
       - name: Run Forge build
+        id: build
         run: |
           forge --version
           forge build --sizes
-        id: build
       - name: Run Forge tests
-        run: forge test -vv --match-path "test/*.t.sol"
         id: test
+        run: forge test -vv --match-path "test/*.t.sol"
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Get Cache Directory Path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - name: Cache
-        uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
       - name: Install Dependencies
         run: yarn
       - name: Lint
