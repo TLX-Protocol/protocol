@@ -31,17 +31,17 @@ contract TimelockDeployment is DeploymentScript, Test {
         IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
 
         // Timelock Deployment
-        Timelock Timelock = new Timelock();
-        _deployedAddress("Timelock", address(Timelock));
+        Timelock timelock = new Timelock();
+        _deployedAddress("Timelock", address(timelock));
 
         // Transferring ownership
-        addressProvider.transferOwnership(address(Timelock));
-        airdrop.transferOwnership(address(Timelock));
-        bonding.transferOwnership(address(Timelock));
-        leveragedTokenFactory.transferOwnership(address(Timelock));
-        staker.transferOwnership(address(Timelock));
-        parameterProvider.transferOwnership(address(Timelock));
-        referrals.transferOwnership(address(Timelock));
+        addressProvider.transferOwnership(address(timelock));
+        airdrop.transferOwnership(address(timelock));
+        bonding.transferOwnership(address(timelock));
+        leveragedTokenFactory.transferOwnership(address(timelock));
+        staker.transferOwnership(address(timelock));
+        parameterProvider.transferOwnership(address(timelock));
+        referrals.transferOwnership(address(timelock));
 
         // Setting delays
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();
@@ -53,19 +53,19 @@ contract TimelockDeployment is DeploymentScript, Test {
             );
             ITimelock.Call[] memory calls_ = new ITimelock.Call[](1);
             calls_[0] = ITimelock.Call({
-                target: address(Timelock),
+                target: address(timelock),
                 data: data_
             });
-            uint256 id = Timelock.createProposal(calls_);
-            Timelock.executeProposal(id);
+            uint256 id = timelock.createProposal(calls_);
+            timelock.executeProposal(id);
         }
 
         // Transferring ownership of Timelock to multisig
-        Timelock.transferOwnership(Config.TREASURY);
+        timelock.transferOwnership(Config.TREASURY);
     }
 
     function testTimelockDeployment() public {
-        ITimelock Timelock = ITimelock(_getDeployedAddress("Timelock"));
+        ITimelock timelock = ITimelock(_getDeployedAddress("Timelock"));
         IOwnable addressProvider = IOwnable(
             _getDeployedAddress("AddressProvider")
         );
@@ -80,27 +80,27 @@ contract TimelockDeployment is DeploymentScript, Test {
         );
         IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
 
-        assertEq(addressProvider.owner(), address(Timelock), "addressProvider");
-        assertEq(airdrop.owner(), address(Timelock), "airdrop");
-        assertEq(bonding.owner(), address(Timelock), "bonding");
+        assertEq(addressProvider.owner(), address(timelock), "addressProvider");
+        assertEq(airdrop.owner(), address(timelock), "airdrop");
+        assertEq(bonding.owner(), address(timelock), "bonding");
         assertEq(
             leveragedTokenFactory.owner(),
-            address(Timelock),
+            address(timelock),
             "leveragedTokenFactory"
         );
-        assertEq(staker.owner(), address(Timelock), "staker");
+        assertEq(staker.owner(), address(timelock), "staker");
         assertEq(
             parameterProvider.owner(),
-            address(Timelock),
+            address(timelock),
             "parameterProvider"
         );
-        assertEq(referrals.owner(), address(Timelock), "referrals");
-        assertEq(Timelock.delay(bytes4(0)), 0, "delays");
+        assertEq(referrals.owner(), address(timelock), "referrals");
+        assertEq(timelock.delay(bytes4(0)), 0, "delays");
 
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();
         for (uint256 i; i < delays_.length; i++) {
             assertEq(
-                Timelock.delay(delays_[i].selector),
+                timelock.delay(delays_[i].selector),
                 delays_[i].delay,
                 "delays"
             );
