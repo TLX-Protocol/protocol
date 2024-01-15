@@ -47,7 +47,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();
         for (uint256 i; i < delays_.length; i++) {
             bytes memory data_ = abi.encodeWithSelector(
-                Timelock.setDelay.selector,
+                timelock.setDelay.selector,
                 delays_[i].selector,
                 delays_[i].delay
             );

@@ -81,7 +81,7 @@ contract TimelockTest is Test {
         // set dummySelector delay to 100 and autoRevert to 200
         for (uint256 i; i < 2; i++) {
             bytes memory data_ = abi.encodeWithSelector(
-                Timelock.setDelay.selector,
+                timelock.setDelay.selector,
                 i == 0 ? dummySelector : dummyContract.autoRevert.selector,
                 i == 0 ? 100 : 200
             );
@@ -161,7 +161,7 @@ contract TimelockTest is Test {
 
     function testSetDelay() public {
         bytes memory data_ = abi.encodeWithSelector(
-            Timelock.setDelay.selector,
+            timelock.setDelay.selector,
             dummySelector,
             100
         );
@@ -172,7 +172,7 @@ contract TimelockTest is Test {
 
     function testExecuteCallFailsWhenNotReady() public {
         bytes memory data_ = abi.encodeWithSelector(
-            Timelock.setDelay.selector,
+            timelock.setDelay.selector,
             dummySelector,
             1 days
         );
@@ -187,7 +187,7 @@ contract TimelockTest is Test {
 
     function testExecuteAfterDelay() public {
         bytes memory data_ = abi.encodeWithSelector(
-            Timelock.setDelay.selector,
+            timelock.setDelay.selector,
             dummySelector,
             1 days
         );
