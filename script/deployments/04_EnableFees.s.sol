@@ -5,19 +5,19 @@ import {Test} from "forge-std/Test.sol";
 
 import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
-import {ILocker} from "../../src/interfaces/ILocker.sol";
+import {IStaker} from "../../src/interfaces/IStaker.sol";
 
 contract EnableFeesDeployment is DeploymentScript, Test {
     function _run() internal override {
         // Getting deployed contracts
-        ILocker locker = ILocker(_getDeployedAddress("Locker"));
+        IStaker staker = IStaker(_getDeployedAddress("Staker"));
 
-        // Enable claiming for locker
-        locker.enableClaiming();
+        // Enable claiming for staker
+        staker.enableClaiming();
     }
 
     function testEnableFeesDeployment() public {
-        ILocker locker = ILocker(_getDeployedAddress("Locker"));
-        assertEq(locker.claimingEnabled(), true, "claimingEnabled");
+        IStaker staker = IStaker(_getDeployedAddress("Staker"));
+        assertEq(staker.claimingEnabled(), true, "claimingEnabled");
     }
 }

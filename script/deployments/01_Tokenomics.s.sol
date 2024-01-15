@@ -16,7 +16,7 @@ import {AddressProvider} from "../../src/AddressProvider.sol";
 import {ParameterProvider} from "../../src/ParameterProvider.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
-import {Locker} from "../../src/Locker.sol";
+import {Staker} from "../../src/Staker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 
@@ -91,14 +91,14 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         airdrop.updateMerkleRoot(Config.MERKLE_ROOT);
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 
-        // Locker Deployment
-        Locker locker = new Locker(
+        // Staker Deployment
+        Staker staker = new Staker(
             address(addressProvider),
-            Config.LOCKER_UNLOCK_DELAY,
+            Config.STAKER_UNSTAKE_DELAY,
             Config.BASE_ASSET
         );
-        _deployedAddress("Locker", address(locker));
-        addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
+        _deployedAddress("Staker", address(staker));
+        addressProvider.updateAddress(AddressKeys.STAKER, address(staker));
 
         // TLX Token Deployment
         TlxToken tlx = new TlxToken(
@@ -130,29 +130,29 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         addressProvider.vesting().claim();
         uint256 tlxBalance = addressProvider.tlx().balanceOf(teamMember);
         assertGt(tlxBalance, 0, "greater than 0");
-        uint256 lockAmount = tlxBalance / 2;
+        uint256 stakeAmount = tlxBalance / 2;
         addressProvider.tlx().approve(
-            address(addressProvider.locker()),
-            lockAmount
+            address(addressProvider.staker()),
+            stakeAmount
         );
-        addressProvider.locker().lock(lockAmount);
+        addressProvider.staker().stake(stakeAmount);
         assertEq(
-            addressProvider.tlx().balanceOf(address(addressProvider.locker())),
-            lockAmount,
-            "locker balance goes up"
+            addressProvider.tlx().balanceOf(address(addressProvider.staker())),
+            stakeAmount,
+            "staker balance goes up"
         );
         assertEq(
             addressProvider.tlx().balanceOf(teamMember),
-            lockAmount,
+            stakeAmount,
             "tlx balance goes down"
         );
-        addressProvider.locker().prepareUnlock();
-        skip(Config.LOCKER_UNLOCK_DELAY);
-        addressProvider.locker().unlock();
+        addressProvider.staker().prepareUnstake();
+        skip(Config.STAKER_UNSTAKE_DELAY);
+        addressProvider.staker().unstake();
         assertEq(
-            addressProvider.tlx().balanceOf(address(addressProvider.locker())),
+            addressProvider.tlx().balanceOf(address(addressProvider.staker())),
             0,
-            "locker balance goes down"
+            "staker balance goes down"
         );
         assertEq(
             addressProvider.tlx().balanceOf(teamMember),

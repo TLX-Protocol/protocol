@@ -9,7 +9,7 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {IBonding} from "./interfaces/IBonding.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {ILocker} from "./interfaces/ILocker.sol";
+import {IStaker} from "./interfaces/IStaker.sol";
 
 contract Bonding is IBonding, Ownable {
     using ScaledNumber for uint256;
@@ -73,9 +73,9 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        ILocker locker_ = _addressProvider.locker();
-        _addressProvider.tlx().approve(address(locker_), tlxAmount_);
-        locker_.lockFor(tlxAmount_, msg.sender);
+        IStaker staker_ = _addressProvider.staker();
+        _addressProvider.tlx().approve(address(staker_), tlxAmount_);
+        staker_.stakeFor(tlxAmount_, msg.sender);
 
         // Emit the event
         emit Bonded(

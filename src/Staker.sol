@@ -7,96 +7,96 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
 
-import {ILocker} from "./interfaces/ILocker.sol";
+import {IStaker} from "./interfaces/IStaker.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-contract Locker is ILocker, Ownable {
+contract Staker is IStaker, Ownable {
     using ScaledNumber for uint256;
 
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal _rewardIntegral;
     mapping(address => uint256) internal _balances;
-    mapping(address => uint256) internal _unlockTimes;
+    mapping(address => uint256) internal _unstakeTimes;
     mapping(address => uint256) internal _usersRewardIntegral;
     mapping(address => uint256) internal _usersRewards;
 
-    uint256 public immutable override unlockDelay;
+    uint256 public immutable override unstakeDelay;
     address public immutable override rewardToken;
 
-    uint256 public override totalLocked;
+    uint256 public override totalStakeed;
     uint256 public override totalPrepared;
     bool public override claimingEnabled;
 
     constructor(
         address addressProvider_,
-        uint256 unlockDelay_,
+        uint256 unstakeDelay_,
         address rewardToken_
     ) {
         _addressProvider = IAddressProvider(addressProvider_);
-        unlockDelay = unlockDelay_;
+        unstakeDelay = unstakeDelay_;
         rewardToken = rewardToken_;
     }
 
-    function lock(uint256 amount_) public override {
-        lockFor(amount_, msg.sender);
+    function stake(uint256 amount_) public override {
+        stakeFor(amount_, msg.sender);
     }
 
-    function lockFor(uint256 amount_, address account_) public override {
+    function stakeFor(uint256 amount_, address account_) public override {
         if (amount_ == 0) revert ZeroAmount();
         if (account_ == address(0)) revert Errors.ZeroAddress();
-        if (_hasPreparedUnlock(account_)) revert UnlockPrepared();
+        if (_hasPreparedUnstake(account_)) revert UnstakePrepared();
 
         _checkpoint(msg.sender);
         _addressProvider.tlx().transferFrom(msg.sender, address(this), amount_);
         _balances[account_] += amount_;
-        totalLocked += amount_;
+        totalStakeed += amount_;
 
-        emit Locked(msg.sender, account_, amount_);
+        emit Stakeed(msg.sender, account_, amount_);
     }
 
-    function prepareUnlock() public override {
+    function prepareUnstake() public override {
         uint256 balance_ = _balances[msg.sender];
         if (balance_ == 0) revert ZeroBalance();
-        if (_hasPreparedUnlock(msg.sender)) revert AlreadyPreparedUnlock();
+        if (_hasPreparedUnstake(msg.sender)) revert AlreadyPreparedUnstake();
 
         _checkpoint(msg.sender);
-        _unlockTimes[msg.sender] = block.timestamp + unlockDelay;
+        _unstakeTimes[msg.sender] = block.timestamp + unstakeDelay;
         totalPrepared += balance_;
 
-        emit PreparedUnlock(msg.sender);
+        emit PreparedUnstake(msg.sender);
     }
 
-    function unlock() public override {
-        unlockFor(msg.sender);
+    function unstake() public override {
+        unstakeFor(msg.sender);
     }
 
-    function relock() public override {
-        if (!_hasPreparedUnlock(msg.sender)) revert NoUnlockPrepared();
+    function restake() public override {
+        if (!_hasPreparedUnstake(msg.sender)) revert NoUnstakePrepared();
 
         _checkpoint(msg.sender);
-        delete _unlockTimes[msg.sender];
+        delete _unstakeTimes[msg.sender];
         totalPrepared -= _balances[msg.sender];
 
-        emit Relocked(msg.sender, _balances[msg.sender]);
+        emit Restakeed(msg.sender, _balances[msg.sender]);
     }
 
-    function unlockFor(address account_) public override {
+    function unstakeFor(address account_) public override {
         uint256 amount_ = _balances[msg.sender];
         if (amount_ == 0) revert ZeroBalance();
-        uint256 unlockTime_ = _unlockTimes[msg.sender];
-        if (unlockTime_ == 0) revert NoUnlockPrepared();
-        if (unlockTime_ > block.timestamp) revert NotUnlocked();
+        uint256 unstakeTime_ = _unstakeTimes[msg.sender];
+        if (unstakeTime_ == 0) revert NoUnstakePrepared();
+        if (unstakeTime_ > block.timestamp) revert NotUnstakeed();
 
         _checkpoint(msg.sender);
         delete _balances[msg.sender];
-        delete _unlockTimes[msg.sender];
-        totalLocked -= amount_;
+        delete _unstakeTimes[msg.sender];
+        totalStakeed -= amount_;
         totalPrepared -= amount_;
 
         _addressProvider.tlx().transfer(account_, amount_);
 
-        emit Unlocked(msg.sender, account_, amount_);
+        emit Unstakeed(msg.sender, account_, amount_);
     }
 
     function claim() public override {
@@ -115,7 +115,7 @@ contract Locker is ILocker, Ownable {
 
     function donateRewards(uint256 amount_) public override {
         if (amount_ == 0) revert ZeroAmount();
-        uint256 divisor_ = totalLocked - totalPrepared;
+        uint256 divisor_ = totalStakeed - totalPrepared;
         if (divisor_ == 0) revert ZeroBalance();
 
         IERC20(rewardToken).transferFrom(msg.sender, address(this), amount_);
@@ -141,15 +141,15 @@ contract Locker is ILocker, Ownable {
         return _balances[account];
     }
 
-    function unlockTime(
+    function unstakeTime(
         address account
     ) public view override returns (uint256) {
-        return _unlockTimes[account];
+        return _unstakeTimes[account];
     }
 
-    function isUnlocked(address account) public view override returns (bool) {
-        if (!_hasPreparedUnlock(account)) return false;
-        return _unlockTimes[account] <= block.timestamp;
+    function isUnstakeed(address account) public view override returns (bool) {
+        if (!_hasPreparedUnstake(account)) return false;
+        return _unstakeTimes[account] <= block.timestamp;
     }
 
     function symbol() public view override returns (string memory) {
@@ -170,12 +170,14 @@ contract Locker is ILocker, Ownable {
     }
 
     function _newRewards(address account_) internal view returns (uint256) {
-        if (_hasPreparedUnlock(account_)) return 0;
+        if (_hasPreparedUnstake(account_)) return 0;
         uint256 integral_ = _rewardIntegral - _usersRewardIntegral[account_];
         return integral_.mul(_balances[account_]);
     }
 
-    function _hasPreparedUnlock(address account_) internal view returns (bool) {
-        return _unlockTimes[account_] != 0;
+    function _hasPreparedUnstake(
+        address account_
+    ) internal view returns (bool) {
+        return _unstakeTimes[account_] != 0;
     }
 }

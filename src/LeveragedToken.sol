@@ -11,7 +11,7 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {ILocker} from "./interfaces/ILocker.sol";
+import {IStaker} from "./interfaces/IStaker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 
 contract LeveragedToken is ILeveragedToken, ERC20 {
@@ -99,12 +99,12 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         _addressProvider.baseAsset().approve(address(referrals_), fee_);
         uint256 referralAmount_ = referrals_.takeEarnings(fee_, msg.sender);
 
-        // Sending fees to locker
-        ILocker locker_ = _addressProvider.locker();
+        // Sending fees to staker
+        IStaker staker_ = _addressProvider.staker();
         uint256 amount_ = fee_ - referralAmount_;
-        if (amount_ != 0 && locker_.totalLocked() != 0) {
-            _addressProvider.baseAsset().approve(address(locker_), amount_);
-            locker_.donateRewards(amount_);
+        if (amount_ != 0 && staker_.totalStakeed() != 0) {
+            _addressProvider.baseAsset().approve(address(staker_), amount_);
+            staker_.donateRewards(amount_);
         }
 
         // Redeeming
@@ -189,11 +189,11 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
 
-        // Sending fees to locker
-        ILocker locker_ = _addressProvider.locker();
-        if (fee_ != 0 && locker_.totalLocked() != 0) {
-            _addressProvider.baseAsset().approve(address(locker_), fee_);
-            locker_.donateRewards(fee_);
+        // Sending fees to staker
+        IStaker staker_ = _addressProvider.staker();
+        if (fee_ != 0 && staker_.totalStakeed() != 0) {
+            _addressProvider.baseAsset().approve(address(staker_), fee_);
+            staker_.donateRewards(fee_);
         }
 
         // Rebalancing

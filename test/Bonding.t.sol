@@ -136,10 +136,10 @@ contract BondingTest is IntegrationTest {
         assertEq(bonding.availableTlx(), 0, "availableTlx");
         assertEq(bonding.exchangeRate(), 0, "exchangeRate");
         assertApproxEqAbs(
-            locker.balanceOf(address(this)),
+            staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "locked balance"
+            "stakeed balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
@@ -220,10 +220,10 @@ contract BondingTest is IntegrationTest {
         assertEq(bonding.availableTlx(), 0, "availableTlx");
         assertEq(bonding.exchangeRate(), 0, "exchangeRate");
         assertApproxEqAbs(
-            locker.balanceOf(address(this)),
+            staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "locked balance"
+            "stakeed balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
