@@ -12,6 +12,7 @@ import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
+import {ForkBlock} from "./ForkBlock.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
 import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
@@ -62,7 +63,9 @@ contract IntegrationTest is Test {
     SynthetixHandler public synthetixHandler;
 
     function setUp() public virtual {
-        vm.selectFork(vm.createFork(vm.envString("OPTIMISM_RPC"), 113_220_646));
+        vm.selectFork(
+            vm.createFork(vm.envString("OPTIMISM_RPC"), ForkBlock.NUMBER)
+        );
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
