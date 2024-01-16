@@ -24,6 +24,20 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+      - name: Cache RPC
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.foundry/cache/rpc
+          key: ${{ runner.os }}-foundry-${{ hashFiles('**/ForkBlock.sol') }}
+      - name: Restore Build Cache
+        id: cache-build-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            cache/
+            out/
+          key: ${{ runner.os }}-foundry
       - name: Run Forge build
         id: build
         run: |
@@ -32,6 +46,14 @@ jobs:
       - name: Run Forge tests
         id: test
         run: forge test -vv --match-path "test/*.t.sol"
+      - name: Save Build Cache
+        id: cache-build-save
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            cache/
+            out/
+          key: ${{ steps.cache-build-restore.outputs.cache-primary-key }}
 
   lint:
     name: Lint
