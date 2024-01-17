@@ -24,7 +24,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         IOwnable leveragedTokenFactory = IOwnable(
             _getDeployedAddress("LeveragedTokenFactory")
         );
-        IOwnable locker = IOwnable(_getDeployedAddress("Locker"));
+        IOwnable staker = IOwnable(_getDeployedAddress("Staker"));
         IOwnable parameterProvider = IOwnable(
             _getDeployedAddress("ParameterProvider")
         );
@@ -39,7 +39,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         airdrop.transferOwnership(address(timelock));
         bonding.transferOwnership(address(timelock));
         leveragedTokenFactory.transferOwnership(address(timelock));
-        locker.transferOwnership(address(timelock));
+        staker.transferOwnership(address(timelock));
         parameterProvider.transferOwnership(address(timelock));
         referrals.transferOwnership(address(timelock));
 
@@ -74,7 +74,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         IOwnable leveragedTokenFactory = IOwnable(
             _getDeployedAddress("LeveragedTokenFactory")
         );
-        IOwnable locker = IOwnable(_getDeployedAddress("Locker"));
+        IOwnable staker = IOwnable(_getDeployedAddress("Staker"));
         IOwnable parameterProvider = IOwnable(
             _getDeployedAddress("ParameterProvider")
         );
@@ -88,7 +88,7 @@ contract TimelockDeployment is DeploymentScript, Test {
             address(timelock),
             "leveragedTokenFactory"
         );
-        assertEq(locker.owner(), address(timelock), "locker");
+        assertEq(staker.owner(), address(timelock), "staker");
         assertEq(
             parameterProvider.owner(),
             address(timelock),

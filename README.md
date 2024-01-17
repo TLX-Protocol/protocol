@@ -14,7 +14,7 @@ The primary license for TLX is `GPL-3.0`.
 
 TLX is a protocol that allows users to mint and redeem leveraged tokens. The liquidity for these tokens is provided by Synthetix. A referral system is in place that allows for discounts of fees for users, and a share of fees for the referrers. All protocol changes go through a timelock that has a delay for key changes.
 
-The native token of TLX is `TLX`. Leveraged Tokens can be bonded to receive `TLX` tokens. `TLX` tokens are also distributed to some team members and investors through a vesting schedule. A fee is charged on the Leveraged Tokens which is sent to the locker. Users can lock their TLX to receive a share of these fees. An airdrop will be held when the token is live for a set of users to be able to claim `TLX`.
+The native token of TLX is `TLX`. Leveraged Tokens can be bonded to receive `TLX` tokens. `TLX` tokens are also distributed to some team members and investors through a vesting schedule. A fee is charged on the Leveraged Tokens which is sent to the staker. Users can stake their TLX to receive a share of these fees. An airdrop will be held when the token is live for a set of users to be able to claim `TLX`.
 
 ### Address Provider
 
@@ -48,11 +48,11 @@ The `LeveragedToken` contract can be considered the 'core' contract of the produ
 
 The goal of the Leveraged Token is to stay within a range of leverage, it should be between the `targetLeverage` plus and minus the `rebalanceThreshold` for that leveraged Token. When the token is outside that range, the `canRebalance` view should generally return `true`. This will then be handled by the keeper to call the `rebalance` function.
 
-Rebalancing should do a few key steps. First, it should verify that we actually can rebalance. Next, it should charge the `rebalanceFee`, which is a flat fee charged to the Leveraged Token holders per rebalance to cover keeper maintenance costs. It should then charge a streaming fee and send that to the locker. Finally, it should submit an update on Synthetix to bring the leverage back in line with the target.
+Rebalancing should do a few key steps. First, it should verify that we actually can rebalance. Next, it should charge the `rebalanceFee`, which is a flat fee charged to the Leveraged Token holders per rebalance to cover keeper maintenance costs. It should then charge a streaming fee and send that to the staker. Finally, it should submit an update on Synthetix to bring the leverage back in line with the target.
 
 When minting new Leveraged Tokens, the contract should mint an amount of Leveraged Tokens based on the exchange rate of the Leveraged Tokens relative to the Base Asset (sUSD). It then deposits the users' sUSD as additional margin. Finally, if the Leveraged Token is not balanced, it should rebalance it. Note that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
 
-When redeeming Leveraged Tokens, the contract sends the user an amount of sUSD back dependent on the exchange rate. It charges a redemption fee and sends that to the locker. Finally, if the Leveraged Token is not balanced, it rebalances it. Note that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
+When redeeming Leveraged Tokens, the contract sends the user an amount of sUSD back dependent on the exchange rate. It charges a redemption fee and sends that to the staker. Finally, if the Leveraged Token is not balanced, it rebalances it. Note that it does not charge the rebalance fee in this case, as there is no keeper cost to cover.
 
 ### Leveraged Token Factory
 
@@ -64,7 +64,7 @@ The `Referrals` contract is responsible for managing the referral system for TLX
 
 ### TLX Token
 
-The `TlxToken` contract is the governance token of the TLX protocol. It will be deployed shortly before the core protocol. It can be staked in the `Locker` contract.
+The `TlxToken` contract is the governance token of the TLX protocol. It will be deployed shortly before the core protocol. It can be staked in the `Staker` contract.
 
 ### Airdrop
 
@@ -78,9 +78,9 @@ The `Vesting` contract is responsible for distributing vested tokens to the team
 
 Bonding is one of the main ways `TLX` tokens are distributed to users. The `Bonding` contract is responsible for managing this. The bonding contract will be deployed at the same time as the `TLX` token, but bonding will not be live until the protocol is live, and is made live with the `live` function. Users can bond Leveraged Tokens, and get `TLX` in return. The amount of `TLX` they receive increases over time until someone bonds.
 
-### Locker
+### Staker
 
-The locker is where users can stake their `TLX`. Staked `TLX` is staked indefinitely, but at any time a user can call `prepareUnlock` to prepare an unlock. After the delay period, users can call `unlock` to receive their `TLX` tokens back. If they change their mind during an unlock and would like to relock, they can do so with the `relock` function. When staking `TLX`, users receive a share of fees that accrue in the Locker, they can claim these at any time with the `claim` function. Users do not earn fees while they have an unlock prepared. Claiming will be disabled by default, but can be enabled through governance. Staked `TLX` has a `balanceOf` function, similar to an ERC20, which returns how many `TLX` tokens they have staked, this will be used on Snapshot for governance.
+The staker is where users can stake their `TLX`. Staked `TLX` is staked indefinitely, but at any time a user can call `prepareUnstake` to prepare an unstake. After the delay period, users can call `unstake` to receive their `TLX` tokens back. If they change their mind during an unstake and would like to restake, they can do so with the `restake` function. When staking `TLX`, users receive a share of fees that accrue in the Staker, they can claim these at any time with the `claim` function. Users do not earn fees while they have an unstake prepared. Claiming will be disabled by default, but can be enabled through governance. Staked `TLX` has a `balanceOf` function, similar to an ERC20, which returns how many `TLX` tokens they have staked, this will be used on Snapshot for governance.
 
 ### Timelock
 
