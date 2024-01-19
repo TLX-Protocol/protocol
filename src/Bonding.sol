@@ -109,6 +109,7 @@ contract Bonding is IBonding, Ownable {
         uint256 balance_ = tlx_.balanceOf(address(this));
         if (balance_ == 0) revert AlreadyMigrated();
         tlx_.transfer(bonding_, balance_);
+        emit Migrated(balance_);
     }
 
     function availableTlx() public view override returns (uint256) {

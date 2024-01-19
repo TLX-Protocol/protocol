@@ -8,6 +8,7 @@ interface IBonding {
         uint256 leveragedTokenAmount,
         uint256 tlxTokensReceived
     );
+    event Migrated(uint256 amount);
 
     error NotLeveragedToken();
     error MinTlxNotReached();
