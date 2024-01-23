@@ -200,10 +200,10 @@ contract LeveragedTokenTest is IntegrationTest {
         vm.startPrank(alice);
         vesting.claim();
 
-        // Lock some tokens from alice
+        // Stake some tokens from alice
         uint256 aliceTlxBalance = tlx.balanceOf(alice);
-        tlx.approve(address(locker), aliceTlxBalance);
-        locker.lock(aliceTlxBalance);
+        tlx.approve(address(staker), aliceTlxBalance);
+        staker.stake(aliceTlxBalance);
         vm.stopPrank();
 
         // Minting Leveraged Tokens
@@ -216,11 +216,11 @@ contract LeveragedTokenTest is IntegrationTest {
         assertEq(leveragedToken.balanceOf(address(this)), amount);
 
         // Redeeming Leveraged Tokens
-        assertEq(base.balanceOf(address(locker)), 0);
+        assertEq(base.balanceOf(address(staker)), 0);
         uint256 baseHeld = base.balanceOf(address(leveragedToken));
         assertEq(baseHeld, 0);
         leveragedToken.redeem(amount / 10, 0);
-        assertGt(base.balanceOf(address(locker)), 0);
+        assertGt(base.balanceOf(address(staker)), 0);
     }
 
     function _mintTokens() public {

@@ -23,7 +23,7 @@ contract SetupChainlinkAutomationDeployment is DeploymentScript, Test {
             _getDeployedAddress("ChainlinkAutomation")
         );
 
-        // Enable claiming for locker
+        // Enable claiming for staker
         chainlinkAutomation.transferOwnership(
             Config.CHAINLINK_AUTOMATION_FORWARDER_ADDRESS
         );

@@ -23,7 +23,7 @@ import {ParameterProvider} from "../../src/ParameterProvider.sol";
 import {Referrals} from "../../src/Referrals.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
-import {Locker} from "../../src/Locker.sol";
+import {Staker} from "../../src/Staker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
@@ -56,7 +56,7 @@ contract IntegrationTest is Test {
     Referrals public referrals;
     TlxToken public tlx;
     Airdrop public airdrop;
-    Locker public locker;
+    Staker public staker;
     Bonding public bonding;
     Vesting public vesting;
     SynthetixHandler public synthetixHandler;
@@ -149,13 +149,13 @@ contract IntegrationTest is Test {
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 
-        // Locker Setup
-        locker = new Locker(
+        // Staker Setup
+        staker = new Staker(
             address(addressProvider),
-            Config.LOCKER_UNLOCK_DELAY,
+            Config.STAKER_UNSTAKE_DELAY,
             Config.BASE_ASSET
         );
-        addressProvider.updateAddress(AddressKeys.LOCKER, address(locker));
+        addressProvider.updateAddress(AddressKeys.STAKER, address(staker));
 
         // SynthetixHandler Setup
         synthetixHandler = new SynthetixHandler(

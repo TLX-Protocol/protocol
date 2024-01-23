@@ -15,7 +15,7 @@ import {IAirdrop} from "./interfaces/IAirdrop.sol";
 import {IBonding} from "./interfaces/IBonding.sol";
 import {IVesting} from "./interfaces/IVesting.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
-import {ILocker} from "./interfaces/ILocker.sol";
+import {IStaker} from "./interfaces/IStaker.sol";
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 
@@ -97,8 +97,8 @@ contract AddressProvider is IAddressProvider, Ownable {
         return ITlxToken(_getAddress(AddressKeys.TLX));
     }
 
-    function locker() external view override returns (ILocker) {
-        return ILocker(_getAddress(AddressKeys.LOCKER));
+    function staker() external view override returns (IStaker) {
+        return IStaker(_getAddress(AddressKeys.STAKER));
     }
 
     function baseAsset() external view override returns (IERC20Metadata) {

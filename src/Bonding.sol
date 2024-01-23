@@ -5,11 +5,12 @@ import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
+import {Errors} from "./libraries/Errors.sol";
 
 import {IBonding} from "./interfaces/IBonding.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {ILocker} from "./interfaces/ILocker.sol";
+import {IStaker} from "./interfaces/IStaker.sol";
 
 contract Bonding is IBonding, Ownable {
     using ScaledNumber for uint256;
@@ -73,9 +74,9 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        ILocker locker_ = _addressProvider.locker();
-        _addressProvider.tlx().approve(address(locker_), tlxAmount_);
-        locker_.lockFor(tlxAmount_, msg.sender);
+        IStaker staker_ = _addressProvider.staker();
+        _addressProvider.tlx().approve(address(staker_), tlxAmount_);
+        staker_.stakeFor(tlxAmount_, msg.sender);
 
         // Emit the event
         emit Bonded(
@@ -99,6 +100,16 @@ contract Bonding is IBonding, Ownable {
         if (isLive) revert BondingAlreadyLive();
         isLive = true;
         _lastUpdate = block.timestamp;
+    }
+
+    function migrate() external override onlyOwner {
+        address bonding_ = address(_addressProvider.bonding());
+        if (address(bonding_) == address(this)) revert Errors.SameAsCurrent();
+        IERC20 tlx_ = _addressProvider.tlx();
+        uint256 balance_ = tlx_.balanceOf(address(this));
+        if (balance_ == 0) revert AlreadyMigrated();
+        tlx_.transfer(bonding_, balance_);
+        emit Migrated(balance_);
     }
 
     function availableTlx() public view override returns (uint256) {

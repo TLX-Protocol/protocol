@@ -10,7 +10,7 @@ library AddressKeys {
     bytes32 public constant TREASURY = "treasury";
     bytes32 public constant VESTING = "vesting";
     bytes32 public constant TLX = "tlx";
-    bytes32 public constant LOCKER = "locker";
+    bytes32 public constant STAKER = "staker";
     bytes32 public constant SYNTHETIX_HANDLER = "synthetixHandler";
     bytes32 public constant POL = "pol";
     bytes32 public constant PARAMETER_PROVIDER = "parameterProvider";

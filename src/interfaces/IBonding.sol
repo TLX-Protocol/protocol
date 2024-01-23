@@ -8,12 +8,14 @@ interface IBonding {
         uint256 leveragedTokenAmount,
         uint256 tlxTokensReceived
     );
+    event Migrated(uint256 amount);
 
     error NotLeveragedToken();
     error MinTlxNotReached();
     error ExceedsAvailable();
     error BondingNotLive();
     error BondingAlreadyLive();
+    error AlreadyMigrated();
 
     /**
      * @notice Bond leveraged tokens for TLX.
@@ -40,6 +42,12 @@ interface IBonding {
      * @dev Reverts if the caller is not the owner.
      */
     function launch() external;
+
+    /**
+     * @notice Migrate the TLX tokens to the new bonding contract.
+     * @dev Reverts if the caller is not the owner.
+     */
+    function migrate() external;
 
     /**
      * @notice Returns if the bonding is live.

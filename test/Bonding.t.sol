@@ -10,6 +10,7 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 import {AddressKeys} from "../src/libraries/AddressKeys.sol";
 import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {IBonding} from "../src/interfaces/IBonding.sol";
 
@@ -136,10 +137,10 @@ contract BondingTest is IntegrationTest {
         assertEq(bonding.availableTlx(), 0, "availableTlx");
         assertEq(bonding.exchangeRate(), 0, "exchangeRate");
         assertApproxEqAbs(
-            locker.balanceOf(address(this)),
+            staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "locked balance"
+            "staked balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
     }
@@ -220,11 +221,28 @@ contract BondingTest is IntegrationTest {
         assertEq(bonding.availableTlx(), 0, "availableTlx");
         assertEq(bonding.exchangeRate(), 0, "exchangeRate");
         assertApproxEqAbs(
-            locker.balanceOf(address(this)),
+            staker.balanceOf(address(this)),
             expectedTlx_,
             0.01e18,
-            "locked balance"
+            "staked balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
+    }
+
+    function testMigration() public {
+        uint256 bondingBefore_ = tlx.balanceOf(address(bonding));
+        assertGt(bondingBefore_, 0);
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        bonding.migrate();
+        addressProvider.updateAddress(AddressKeys.BONDING, bob);
+        uint256 bobBefore = tlx.balanceOf(bob);
+        vm.prank(alice);
+        vm.expectRevert();
+        bonding.migrate();
+        bonding.migrate();
+        assertEq(tlx.balanceOf(bob), bobBefore + bondingBefore_);
+        assertEq(tlx.balanceOf(address(bonding)), 0);
+        vm.expectRevert(IBonding.AlreadyMigrated.selector);
+        bonding.migrate();
     }
 }

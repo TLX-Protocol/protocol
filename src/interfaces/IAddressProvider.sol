@@ -9,7 +9,7 @@ import {IAirdrop} from "./IAirdrop.sol";
 import {IBonding} from "./IBonding.sol";
 import {IVesting} from "./IVesting.sol";
 import {ITlxToken} from "./ITlxToken.sol";
-import {ILocker} from "./ILocker.sol";
+import {IStaker} from "./IStaker.sol";
 import {ISynthetixHandler} from "./ISynthetixHandler.sol";
 import {IParameterProvider} from "./IParameterProvider.sol";
 
@@ -108,10 +108,10 @@ interface IAddressProvider {
     function tlx() external view returns (ITlxToken tlx);
 
     /**
-     * @notice Returns the Locker contract.
-     * @return locker The Locker contract.
+     * @notice Returns the Staker contract.
+     * @return staker The Staker contract.
      */
-    function locker() external view returns (ILocker locker);
+    function staker() external view returns (IStaker staker);
 
     /**
      * @notice Returns the base asset.
