@@ -62,6 +62,7 @@ contract ZapSwap is IZapSwap, Ownable {
                 type(uint256).max
             );
         } else {
+            // Approving the velodrome router for zap asset
             IERC20(zapAsset_).approve(
                 address(_velodromeRouter),
                 type(uint256).max
@@ -91,7 +92,7 @@ contract ZapSwap is IZapSwap, Ownable {
             revert UnsupportedAsset();
         }
 
-        // Verifying amount in is over zero
+        // Verifying amountIn is over zero
         if (zapAssetAmountIn_ == 0) return 0;
 
         //  Verifying valid leveraged token address
@@ -106,7 +107,7 @@ contract ZapSwap is IZapSwap, Ownable {
         // Receiving zap asset from user
         zapAsset_.transferFrom(msg.sender, address(this), zapAssetAmountIn_);
 
-        // Swap zap asset for base asset based on swap data
+        // Swapping zap asset for base asset based on swap data
         _swapAsset(
             zapAssetAmountIn_,
             zapAssetAddress_,
@@ -155,6 +156,7 @@ contract ZapSwap is IZapSwap, Ownable {
             revert UnsupportedAsset();
         }
 
+        // Verifying amountIn is over zero
         if (leveragedTokenAmountIn_ == 0) return 0;
 
         //  Verifying valid leveraged token address
@@ -365,6 +367,7 @@ contract ZapSwap is IZapSwap, Ownable {
                 swapDataBridgeAsset,
                 zapAssetForBaseAsset_
             );
+
             // Bridge asset for zap asset on UniSwap
             IUniswapRouter.ExactInputSingleParams memory params = IUniswapRouter
                 .ExactInputSingleParams(

@@ -90,7 +90,6 @@ The `Timelock` contract will be set as the owner for all other contracts. It is 
 
 The helpers in directory `src/helpers` are not considered part of the core protocol. They are lightweight wrappers used to help with integration of off-chain components such as the UI or analytics ect.
 
-
 ### ZapSwap
 
-The `ZapSwapDirect` and `ZapSwapIndirect` contracts enable the minting and redeeming of leveraged tokens with assets other than the base asset. Swaps are executed exclusively through `Velodrome`. The `ZapSwapDirect` contract is used when the zap asset and the base asset are swapped directly through one liquidity pool. The `ZapSwapIndirect` contract is used for assets that require two swaps.
+The `ZapSwap` contract enables the minting and redeeming of leveraged tokens with assets other than the base asset. Swapping a zap asset can be routed through `Uniswap V3` or `Velodrome V2`. The base asset is eventually always swapped on `Velodrome V2`. The `SwapData` of a particular asset which determines its swap route can be set and updated by the contract owner. 

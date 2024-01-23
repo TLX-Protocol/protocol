@@ -60,10 +60,13 @@ contract ZapSwapTest is IntegrationTest {
 
     IERC20 public baseAsset;
 
+    uint256 public ethPrice;
+
     function setUp() public override {
         super.setUp();
 
         baseAsset = addressProvider.baseAsset();
+        ethPrice = synthetixHandler.assetPrice("ETH");
 
         // Create new zapSwap
         zapSwap = new ZapSwap(
@@ -108,6 +111,8 @@ contract ZapSwapTest is IntegrationTest {
     }
 
     function testUpdateSwapPath() public {
+        uint256 supportedAssets = zapSwap.supportedZapAssets().length;
+        // Update an existing zap asset
         IZapSwap.SwapData memory _wethSwapData = IZapSwap.SwapData({
             supported: true,
             direct: false,
@@ -119,7 +124,9 @@ contract ZapSwapTest is IntegrationTest {
         });
         zapSwap.setAssetSwapData(Tokens.WETH, _wethSwapData);
 
-        // Verify updated swap data
+        // Verify no change in number of supported assets
+        assertEq(zapSwap.supportedZapAssets().length, supportedAssets);
+        // Verify updated swap data is correct
         IZapSwap.SwapData memory wethSwapData = zapSwap.swapData(Tokens.WETH);
         assertEq(wethSwapData.supported, true);
         assertEq(wethSwapData.direct, false);
@@ -177,20 +184,6 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(supportedAssets[2], Tokens.DAI);
         assertEq(supportedAssets[3], Tokens.USDC);
         assertEq(supportedAssets[4], Tokens.WETH);
-
-        // update swapData of an existing zapAsset
-        IZapSwap.SwapData memory _updatedUsdtSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: true,
-            bridgeAsset: address(99),
-            zapAssetSwapStable: false,
-            baseAssetSwapStable: true,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
-        });
-        zapSwap.setAssetSwapData(Tokens.USDT, _updatedUsdtSwapData);
-
-        // Verify there are no duplicates after updating an existing zapAsset
         assertEq(zapSwap.supportedZapAssets().length, 5);
     }
 
@@ -221,7 +214,7 @@ contract ZapSwapTest is IntegrationTest {
     }
 
     function testSimpleMintWithWETH() public {
-        simpleMint(Tokens.WETH, 1e18, 2359e18);
+        simpleMint(Tokens.WETH, 1e18, ethPrice);
     }
 
     function simpleMint(
@@ -310,7 +303,7 @@ contract ZapSwapTest is IntegrationTest {
     }
 
     function testSimpleRedeemWithWETH() public {
-        simpleRedeem(Tokens.WETH, 2359e18, 1e18);
+        simpleRedeem(Tokens.WETH, ethPrice, 1e18);
     }
 
     function simpleRedeem(
@@ -499,7 +492,7 @@ contract ZapSwapTest is IntegrationTest {
         assertApproxEqRel(2500e18, dai.balanceOf(bob), 0.03e18);
     }
 
-    // The following tests are testing the internal swap function
+    // The following tests are testing the internal swap functions
     // of the ZapSwap using the WrappedZapSwap contract
 
     function testSwapUSDCeforBaseAsset() public {
@@ -595,7 +588,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.WETH,
             address(baseAsset),
             1e18,
-            2359e18,
+            ethPrice,
             wrappedZapSwap.swapData(Tokens.WETH),
             true
         );
@@ -605,7 +598,7 @@ contract ZapSwapTest is IntegrationTest {
         swapAssetForAsset(
             address(baseAsset),
             Tokens.WETH,
-            2359e18,
+            ethPrice,
             1e18,
             wrappedZapSwap.swapData(Tokens.WETH),
             false
