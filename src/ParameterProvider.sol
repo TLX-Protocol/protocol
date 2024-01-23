@@ -67,19 +67,19 @@ contract ParameterProvider is IParameterProvider, Ownable {
     function parameterOf(
         bytes32 key_
     ) external view override returns (uint256) {
-        return _parameters.get(key_);
+        return _getParameter(key_);
     }
 
     function redemptionFee() external view override returns (uint256) {
-        return _parameters.get(ParameterKeys.REDEMPTION_FEE);
+        return _getParameter(ParameterKeys.REDEMPTION_FEE);
     }
 
     function streamingFee() external view override returns (uint256) {
-        return _parameters.get(ParameterKeys.STREAMING_FEE);
+        return _getParameter(ParameterKeys.STREAMING_FEE);
     }
 
     function rebalanceFee() external view override returns (uint256) {
-        return _parameters.get(ParameterKeys.REBALANCE_FEE);
+        return _getParameter(ParameterKeys.REBALANCE_FEE);
     }
 
     function parameters() external view override returns (Parameter[] memory) {
@@ -96,5 +96,10 @@ contract ParameterProvider is IParameterProvider, Ownable {
         address leveragedToken_
     ) external view override returns (uint256) {
         return _rebalanceThresholds[leveragedToken_];
+    }
+
+    function _getParameter(bytes32 key_) internal view returns (uint256) {
+        if (!_parameters.contains(key_)) revert NonExistentParameter(key_);
+        return _parameters.get(key_);
     }
 }

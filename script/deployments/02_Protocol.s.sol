@@ -22,6 +22,7 @@ import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {Referrals} from "../../src/Referrals.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
 import {ChainlinkAutomation} from "../../src/ChainlinkAutomation.sol";
+import {LeveragedTokenHelper} from "../../src/helpers/LeveragedTokenHelper.sol";
 
 import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
 
@@ -73,9 +74,12 @@ contract ProtocolDeployment is DeploymentScript, Test {
         // ChainlinkAutomation Deployment
         ChainlinkAutomation chainlinkAutomation = new ChainlinkAutomation(
             address(addressProvider),
-            Config.MAX_REBALANCES
+            Config.MAX_REBALANCES,
+            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY,
+            Config.REBALANCE_MAX_ATTEMPTS
         );
         _deployedAddress("ChainlinkAutomation", address(chainlinkAutomation));
+        addressProvider.addRebalancer(address(chainlinkAutomation));
 
         // Deploying Leveraged Tokens
         LeveragedTokens.LeveragedTokenData[]
@@ -91,6 +95,12 @@ contract ProtocolDeployment is DeploymentScript, Test {
                 );
             }
         }
+
+        // Leveraged Token Helper Deployment
+        LeveragedTokenHelper leveragedTokenHelper = new LeveragedTokenHelper(
+            _getDeployedAddress("AddressProvider")
+        );
+        _deployedAddress("LeveragedTokenHelper", address(leveragedTokenHelper));
 
         // Launching bonding
         bonding.launch();

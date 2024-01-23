@@ -11,6 +11,7 @@ library Config {
     address public constant TREASURY = address(1); // Our multisig
     address public constant POL = TREASURY; // Where the bonding tokens ar sent to
     address public constant REBALANCE_FEE_RECEIVER = address(2); // Receiver of rebalance fees (may be treasury to start)
+    address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
 
     // Strings
     string public constant TOKEN_NAME = "TLX DAO Token"; // TLX DAO Token
@@ -29,6 +30,8 @@ library Config {
     uint256 public constant BASE_FOR_ALL_TLX = 75_000e18; // Very roughly means it is 'worth' executing once every 3 days
     uint256 public constant VESTING_DURATION = 365 days; // 1 year
     uint256 public constant REBALANCE_FEE = 2e18; // 2 sUSD
+    uint256 public constant REBALANCE_BASE_NEXT_ATTEMPT_DELAY = 1 minutes; // 1 minute (doubles each attempt)
+    uint256 public constant REBALANCE_MAX_ATTEMPTS = 10; // Max 10 failed rebalance attempts in a row
     uint256 public constant MAX_LEVERAGE = 50e18; // 50x
     uint256 public constant REDEMPTION_FEE = 0.005e18; // 0.5%
     uint256 public constant REBATE_PERCENT = 0.5e18; // 50%

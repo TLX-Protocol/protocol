@@ -80,16 +80,19 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
-        uint256 baseAmountReceived_ = leveragedTokenAmount_.mul(exchangeRate_);
+        uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
         uint256 feePercent_ = _addressProvider
             .parameterProvider()
             .redemptionFee();
-        uint256 fee_ = baseAmountReceived_.mul(targetLeverage).mul(feePercent_);
-        baseAmountReceived_ = baseAmountReceived_ - fee_;
+        uint256 fee_ = baseWithdrawn_.mul(targetLeverage).mul(feePercent_);
+        uint256 baseAmountReceived_ = baseWithdrawn_ - fee_;
 
         // Verifying sufficient amount
         bool sufficient_ = baseAmountReceived_ >= minBaseAmountReceived_;
         if (!sufficient_) revert InsufficientAmount();
+
+        // Withdrawing margin
+        _withdrawMargin(baseWithdrawn_);
 
         // Paying referrals
         IReferrals referrals_ = _addressProvider.referrals();
@@ -106,7 +109,6 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
 
         // Redeeming
         _burn(msg.sender, leveragedTokenAmount_);
-        _withdrawMargin(baseAmountReceived_);
         _addressProvider.baseAsset().transfer(msg.sender, baseAmountReceived_);
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
