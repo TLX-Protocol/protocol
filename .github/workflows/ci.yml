@@ -29,28 +29,20 @@ jobs:
         with:
           path: |
             ~/.foundry/cache/rpc
-          key: ${{ runner.os }}-foundry-${{ hashFiles('**/ForkBlock.sol') }}
+          key: ${{ runner.os }}-rpc-${{ hashFiles('**/ForkBlock.sol') }}
       - name: Build Cache
-        id: cache-build-restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache@v3
         with:
           path: |
             cache/
             out/
-          key: ${{ runner.os }}-foundry
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
       - name: Run Forge build
         id: build
         run: |
           forge --version
           forge build --sizes
-      - name: Post Build Cache
-        id: cache-build-save
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            cache/
-            out/
-          key: ${{ steps.cache-build-restore.outputs.cache-primary-key }}
       - name: Run Forge tests
         id: test
         run: forge test -vv --match-path "test/*.t.sol"
@@ -83,26 +75,18 @@ jobs:
         with:
           version: nightly
       - name: Build Cache
-        id: cache-build-restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache@v3
         with:
           path: |
             cache/
             out/
-          key: ${{ runner.os }}-foundry
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
       - name: Run Forge build
         id: build
         run: |
           forge --version
           forge build --sizes
-      - name: Post Build Cache
-        id: cache-build-save
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            cache/
-            out/
-          key: ${{ steps.cache-build-restore.outputs.cache-primary-key }}
       - name: Start Anvil
         run: anvil --fork-url ${{ secrets.OPTIMISM_RPC }} &
       - name: Wait for Anvil to start running
