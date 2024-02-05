@@ -8,6 +8,8 @@ interface IZapSwap {
         address bridgeAsset;
         bool zapAssetSwapStable;
         bool baseAssetSwapStable;
+        address zapAssetFactory;
+        address baseAssetFactory;
         bool swapZapAssetOnUni;
         uint24 uniPoolFee;
     }
@@ -29,10 +31,11 @@ interface IZapSwap {
 
     error UnsupportedAsset();
     error BridgeAssetNotSupported();
+    error BridgeAssetDependency(address dependentZapAsset);
 
     /**
      * @notice Sets the swap data for a zap asset.
-     * @param zapAsset The address of the zapAsset.
+     * @param zapAsset The address of the new zap asset.
      * @param swapData The swap data describing the swap route.
      */
     function setAssetSwapData(
@@ -41,9 +44,15 @@ interface IZapSwap {
     ) external;
 
     /**
-     * @notice Returns the swap data of the zapAsset.
-     * @param zapAsset The address of the zapAsset.
-     * @return swapData The swapData of the zap asset.
+     * @notice Removes an asset from supported zap assets.
+     * @param zapAsset The address of the zap asset to be removed.
+     */
+    function removeAssetSwapData(address zapAsset) external;
+
+    /**
+     * @notice Returns the swap data of a zap asset.
+     * @param zapAsset The address of the zap asset.
+     * @return swapData The swap data of the zap asset.
      */
     function swapData(
         address zapAsset

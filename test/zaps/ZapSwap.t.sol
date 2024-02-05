@@ -11,6 +11,7 @@ import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
 import {Config} from "../../src/libraries/Config.sol";
+import {Errors} from "../../src/libraries/Errors.sol";
 import {ScaledNumber} from "../../src/libraries/ScaledNumber.sol";
 
 import {ZapSwap} from "../../src/zaps/ZapSwap.sol";
@@ -19,16 +20,8 @@ contract WrappedZapSwap is ZapSwap {
     constructor(
         address addressProvider_,
         address velodromeRouter_,
-        address defaultFactory_,
         address uniswapRouter_
-    )
-        ZapSwap(
-            addressProvider_,
-            velodromeRouter_,
-            defaultFactory_,
-            uniswapRouter_
-        )
-    {}
+    ) ZapSwap(addressProvider_, velodromeRouter_, uniswapRouter_) {}
 
     function swapAsset(
         uint256 amountIn_,
@@ -59,20 +52,20 @@ contract ZapSwapTest is IntegrationTest {
     ILeveragedToken public leveragedToken;
 
     IERC20 public baseAsset;
-
     uint256 public ethPrice;
+    address public veloDefaultFactory;
 
     function setUp() public override {
         super.setUp();
 
         baseAsset = addressProvider.baseAsset();
         ethPrice = synthetixHandler.assetPrice("ETH");
+        veloDefaultFactory = Contracts.VELODROME_DEFAULT_FACTORY;
 
         // Create new zapSwap
         zapSwap = new ZapSwap(
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
-            Contracts.VELODROME_DEFAULT_FACTORY,
             Contracts.UNISWAP_V3_ROUTER
         );
         // Set swap data for zapSwap
@@ -82,7 +75,6 @@ contract ZapSwapTest is IntegrationTest {
         wrappedZapSwap = new WrappedZapSwap(
             address(addressProvider),
             Contracts.VELODROME_ROUTER,
-            Contracts.VELODROME_DEFAULT_FACTORY,
             Contracts.UNISWAP_V3_ROUTER
         );
         // Set swap data for wrappedZapSwap
@@ -106,6 +98,8 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(usdtSwapPath.bridgeAsset, Tokens.USDCE);
         assertEq(usdtSwapPath.zapAssetSwapStable, true);
         assertEq(usdtSwapPath.baseAssetSwapStable, true);
+        assertEq(usdtSwapPath.zapAssetFactory, veloDefaultFactory);
+        assertEq(usdtSwapPath.baseAssetFactory, veloDefaultFactory);
         assertEq(usdtSwapPath.swapZapAssetOnUni, false);
         assertEq(usdtSwapPath.uniPoolFee, 0);
     }
@@ -119,6 +113,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDCE,
             zapAssetSwapStable: false,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: false,
             uniPoolFee: 0
         });
@@ -133,6 +129,8 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(wethSwapData.bridgeAsset, Tokens.USDCE);
         assertEq(wethSwapData.zapAssetSwapStable, false);
         assertEq(wethSwapData.baseAssetSwapStable, true);
+        assertEq(wethSwapData.zapAssetFactory, veloDefaultFactory);
+        assertEq(wethSwapData.baseAssetFactory, veloDefaultFactory);
         assertEq(wethSwapData.swapZapAssetOnUni, false);
         assertEq(wethSwapData.uniPoolFee, 0);
     }
@@ -145,6 +143,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDC,
             zapAssetSwapStable: false,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: false,
             uniPoolFee: 0
         });
@@ -159,6 +159,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.CRV,
             zapAssetSwapStable: false,
             baseAssetSwapStable: false,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: true,
             uniPoolFee: 0
         });
@@ -170,6 +172,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDC,
             zapAssetSwapStable: false,
             baseAssetSwapStable: false,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: true,
             uniPoolFee: 0
         });
@@ -187,14 +191,45 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(zapSwap.supportedZapAssets().length, 5);
     }
 
-    function testMintingWithUnsupportedAsset() public {
-        vm.expectRevert();
+    function testUnsupportedZapAsset() public {
+        vm.expectRevert(IZapSwap.UnsupportedAsset.selector);
         zapSwap.mint(Tokens.CRV, address(leveragedToken), 100e18, 0);
+        vm.expectRevert(IZapSwap.UnsupportedAsset.selector);
+        zapSwap.redeem(Tokens.CRV, address(leveragedToken), 100e18, 0);
     }
 
-    function testRedeemingWithUnsupportedAsset() public {
+    function testRemoveZapAsset() public {
+        // Verify removing a zap asset with bridgeDependency reverts
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IZapSwap.BridgeAssetDependency.selector,
+                Tokens.USDT
+            )
+        );
+        zapSwap.removeAssetSwapData(Tokens.USDCE);
+
+        // Verify removing an unsupported asset reverts correctly
+        vm.expectRevert(IZapSwap.UnsupportedAsset.selector);
+        zapSwap.removeAssetSwapData(Tokens.CRV);
+
+        // Verify only owner can remove a zap asset
+        vm.prank(alice);
         vm.expectRevert();
-        zapSwap.redeem(Tokens.CRV, address(leveragedToken), 100e18, 0);
+        zapSwap.removeAssetSwapData(Tokens.DAI);
+
+        // Remove the target asset
+        address targetAsset = Tokens.USDT;
+        zapSwap.removeAssetSwapData(targetAsset);
+        // Verify swap data indicates that the asset is not supported anymore
+        assertEq(zapSwap.swapData(targetAsset).supported, false);
+        // Verify zap asset is not included in the supportedZapAssets array
+        (, bool found) = _findIndex(targetAsset, zapSwap.supportedZapAssets());
+        assertEq(found, false);
+        assertEq(zapSwap.supportedZapAssets().length, 4);
+
+        // Verfiy minting with the removed asset doesn't work anymore
+        vm.expectRevert(IZapSwap.UnsupportedAsset.selector);
+        zapSwap.mint(targetAsset, address(leveragedToken), 100e18, 0);
     }
 
     function testSimpleMintWithUSDCe() public {
@@ -269,7 +304,7 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(zapSwap.mint(zapAssetIn, address(leveragedToken), 0, 0), 0);
 
         // Mint with wrong lt address
-        vm.expectRevert();
+        vm.expectRevert(Errors.InvalidAddress.selector);
         zapSwap.mint(zapAssetIn, address(6), amountIn, 0);
 
         // Mint with higher amountIn
@@ -386,7 +421,7 @@ contract ZapSwapTest is IntegrationTest {
             0
         );
         // Redeem with wrong address
-        vm.expectRevert();
+        vm.expectRevert(Errors.InvalidAddress.selector);
         zapSwap.redeem(zapAssetAddress, address(5), leveragedTokenAmount, 0);
         // Redeem more than owned
         vm.expectRevert();
@@ -398,7 +433,7 @@ contract ZapSwapTest is IntegrationTest {
         );
         // Redeem with higher minAmountOut: 50% of leveraged tokens, 60% of amountIn
         uint256 tooLargeAmountOut = (amountIn / 10) * 6;
-        vm.expectRevert();
+        vm.expectRevert(Errors.InsufficientAmount.selector);
         zapSwap.redeem(
             zapAssetAddress,
             address(leveragedToken),
@@ -651,6 +686,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: address(0),
             zapAssetSwapStable: true,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: false,
             uniPoolFee: 0
         });
@@ -663,6 +700,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDCE,
             zapAssetSwapStable: true,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: false,
             uniPoolFee: 0
         });
@@ -675,6 +714,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDCE,
             zapAssetSwapStable: true,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: false,
             uniPoolFee: 0
         });
@@ -687,6 +728,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDCE,
             zapAssetSwapStable: true,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: true,
             uniPoolFee: 100
         });
@@ -699,6 +742,8 @@ contract ZapSwapTest is IntegrationTest {
             bridgeAsset: Tokens.USDCE,
             zapAssetSwapStable: true,
             baseAssetSwapStable: true,
+            zapAssetFactory: veloDefaultFactory,
+            baseAssetFactory: veloDefaultFactory,
             swapZapAssetOnUni: true,
             uniPoolFee: 500
         });
@@ -714,5 +759,18 @@ contract ZapSwapTest is IntegrationTest {
         _mintTokensFor(address(zapAsset), address(this), amountIn_);
         zapSwap.mint(zapAssetAddress, address(leveragedToken), amountIn_, 0);
         return leveragedToken.balanceOf(address(this));
+    }
+
+    function _findIndex(
+        address element_,
+        address[] memory array_
+    ) internal pure returns (uint, bool) {
+        for (uint i = 0; i < array_.length; i++) {
+            if (array_[i] == element_) {
+                return (i, true);
+            }
+        }
+        // Return a default value if the element is not found
+        return (0, false);
     }
 }
