@@ -23,7 +23,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a
       - name: RPC Cache
         uses: actions/cache@v3
         with:
@@ -73,7 +73,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a
       - name: Build Cache
         uses: actions/cache@v3
         with:
