@@ -23,15 +23,29 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a
+      - name: RPC Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.foundry/cache/rpc
+          key: ${{ runner.os }}-rpc-${{ hashFiles('**/ForkBlock.sol') }}
+      - name: Build Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            cache/
+            out/
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
       - name: Run Forge build
+        id: build
         run: |
           forge --version
           forge build --sizes
-        id: build
       - name: Run Forge tests
-        run: forge test -vv --match-path "test/*.t.sol"
         id: test
+        run: forge test -vv --match-path "test/*.t.sol"
 
   lint:
     name: Lint
@@ -59,12 +73,20 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: nightly-5b7e4cb3c882b28f3c32ba580de27ce7381f415a
+      - name: Build Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            cache/
+            out/
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
       - name: Run Forge build
+        id: build
         run: |
           forge --version
           forge build --sizes
-        id: build
       - name: Start Anvil
         run: anvil --fork-url ${{ secrets.OPTIMISM_RPC }} &
       - name: Wait for Anvil to start running
