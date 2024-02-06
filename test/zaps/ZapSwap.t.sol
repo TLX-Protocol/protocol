@@ -10,6 +10,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Tokens} from "../../src/libraries/Tokens.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 import {Contracts} from "../../src/libraries/Contracts.sol";
+import {ZapAssetRoutes} from "../../src/libraries/ZapAssetRoutes.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Errors} from "../../src/libraries/Errors.sol";
 import {ScaledNumber} from "../../src/libraries/ScaledNumber.sol";
@@ -679,75 +680,16 @@ contract ZapSwapTest is IntegrationTest {
     // Helper functions
 
     function setSwapDataForAllZapAssets(ZapSwap zapSwap_) public {
-        // Add USDC.e data
-        IZapSwap.SwapData memory _usdceSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: true,
-            bridgeAsset: address(0),
-            zapAssetSwapStable: true,
-            baseAssetSwapStable: true,
-            zapAssetFactory: veloDefaultFactory,
-            baseAssetFactory: veloDefaultFactory,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
-        });
-        zapSwap_.setAssetSwapData(Tokens.USDCE, _usdceSwapData);
+        // Set swap routes from ZapAssetRoutes library
+        (
+            address[5] memory zapAssets,
+            IZapSwap.SwapData[] memory swapRoutes
+        ) = ZapAssetRoutes.zapAssetRoutes();
 
-        // Add USDT data
-        IZapSwap.SwapData memory _usdtSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: false,
-            bridgeAsset: Tokens.USDCE,
-            zapAssetSwapStable: true,
-            baseAssetSwapStable: true,
-            zapAssetFactory: veloDefaultFactory,
-            baseAssetFactory: veloDefaultFactory,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
-        });
-        zapSwap_.setAssetSwapData(Tokens.USDT, _usdtSwapData);
+        for (uint256 i; i < zapAssets.length; i++) {
+            zapSwap_.setAssetSwapData(zapAssets[i], swapRoutes[i]);
+        }
 
-        // Add DAI data
-        IZapSwap.SwapData memory _daiSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: false,
-            bridgeAsset: Tokens.USDCE,
-            zapAssetSwapStable: true,
-            baseAssetSwapStable: true,
-            zapAssetFactory: veloDefaultFactory,
-            baseAssetFactory: veloDefaultFactory,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
-        });
-        zapSwap_.setAssetSwapData(Tokens.DAI, _daiSwapData);
-
-        // Add USDC data
-        IZapSwap.SwapData memory _usdcSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: false,
-            bridgeAsset: Tokens.USDCE,
-            zapAssetSwapStable: true,
-            baseAssetSwapStable: true,
-            zapAssetFactory: veloDefaultFactory,
-            baseAssetFactory: veloDefaultFactory,
-            swapZapAssetOnUni: true,
-            uniPoolFee: 100
-        });
-        zapSwap_.setAssetSwapData(Tokens.USDC, _usdcSwapData);
-
-        // Add WETH data
-        IZapSwap.SwapData memory _wethSwapData = IZapSwap.SwapData({
-            supported: true,
-            direct: false,
-            bridgeAsset: Tokens.USDCE,
-            zapAssetSwapStable: true,
-            baseAssetSwapStable: true,
-            zapAssetFactory: veloDefaultFactory,
-            baseAssetFactory: veloDefaultFactory,
-            swapZapAssetOnUni: true,
-            uniPoolFee: 500
-        });
-        zapSwap_.setAssetSwapData(Tokens.WETH, _wethSwapData);
     }
 
     function mintLeveragedTokenWithZapAsset(
