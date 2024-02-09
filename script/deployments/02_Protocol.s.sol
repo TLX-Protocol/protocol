@@ -108,7 +108,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
 
         // ZapSwap Deployment
         ZapSwap zapSwap = new ZapSwap(
-            address(addressProvider),
+            _getDeployedAddress("AddressProvider"),
             Contracts.VELODROME_ROUTER,
             Contracts.UNISWAP_V3_ROUTER
         );
@@ -153,8 +153,9 @@ contract ProtocolDeployment is DeploymentScript, Test {
 
         // Test zapSwap
         IZapSwap zapSwap = addressProvider.zapSwap();
-        assertEq(zapSwap.supportedZapAssets()[0], Tokens.USDCE);
-        assertEq(zapSwap.supportedZapAssets().length, 5);
+        address[] memory supportedAssets = zapSwap.supportedZapAssets();
+        assertEq(supportedAssets[0], Tokens.USDCE);
+        assertEq(supportedAssets.length, 5);
 
         uint256 balanceBefore = leveragedToken.balanceOf(address(this));
         _mintTokensFor(Tokens.USDC, address(this), 10_000e6);

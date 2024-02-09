@@ -7,8 +7,6 @@ import {Contracts} from "./Contracts.sol";
 import {Tokens} from "./Tokens.sol";
 
 library ZapAssetRoutes {
-    // Create array of SwapData structs for all zap assets we want to support upon launch
-
     function zapAssetRoutes()
         internal
         pure
@@ -94,9 +92,3 @@ library ZapAssetRoutes {
         return (zapAssets_, zapAssetRoutes_);
     }
 }
-
-// Use this in test file
-
-// Notes deployment script
-
-//
