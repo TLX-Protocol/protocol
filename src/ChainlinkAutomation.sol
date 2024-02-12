@@ -60,6 +60,22 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         }
     }
 
+    function setForwarderAddress(
+        address forwarderAddress_
+    ) external override onlyOwner {
+        if (forwarderAddress_ == forwarderAddress) {
+            revert Errors.SameAsCurrent();
+        }
+        forwarderAddress = forwarderAddress_;
+    }
+
+    function resetFailedCounter(
+        address leveragedToken_
+    ) external override onlyOwner {
+        if (_failedCounter[leveragedToken_] == 0) revert Errors.SameAsCurrent();
+        delete _failedCounter[leveragedToken_];
+    }
+
     function checkUpkeep(
         bytes calldata
     )
@@ -92,21 +108,5 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
             mstore(rebalancableTokens_, rebalancableTokensCount_)
         }
         performData = abi.encode(rebalancableTokens_);
-    }
-
-    function setForwarderAddress(
-        address forwarderAddress_
-    ) external override onlyOwner {
-        if (forwarderAddress_ == forwarderAddress) {
-            revert Errors.SameAsCurrent();
-        }
-        forwarderAddress = forwarderAddress_;
-    }
-
-    function resetFailedCounter(
-        address leveragedToken_
-    ) external override onlyOwner {
-        if (_failedCounter[leveragedToken_] == 0) revert Errors.SameAsCurrent();
-        delete _failedCounter[leveragedToken_];
     }
 }
