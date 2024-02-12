@@ -18,7 +18,8 @@ library Config {
     string public constant TOKEN_SYMBOL = "TLX"; // TLX
 
     // Values
-    uint256 public constant AIRDROP_AMOUNT = 1_000_000e18; // 1 million TLX
+    uint256 public constant AMM_AMOUNT = 500_000e18; // 500k TLX
+    uint256 public constant AIRDROP_AMOUNT = 500_000e18; // 500k TLX
     uint256 public constant BONDING_AMOUNT = 7_500_000e18; // 7.5 million TLX
     uint256 public constant VESTING_AMOUNT = 1_500_000e18; // 1.5 million TLX
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months

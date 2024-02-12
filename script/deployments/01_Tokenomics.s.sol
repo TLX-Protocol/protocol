@@ -105,6 +105,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             Config.TOKEN_NAME,
             Config.TOKEN_SYMBOL,
             address(addressProvider),
+            Config.AMM_AMOUNT,
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
             Config.VESTING_AMOUNT
