@@ -102,4 +102,11 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         }
         forwarderAddress = forwarderAddress_;
     }
+
+    function resetFailedCounter(
+        address leveragedToken_
+    ) external override onlyOwner {
+        if (_failedCounter[leveragedToken_] == 0) revert Errors.SameAsCurrent();
+        delete _failedCounter[leveragedToken_];
+    }
 }

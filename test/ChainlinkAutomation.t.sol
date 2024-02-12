@@ -6,6 +6,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Config} from "../src/libraries/Config.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {ChainlinkAutomation} from "../src/ChainlinkAutomation.sol";
 
@@ -80,5 +81,18 @@ contract ChainlinkAutomationTest is IntegrationTest {
         chainlinkAutomation.setForwarderAddress(address(this));
         vm.expectRevert(IChainlinkAutomation.NoRebalancableTokens.selector);
         chainlinkAutomation.performUpkeep(performData);
+    }
+
+    function testResetFailedCounterRevertsWhenZero() public {
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.ETH,
+            2e18,
+            Config.REBALANCE_THRESHOLD
+        );
+        ILeveragedToken leveragedToken = ILeveragedToken(
+            leveragedTokenFactory.allTokens()[0]
+        );
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        chainlinkAutomation.resetFailedCounter(address(leveragedToken));
     }
 }

@@ -22,6 +22,13 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
     function setForwarderAddress(address forwarderAddress) external;
 
     /**
+     * @notice Resets the failed counter for the given leveraged token.
+     * @dev Only callable by the contract owner.
+     * @param leveragedToken The leveraged token to reset the failed counter for.
+     */
+    function resetFailedCounter(address leveragedToken) external;
+
+    /**
      * @notice Returns the address of the Chainlink forwarder.
      * @return forwarderAddress The address of the Chainlink forwarder.
      */
