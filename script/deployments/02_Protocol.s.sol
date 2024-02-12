@@ -158,7 +158,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
         assertEq(supportedAssets.length, 5);
 
         // uint256 balanceBefore = leveragedToken.balanceOf(address(this));
-        // _mintTokensFor(Tokens.USDC, address(this), 10_000e6);
+        _mintTokensFor(Tokens.USDC, address(this), 10_000e6);
         // IERC20(Tokens.USDC).approve(address(zapSwap), 10_000e6);
         // zapSwap.mint(Tokens.USDC, address(leveragedToken), 10_000e6, 0);
         // uint256 balanceAfter = leveragedToken.balanceOf(address(this));
