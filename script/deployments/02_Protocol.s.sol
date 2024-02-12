@@ -150,6 +150,15 @@ contract ProtocolDeployment is DeploymentScript, Test {
         assertGt(addressProvider.bonding().availableTlx(), 1e18);
         leveragedToken.approve(address(addressProvider.bonding()), 50_000e18);
         addressProvider.bonding().bond(address(leveragedToken), 50_000e18, 1);
+    }
+
+    function testZapSwapDeployment() public {
+        IAddressProvider addressProvider = IAddressProvider(
+            _getDeployedAddress("AddressProvider")
+        );
+        ILeveragedToken leveragedToken = ILeveragedToken(
+            addressProvider.leveragedTokenFactory().allTokens()[0]
+        );
 
         // Test zapSwap
         IZapSwap zapSwap = addressProvider.zapSwap();
