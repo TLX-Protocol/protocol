@@ -5,6 +5,7 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
@@ -14,7 +15,7 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 
-contract LeveragedToken is ILeveragedToken, ERC20 {
+contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     using ScaledNumber for uint256;
     using Address for address;
 
@@ -25,6 +26,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
     string public override targetAsset;
     uint256 public immutable override targetLeverage;
     bool public immutable override isLong;
+    bool public override isPaused;
 
     constructor(
         string memory name_,
@@ -45,6 +47,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         uint256 minLeveragedTokenAmountOut_
     ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
+        if (isPaused) revert Paused();
         _ensureNoPendingLeverageUpdate();
 
         // Accounting
@@ -124,6 +127,11 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         if (!canRebalance()) revert CannotRebalance();
         _chargeRebalanceFee();
         _rebalance();
+    }
+
+    function setIsPaused(bool isPaused_) public override onlyOwner {
+        if (isPaused == isPaused_) revert Errors.SameAsCurrent();
+        isPaused = isPaused_;
     }
 
     function exchangeRate() public view override returns (uint256) {
