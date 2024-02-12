@@ -9,6 +9,7 @@ import {Config} from "../src/libraries/Config.sol";
 
 import {ChainlinkAutomation} from "../src/ChainlinkAutomation.sol";
 
+import {IChainlinkAutomation} from "../src/interfaces/IChainlinkAutomation.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract ChainlinkAutomationTest is IntegrationTest {
@@ -69,7 +70,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
     function testRevertsWithNotForwarder() public {
         address[] memory rebalancableTokens = new address[](0);
         bytes memory performData = abi.encode(rebalancableTokens);
-        vm.expectRevert(ChainlinkAutomation.NotForwarder.selector);
+        vm.expectRevert(IChainlinkAutomation.NotForwarder.selector);
         chainlinkAutomation.performUpkeep(performData);
     }
 
@@ -77,7 +78,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
         address[] memory rebalancableTokens = new address[](0);
         bytes memory performData = abi.encode(rebalancableTokens);
         chainlinkAutomation.setForwarderAddress(address(this));
-        vm.expectRevert(ChainlinkAutomation.NoRebalancableTokens.selector);
+        vm.expectRevert(IChainlinkAutomation.NoRebalancableTokens.selector);
         chainlinkAutomation.performUpkeep(performData);
     }
 }

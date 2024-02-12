@@ -1,33 +1,23 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {AutomationCompatibleInterface} from "chainlink/src/v0.8/automation/AutomationCompatible.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 
+import {IChainlinkAutomation} from "./interfaces/IChainlinkAutomation.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
+contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
     uint256 internal immutable _maxRebalances;
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _baseNextAttemptDelay;
     uint256 internal immutable _maxAttempts;
 
-    address public forwarderAddress;
+    address public override forwarderAddress;
     mapping(address => uint256) internal _failedCounter;
     mapping(address => uint256) internal _nextAttempt;
-
-    event UpkeepPerformed(address indexed leveragedToken);
-    event UpkeepFailed(
-        address indexed leveragedToken,
-        uint256 nextAttempt,
-        uint256 failedCounter
-    );
-
-    error NoRebalancableTokens();
-    error NotForwarder();
 
     constructor(
         address addressProvider_,
@@ -41,7 +31,7 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
         _maxAttempts = maxAttempts_;
     }
 
-    function performUpkeep(bytes calldata performData) external {
+    function performUpkeep(bytes calldata performData) external override {
         if (msg.sender != forwarderAddress) revert NotForwarder();
 
         address[] memory rebalancableTokens_ = abi.decode(
@@ -72,7 +62,12 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
 
     function checkUpkeep(
         bytes calldata
-    ) external view returns (bool upkeepNeeded, bytes memory performData) {
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
         address[] memory tokens_ = _addressProvider
             .leveragedTokenFactory()
             .allTokens();
@@ -99,7 +94,9 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
         performData = abi.encode(rebalancableTokens_);
     }
 
-    function setForwarderAddress(address forwarderAddress_) external onlyOwner {
+    function setForwarderAddress(
+        address forwarderAddress_
+    ) external override onlyOwner {
         if (forwarderAddress_ == forwarderAddress) {
             revert Errors.SameAsCurrent();
         }

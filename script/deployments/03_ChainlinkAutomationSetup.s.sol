@@ -7,7 +7,7 @@ import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
 import {Config} from "../../src/libraries/Config.sol";
 
-import {ChainlinkAutomation} from "../../src/ChainlinkAutomation.sol";
+import {IChainlinkAutomation} from "../../src/interfaces/IChainlinkAutomation.sol";
 
 /*
  * After deploying the `ChainlinkAutomation` contract in the ProtocolDeployment script,
@@ -19,7 +19,7 @@ import {ChainlinkAutomation} from "../../src/ChainlinkAutomation.sol";
 contract SetupChainlinkAutomationDeployment is DeploymentScript, Test {
     function _run() internal override {
         // Getting deployed contracts
-        ChainlinkAutomation chainlinkAutomation = ChainlinkAutomation(
+        IChainlinkAutomation chainlinkAutomation = IChainlinkAutomation(
             _getDeployedAddress("ChainlinkAutomation")
         );
 
@@ -30,7 +30,7 @@ contract SetupChainlinkAutomationDeployment is DeploymentScript, Test {
     }
 
     function testEnableFeesDeployment() public {
-        ChainlinkAutomation chainlinkAutomation = ChainlinkAutomation(
+        IChainlinkAutomation chainlinkAutomation = IChainlinkAutomation(
             _getDeployedAddress("ChainlinkAutomation")
         );
         assertEq(
