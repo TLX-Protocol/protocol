@@ -75,8 +75,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
         ChainlinkAutomation chainlinkAutomation = new ChainlinkAutomation(
             address(addressProvider),
             Config.MAX_REBALANCES,
-            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY,
-            Config.REBALANCE_MAX_ATTEMPTS
+            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY
         );
         _deployedAddress("ChainlinkAutomation", address(chainlinkAutomation));
         addressProvider.addRebalancer(address(chainlinkAutomation));
