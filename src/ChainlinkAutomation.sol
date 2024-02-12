@@ -15,6 +15,7 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
     uint256 internal immutable _baseNextAttemptDelay;
     uint256 internal immutable _maxAttempts;
 
+    address public forwarderAddress;
     mapping(address => uint256) internal _failedCounter;
     mapping(address => uint256) internal _nextAttempt;
 
@@ -26,6 +27,7 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
     );
 
     error NoRebalancableTokens();
+    error NotForwarder();
 
     constructor(
         address addressProvider_,
@@ -39,7 +41,9 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
         _maxAttempts = maxAttempts_;
     }
 
-    function performUpkeep(bytes calldata performData) external onlyOwner {
+    function performUpkeep(bytes calldata performData) external {
+        if (msg.sender != forwarderAddress) revert NotForwarder();
+
         address[] memory rebalancableTokens_ = abi.decode(
             performData,
             (address[])
@@ -93,5 +97,12 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
             mstore(rebalancableTokens_, rebalancableTokensCount_)
         }
         performData = abi.encode(rebalancableTokens_);
+    }
+
+    function setForwarderAddress(address forwarderAddress_) external onlyOwner {
+        if (forwarderAddress_ == forwarderAddress) {
+            revert Errors.SameAsCurrent();
+        }
+        forwarderAddress = forwarderAddress_;
     }
 }
