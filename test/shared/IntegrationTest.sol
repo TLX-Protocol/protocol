@@ -175,6 +175,7 @@ contract IntegrationTest is Test {
             Config.TOKEN_NAME,
             Config.TOKEN_SYMBOL,
             address(addressProvider),
+            Config.AMM_DISTRIBUTOR,
             Config.AMM_AMOUNT,
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
