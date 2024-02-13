@@ -9,7 +9,8 @@ library Config {
     address public constant BINANCE =
         0xacD03D601e5bB1B275Bb94076fF46ED9D753435A; // Used for testing scripts
     address public constant TREASURY = address(1); // Our multisig
-    address public constant AMM_DISTRIBUTOR = address(3); // AMM distributor (multisig)
+    address public constant AMM_DISTRIBUTOR =
+        0x9d27E96B3564e51422C1f0592f42b3934f2bd056; // AMM distributor (multisig)
     address public constant POL = TREASURY; // Where the bonding tokens ar sent to
     address public constant REBALANCE_FEE_RECEIVER = address(2); // Receiver of rebalance fees (may be treasury to start)
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
