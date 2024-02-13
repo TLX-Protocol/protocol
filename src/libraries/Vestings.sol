@@ -13,7 +13,9 @@ library Vestings {
         returns (IVesting.VestingAmount[] memory)
     {
         IVesting.VestingAmount[]
-            memory vestings_ = new IVesting.VestingAmount[](8);
+            memory vestings_ = new IVesting.VestingAmount[](9);
+
+        // Team (should total to 20% of total supply)
 
         // Sam
         vestings_[0] = IVesting.VestingAmount({
@@ -57,13 +59,19 @@ library Vestings {
             amount: 0 // TODO
         });
 
-        // Treasury
+        // Treasury (DAO)
         vestings_[7] = IVesting.VestingAmount({
             account: Config.TREASURY,
-            amount: 0 // TODO
+            amount: 0 // TODO (should be 3% of total supply)
         });
 
-        // TODO: Investors/Advisors
+        // Company Reserves
+        vestings_[7] = IVesting.VestingAmount({
+            account: Config.TREASURY,
+            amount: 0 // TODO (should be 7% of total supply)
+        });
+
+        // TODO: Investors/Advisors (should total to 8% of total supply)
 
         // Validating amounts
         validateAmounts(vestings_);

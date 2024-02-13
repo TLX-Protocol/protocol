@@ -19,10 +19,11 @@ library Config {
     string public constant TOKEN_SYMBOL = "TLX"; // TLX
 
     // Values
-    uint256 public constant AMM_AMOUNT = 500_000e18; // 500k TLX
-    uint256 public constant AIRDROP_AMOUNT = 500_000e18; // 500k TLX
-    uint256 public constant BONDING_AMOUNT = 42_000_000e18; // 42 million TLX
-    uint256 public constant VESTING_AMOUNT = 1_500_000e18; // 1.5 million TLX
+    uint256 public constant TOTAL_SUPPLY = 100_000_000e18; // 100 million TLX
+    uint256 public constant AMM_AMOUNT = (TOTAL_SUPPLY * 10) / 100; // 10%
+    uint256 public constant AIRDROP_AMOUNT = (TOTAL_SUPPLY * 10) / 100; // 10%
+    uint256 public constant BONDING_AMOUNT = (TOTAL_SUPPLY * 42) / 100; // 42%
+    uint256 public constant VESTING_AMOUNT = (TOTAL_SUPPLY * 38) / 100; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
     uint256 public constant GENESIS_LOCKER_LOCK_TIME = 180 days; // 6 months
     uint256 public constant STAKER_UNSTAKE_DELAY = 5 days; // 5 days
