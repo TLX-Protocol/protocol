@@ -124,7 +124,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
         skip(1 hours);
         assertApproxEqRel(leveragedToken.exchangeRate(), 1e18, 0.1e18);
         assertGt(addressProvider.bonding().availableTlx(), 1e18);
-        leveragedToken.approve(address(addressProvider.bonding()), 50_000e18);
-        addressProvider.bonding().bond(address(leveragedToken), 50_000e18, 1);
+        leveragedToken.approve(address(addressProvider.bonding()), 1_000e18);
+        addressProvider.bonding().bond(address(leveragedToken), 1_000e18, 1);
     }
 }
