@@ -146,9 +146,9 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             stakeAmount,
             "tlx balance goes down"
         );
-        addressProvider.staker().prepareUnstake();
+        uint256 id = addressProvider.staker().prepareUnstake(stakeAmount);
         skip(Config.STAKER_UNSTAKE_DELAY);
-        addressProvider.staker().unstake();
+        addressProvider.staker().unstake(id);
         assertEq(
             addressProvider.tlx().balanceOf(address(addressProvider.staker())),
             0,

@@ -25,6 +25,7 @@ import {Referrals} from "../../src/Referrals.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
 import {Staker} from "../../src/Staker.sol";
+import {GenesisLocker} from "../../src/GenesisLocker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
@@ -58,6 +59,7 @@ contract IntegrationTest is Test {
     TlxToken public tlx;
     Airdrop public airdrop;
     Staker public staker;
+    GenesisLocker public genesisLocker;
     Bonding public bonding;
     Vesting public vesting;
     SynthetixHandler public synthetixHandler;
@@ -181,6 +183,17 @@ contract IntegrationTest is Test {
             Config.VESTING_AMOUNT
         );
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
+
+        genesisLocker = new GenesisLocker(
+            address(addressProvider),
+            Config.GENESIS_LOCKER_UNLOCK_DELAY,
+            address(tlx),
+            Config.GENESIS_LOCKER_STREAMING_PERIOD
+        );
+        addressProvider.updateAddress(
+            AddressKeys.GENESIS_LOCKER,
+            address(genesisLocker)
+        );
     }
 
     receive() external payable {}
