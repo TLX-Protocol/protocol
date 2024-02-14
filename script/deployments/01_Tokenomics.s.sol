@@ -105,9 +105,10 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             Config.TOKEN_NAME,
             Config.TOKEN_SYMBOL,
             address(addressProvider),
+            Config.AMM_DISTRIBUTOR,
+            Config.AMM_AMOUNT,
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
-            Config.TREASURY_AMOUNT,
             Config.VESTING_AMOUNT
         );
         _deployedAddress("TLX", address(tlx));

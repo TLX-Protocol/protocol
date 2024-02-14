@@ -9,6 +9,7 @@ library Config {
     address public constant BINANCE =
         0xacD03D601e5bB1B275Bb94076fF46ED9D753435A; // Used for testing scripts
     address public constant TREASURY = address(1); // Our multisig
+    address public constant AMM_DISTRIBUTOR = address(3); // AMM distributor (multisig)
     address public constant POL = TREASURY; // Where the bonding tokens ar sent to
     address public constant REBALANCE_FEE_RECEIVER = address(2); // Receiver of rebalance fees (may be treasury to start)
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
@@ -18,27 +19,26 @@ library Config {
     string public constant TOKEN_SYMBOL = "TLX"; // TLX
 
     // Values
-    uint256 public constant AIRDROP_AMOUNT = 1_000_000e18; // 1 million TLX
+    uint256 public constant AMM_AMOUNT = 500_000e18; // 500k TLX
+    uint256 public constant AIRDROP_AMOUNT = 500_000e18; // 500k TLX
     uint256 public constant BONDING_AMOUNT = 42_000_000e18; // 42 million TLX
-    uint256 public constant TREASURY_AMOUNT = 500_000e18; // 500k TLX
-    uint256 public constant VESTING_AMOUNT = 1_000_000e18; // 1 million TLX
+    uint256 public constant VESTING_AMOUNT = 1_500_000e18; // 1.5 million TLX
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
-    uint256 public constant STAKER_UNSTAKE_DELAY = 7 days; // 1 week
+    uint256 public constant STAKER_UNSTAKE_DELAY = 5 days; // 5 days
     uint256 public constant INITIAL_TLX_PER_SECOND = 0.6806e18; // Roughly 1.18 million TLX in first period (20 days)
     uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.9719981714285e18; // Very roughly gives 40% of TLX bonding allocation in first year
     uint256 public constant PERIOD_DURATION = 20 days;
     uint256 public constant BASE_FOR_ALL_TLX = 15_000e18; // Very roughly means it is 'worth' executing once every 3 days
     uint256 public constant VESTING_DURATION = 365 days; // 1 year
-    uint256 public constant REBALANCE_FEE = 2e18; // 2 sUSD
+    uint256 public constant REBALANCE_FEE = 5e18; // 5 sUSD
     uint256 public constant REBALANCE_BASE_NEXT_ATTEMPT_DELAY = 1 minutes; // 1 minute (doubles each attempt)
-    uint256 public constant REBALANCE_MAX_ATTEMPTS = 10; // Max 10 failed rebalance attempts in a row
     uint256 public constant MAX_LEVERAGE = 50e18; // 50x
     uint256 public constant REDEMPTION_FEE = 0.005e18; // 0.5%
     uint256 public constant REBATE_PERCENT = 0.5e18; // 50%
     uint256 public constant EARNINGS_PERCENT = 0.5e18; // 50%
     uint256 public constant REBALANCE_THRESHOLD = 0.25e18; // 25%
     uint256 public constant STREAMING_FEE = 0.02e18; // 2%
-    uint256 public constant MAX_REBALANCES = 20; // The maximum number of rebalances that can be performed in a single transaction
+    uint256 public constant MAX_REBALANCES = 5; // The maximum number of rebalances that can be performed in a single transaction
 
     // Bytes
     bytes32 public constant MERKLE_ROOT =

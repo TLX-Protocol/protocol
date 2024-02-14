@@ -61,12 +61,14 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             true,
             rebalanceThreshold_
         );
+        Ownable(longToken).transferOwnership(msg.sender);
         shortToken = _deployToken(
             targetAsset_,
             targetLeverage_,
             false,
             rebalanceThreshold_
         );
+        Ownable(shortToken).transferOwnership(msg.sender);
 
         // Setting storage
         pair[longToken] = shortToken;

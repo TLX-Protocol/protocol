@@ -6,9 +6,11 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Config} from "../src/libraries/Config.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
 import {ChainlinkAutomation} from "../src/ChainlinkAutomation.sol";
 
+import {IChainlinkAutomation} from "../src/interfaces/IChainlinkAutomation.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract ChainlinkAutomationTest is IntegrationTest {
@@ -19,8 +21,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
         chainlinkAutomation = new ChainlinkAutomation(
             address(addressProvider),
             Config.MAX_REBALANCES,
-            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY,
-            Config.REBALANCE_MAX_ATTEMPTS
+            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY
         );
         addressProvider.addRebalancer(address(chainlinkAutomation));
     }
@@ -66,10 +67,31 @@ contract ChainlinkAutomationTest is IntegrationTest {
         assertEq(performData.length, 0);
     }
 
+    function testRevertsWithNotForwarder() public {
+        address[] memory rebalancableTokens = new address[](0);
+        bytes memory performData = abi.encode(rebalancableTokens);
+        vm.expectRevert(IChainlinkAutomation.NotForwarder.selector);
+        chainlinkAutomation.performUpkeep(performData);
+    }
+
     function testRevertsWithNoRebalanceTokens() public {
         address[] memory rebalancableTokens = new address[](0);
         bytes memory performData = abi.encode(rebalancableTokens);
-        vm.expectRevert(ChainlinkAutomation.NoRebalancableTokens.selector);
+        chainlinkAutomation.setForwarderAddress(address(this));
+        vm.expectRevert(IChainlinkAutomation.NoRebalancableTokens.selector);
         chainlinkAutomation.performUpkeep(performData);
+    }
+
+    function testResetFailedCounterRevertsWhenZero() public {
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.ETH,
+            2e18,
+            Config.REBALANCE_THRESHOLD
+        );
+        ILeveragedToken leveragedToken = ILeveragedToken(
+            leveragedTokenFactory.allTokens()[0]
+        );
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        chainlinkAutomation.resetFailedCounter(address(leveragedToken));
     }
 }

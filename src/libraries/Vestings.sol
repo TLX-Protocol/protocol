@@ -13,7 +13,7 @@ library Vestings {
         returns (IVesting.VestingAmount[] memory)
     {
         IVesting.VestingAmount[]
-            memory vestings_ = new IVesting.VestingAmount[](7);
+            memory vestings_ = new IVesting.VestingAmount[](8);
 
         // Sam
         vestings_[0] = IVesting.VestingAmount({
@@ -54,6 +54,12 @@ library Vestings {
         // Paul
         vestings_[6] = IVesting.VestingAmount({
             account: address(776), // TODO
+            amount: 0 // TODO
+        });
+
+        // Treasury
+        vestings_[7] = IVesting.VestingAmount({
+            account: Config.TREASURY,
             amount: 0 // TODO
         });
 

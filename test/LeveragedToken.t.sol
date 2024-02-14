@@ -223,6 +223,29 @@ contract LeveragedTokenTest is IntegrationTest {
         assertGt(base.balanceOf(address(staker)), 0);
     }
 
+    function testPause() public {
+        assertFalse(leveragedToken.isPaused());
+        vm.prank(alice);
+        vm.expectRevert();
+        leveragedToken.setIsPaused(true);
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        leveragedToken.setIsPaused(false);
+        leveragedToken.setIsPaused(true);
+        assertTrue(leveragedToken.isPaused());
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+        vm.expectRevert(ILeveragedToken.Paused.selector);
+        leveragedToken.mint(baseAmountIn, 0);
+        vm.expectRevert(Errors.SameAsCurrent.selector);
+        leveragedToken.setIsPaused(true);
+        leveragedToken.setIsPaused(false);
+        leveragedToken.mint(baseAmountIn, 0);
+    }
+
     function _mintTokens() public {
         uint256 baseAmountIn = 100e18;
         _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
