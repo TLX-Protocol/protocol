@@ -10,6 +10,7 @@ import {TimelockDelays} from "../../src/libraries/TimelockDelays.sol";
 
 import {IOwnable} from "../../src/interfaces/libraries/IOwnable.sol";
 import {ITimelock} from "../../src/interfaces/ITimelock.sol";
+import {ILeveragedTokenFactory} from "../../src/interfaces/ILeveragedTokenFactory.sol";
 
 import {Timelock} from "../../src/Timelock.sol";
 
@@ -42,6 +43,15 @@ contract TimelockDeployment is DeploymentScript, Test {
         staker.transferOwnership(address(timelock));
         parameterProvider.transferOwnership(address(timelock));
         referrals.transferOwnership(address(timelock));
+
+        // Transfer ownership of leveraged tokens
+        address[] memory tokens = ILeveragedTokenFactory(
+            address(leveragedTokenFactory)
+        ).allTokens();
+        for (uint256 i; i < tokens.length; i++) {
+            IOwnable token = IOwnable(tokens[i]);
+            token.transferOwnership(address(timelock));
+        }
 
         // Setting delays
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();

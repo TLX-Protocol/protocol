@@ -19,6 +19,7 @@ interface ILeveragedToken is IERC20Metadata {
     error InsufficientAmount();
     error CannotRebalance();
     error LeverageUpdatePending();
+    error Paused();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.
@@ -48,6 +49,13 @@ interface ILeveragedToken is IERC20Metadata {
     function rebalance() external;
 
     /**
+     * @notice Sets if the leveraged token is paused.
+     * @dev Only callable by the contract owner.
+     * @param isPaused If the leveraged token should be paused or not.
+     */
+    function setIsPaused(bool isPaused) external;
+
+    /**
      * @notice Returns the target asset of the leveraged token.
      * @return targetAsset The target asset of the leveraged token.
      */
@@ -71,6 +79,13 @@ interface ILeveragedToken is IERC20Metadata {
      * @return isActive If the leveraged token is active.
      */
     function isActive() external view returns (bool isActive);
+
+    /**
+     * @notice Returns if the leveraged token is paused,
+     * @dev If a token is paused, deposits are disabled.
+     * @return isPaused If the leveraged token is paused.
+     */
+    function isPaused() external view returns (bool isPaused);
 
     /**
      * @notice Returns the rebalance threshold.
