@@ -13,7 +13,6 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
     uint256 internal immutable _maxRebalances;
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _baseNextAttemptDelay;
-    uint256 internal immutable _maxAttempts;
 
     mapping(address => uint256) internal _failedCounter;
     mapping(address => uint256) internal _nextAttempt;
@@ -30,13 +29,11 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
     constructor(
         address addressProvider_,
         uint256 maxReblances_,
-        uint256 baseNextAttemptDelay_,
-        uint256 maxAttempts_
+        uint256 baseNextAttemptDelay_
     ) {
         _addressProvider = IAddressProvider(addressProvider_);
         _maxRebalances = maxReblances_;
         _baseNextAttemptDelay = baseNextAttemptDelay_;
-        _maxAttempts = maxAttempts_;
     }
 
     function performUpkeep(bytes calldata performData) external onlyOwner {
@@ -78,7 +75,6 @@ contract ChainlinkAutomation is AutomationCompatibleInterface, Ownable {
         for (uint256 i; i < tokens_.length; i++) {
             address token_ = tokens_[i];
             if (!ILeveragedToken(token_).canRebalance()) continue;
-            if (_failedCounter[token_] > _maxAttempts) continue;
             if (_nextAttempt[token_] > block.timestamp) continue;
             rebalancableTokens_[rebalancableTokensCount_] = token_;
             rebalancableTokensCount_++;

@@ -19,8 +19,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
         chainlinkAutomation = new ChainlinkAutomation(
             address(addressProvider),
             Config.MAX_REBALANCES,
-            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY,
-            Config.REBALANCE_MAX_ATTEMPTS
+            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY
         );
         addressProvider.addRebalancer(address(chainlinkAutomation));
     }
