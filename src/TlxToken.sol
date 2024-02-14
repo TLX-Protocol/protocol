@@ -13,13 +13,11 @@ contract TlxToken is ITlxToken, ERC20 {
         address addressProvider_,
         uint256 airdropAmount_,
         uint256 bondingAmount_,
-        uint256 treasuryAmount_,
         uint256 vestingAmount_
     ) ERC20(name_, symbol_) {
         IAddressProvider addressProvider = IAddressProvider(addressProvider_);
         _mint(address(addressProvider.airdrop()), airdropAmount_);
         _mint(address(addressProvider.bonding()), bondingAmount_);
-        _mint(addressProvider.treasury(), treasuryAmount_);
         _mint(address(addressProvider.vesting()), vestingAmount_);
     }
 }
