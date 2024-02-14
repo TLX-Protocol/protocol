@@ -19,15 +19,15 @@ library Config {
 
     // Values
     uint256 public constant AIRDROP_AMOUNT = 1_000_000e18; // 1 million TLX
-    uint256 public constant BONDING_AMOUNT = 7_500_000e18; // 7.5 million TLX
+    uint256 public constant BONDING_AMOUNT = 42_000_000e18; // 42 million TLX
     uint256 public constant TREASURY_AMOUNT = 500_000e18; // 500k TLX
     uint256 public constant VESTING_AMOUNT = 1_000_000e18; // 1 million TLX
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
     uint256 public constant STAKER_UNSTAKE_DELAY = 7 days; // 1 week
-    uint256 public constant INITIAL_TLX_PER_SECOND = 0.09645061728e18; // 250k TLX in first month / 30 days (in seconds)
-    uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.966666666666666667e18; // Very roughly gives 30% of supply in first year
-    uint256 public constant PERIOD_DURATION = 30 days; // 1 month
-    uint256 public constant BASE_FOR_ALL_TLX = 75_000e18; // Very roughly means it is 'worth' executing once every 3 days
+    uint256 public constant INITIAL_TLX_PER_SECOND = 0.6806e18; // Roughly 1.18 million TLX in first period (20 days)
+    uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.9719981714285e18; // Very roughly gives 40% of TLX bonding allocation in first year
+    uint256 public constant PERIOD_DURATION = 20 days;
+    uint256 public constant BASE_FOR_ALL_TLX = 15_000e18; // Very roughly means it is 'worth' executing once every 3 days
     uint256 public constant VESTING_DURATION = 365 days; // 1 year
     uint256 public constant REBALANCE_FEE = 2e18; // 2 sUSD
     uint256 public constant REBALANCE_BASE_NEXT_ATTEMPT_DELAY = 1 minutes; // 1 minute (doubles each attempt)
