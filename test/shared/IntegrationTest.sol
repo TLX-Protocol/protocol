@@ -179,7 +179,6 @@ contract IntegrationTest is Test {
             Config.AMM_AMOUNT,
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
-            Config.TREASURY_AMOUNT,
             Config.VESTING_AMOUNT
         );
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));

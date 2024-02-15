@@ -109,7 +109,6 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             Config.AMM_AMOUNT,
             Config.AIRDROP_AMOUNT,
             Config.BONDING_AMOUNT,
-            Config.TREASURY_AMOUNT,
             Config.VESTING_AMOUNT
         );
         _deployedAddress("TLX", address(tlx));

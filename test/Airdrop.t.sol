@@ -89,7 +89,7 @@ contract AirdropTest is IntegrationTest {
         airdrop.mintUnclaimed();
         assertEq(
             tlx.balanceOf(treasury),
-            Config.AIRDROP_AMOUNT + Config.TREASURY_AMOUNT,
+            Config.AMM_AMOUNT,
             "balanceOf(treasury)"
         );
     }

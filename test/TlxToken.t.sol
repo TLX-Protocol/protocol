@@ -17,7 +17,6 @@ contract TlxTokenTest is IntegrationTest {
             tlx.totalSupply(),
             Config.AIRDROP_AMOUNT +
                 Config.AMM_AMOUNT +
-                Config.TREASURY_AMOUNT +
                 Config.BONDING_AMOUNT +
                 Config.VESTING_AMOUNT
         );

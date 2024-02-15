@@ -8,4 +8,7 @@ library Symbols {
     string public constant BTC = "BTC";
     string public constant USDC = "USDC";
     string public constant CRV = "CRV";
+    string public constant SOL = "SOL";
+    string public constant LINK = "LINK";
+    string public constant OP = "OP";
 }
