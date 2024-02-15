@@ -8,11 +8,14 @@ library Config {
     address public constant BASE_ASSET = Tokens.SUSD; // sUSD
     address public constant BINANCE =
         0xacD03D601e5bB1B275Bb94076fF46ED9D753435A; // Used for testing scripts
-    address public constant TREASURY = address(1); // Our multisig
     address public constant AMM_DISTRIBUTOR =
         0x9d27E96B3564e51422C1f0592f42b3934f2bd056; // AMM distributor (multisig)
-    address public constant POL = TREASURY; // Where the bonding tokens ar sent to
-    address public constant REBALANCE_FEE_RECEIVER = address(2); // Receiver of rebalance fees (may be treasury to start)
+    address public constant DAO_TREASURY =
+        0x6E28337E25717553E7f7F3e89Ad19F6cd01f3b2c;
+    address public constant GOVERNANCE_MULTISIG =
+        0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90;
+    address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens ar sent to
+    address public constant REBALANCE_FEE_RECEIVER = GOVERNANCE_MULTISIG; // Receiver of rebalance fees (may be treasury to start)
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
 
     // Strings

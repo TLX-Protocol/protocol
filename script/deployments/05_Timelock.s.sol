@@ -73,7 +73,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         }
 
         // Transferring ownership of Timelock to multisig
-        timelock.transferOwnership(Config.TREASURY);
+        timelock.transferOwnership(Config.DAO_TREASURY);
     }
 
     function testTimelockDeployment() public {
