@@ -8,6 +8,7 @@ import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 
 import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
+import {InitialMint} from "../../src/libraries/InitialMint.sol";
 import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Vestings} from "../../src/libraries/Vestings.sol";
@@ -86,7 +87,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
             address(addressProvider),
             bytes32(0),
             block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
-            Config.AIRDROP_AMOUNT
+            Config.DIRECT_AIRDROP_AMOUNT
         );
         _deployedAddress("Airdrop", address(airdrop));
         airdrop.updateMerkleRoot(Config.MERKLE_ROOT);
@@ -105,12 +106,7 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         TlxToken tlx = new TlxToken(
             Config.TOKEN_NAME,
             Config.TOKEN_SYMBOL,
-            address(addressProvider),
-            Config.AMM_DISTRIBUTOR,
-            Config.AMM_AMOUNT,
-            Config.AIRDROP_AMOUNT,
-            Config.BONDING_AMOUNT,
-            Config.VESTING_AMOUNT
+            address(addressProvider)
         );
         _deployedAddress("TLX", address(tlx));
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
@@ -119,13 +115,15 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         GenesisLocker genesisLocker = new GenesisLocker(
             address(addressProvider),
             Config.GENESIS_LOCKER_LOCK_TIME,
-            Config.BASE_ASSET
+            address(tlx)
         );
         _deployedAddress("GenesisLocker", address(genesisLocker));
         addressProvider.updateAddress(
             AddressKeys.GENESIS_LOCKER,
             address(genesisLocker)
         );
+
+        tlx.mintInitialSupply(InitialMint.getData(addressProvider));
     }
 
     function testTokenomicsDeployment() public {

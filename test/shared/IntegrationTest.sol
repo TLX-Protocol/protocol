@@ -12,6 +12,7 @@ import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
+import {InitialMint} from "../../src/libraries/InitialMint.sol";
 import {ForkBlock} from "./ForkBlock.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
@@ -150,7 +151,7 @@ contract IntegrationTest is Test {
             address(addressProvider),
             bytes32(0),
             block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
-            Config.AIRDROP_AMOUNT
+            Config.DIRECT_AIRDROP_AMOUNT
         );
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 
@@ -176,12 +177,7 @@ contract IntegrationTest is Test {
         tlx = new TlxToken(
             Config.TOKEN_NAME,
             Config.TOKEN_SYMBOL,
-            address(addressProvider),
-            Config.AMM_DISTRIBUTOR,
-            Config.AMM_AMOUNT,
-            Config.AIRDROP_AMOUNT,
-            Config.BONDING_AMOUNT,
-            Config.VESTING_AMOUNT
+            address(addressProvider)
         );
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
 
@@ -194,6 +190,8 @@ contract IntegrationTest is Test {
             AddressKeys.GENESIS_LOCKER,
             address(genesisLocker)
         );
+
+        tlx.mintInitialSupply(InitialMint.getData(addressProvider));
     }
 
     receive() external payable {}

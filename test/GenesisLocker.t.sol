@@ -19,7 +19,7 @@ contract GenesisLockerTest is IntegrationTest {
         super.setUp();
         reward = tlx;
         rewardDecimals = reward.decimals();
-        rewardAmount = 100 * 10 ** rewardDecimals;
+        rewardAmount = Config.STREAMED_AIRDROP_AMOUNT;
     }
 
     function testConfig() public {
@@ -32,11 +32,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testDonateRewards() public {
-        assertEq(genesisLocker.totalRewards(), 0, "donated amount");
-        assertEq(genesisLocker.rewardsStartTime(), 0, "donated at");
-
-        _donateRewardAmount();
-
         assertEq(genesisLocker.totalRewards(), rewardAmount, "donated amount");
         assertEq(
             genesisLocker.rewardsStartTime(),
@@ -46,8 +41,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testLock() public {
-        _donateRewardAmount();
-
         _mintTokensFor(address(tlx), bob, 100e18);
         vm.startPrank(bob);
         tlx.approve(address(genesisLocker), 100e18);
@@ -63,8 +56,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testMigrateFor() public {
-        _donateRewardAmount();
-
         _mintTokensFor(address(tlx), bob, 100e18);
         vm.startPrank(bob);
         tlx.approve(address(genesisLocker), 100e18);
@@ -89,8 +80,6 @@ contract GenesisLockerTest is IntegrationTest {
     function testAmountStreamed() public {
         assertEq(genesisLocker.amountStreamed(), 0);
 
-        _donateRewardAmount();
-
         assertEq(genesisLocker.amountStreamed(), 0, "t = 0");
         skip(Config.GENESIS_LOCKER_LOCK_TIME / 4);
         assertEq(genesisLocker.amountStreamed(), rewardAmount / 4, "t = 1/4");
@@ -103,8 +92,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testNoStakerAtBeginning() public {
-        _donateRewardAmount();
-
         skip(Config.GENESIS_LOCKER_LOCK_TIME / 4);
         _mintTokensFor(address(tlx), bob, 100e18);
 
@@ -118,8 +105,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testManyStakers() public {
-        _donateRewardAmount();
-
         _mintTokensFor(address(tlx), bob, 100e18);
         _mintTokensFor(address(tlx), alice, 25e18);
 
@@ -177,8 +162,6 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testShutdown() public {
-        _donateRewardAmount();
-
         _mintTokensFor(address(tlx), bob, 100e18);
 
         vm.startPrank(bob);
@@ -211,11 +194,5 @@ contract GenesisLockerTest is IntegrationTest {
         assertEq(tlx.balanceOf(bob), rewardAmount / 4, "balance bob");
 
         assertEq(tlx.balanceOf(address(genesisLocker)), 0, "balance locker");
-    }
-
-    function _donateRewardAmount() internal {
-        _mintTokensFor(address(tlx), address(this), rewardAmount);
-        tlx.approve(address(genesisLocker), rewardAmount);
-        genesisLocker.donateRewards(rewardAmount);
     }
 }

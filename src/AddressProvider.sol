@@ -13,6 +13,7 @@ import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
 import {IBonding} from "./interfaces/IBonding.sol";
+import {IGenesisLocker} from "./interfaces/IGenesisLocker.sol";
 import {IVesting} from "./interfaces/IVesting.sol";
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
