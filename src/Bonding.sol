@@ -15,7 +15,9 @@ import {IStaker} from "./interfaces/IStaker.sol";
 contract Bonding is IBonding, Ownable {
     using ScaledNumber for uint256;
 
+    /// @inheritdoc IBonding
     uint256 public override totalTlxBonded;
+    /// @inheritdoc IBonding
     bool public override isLive;
 
     IAddressProvider internal immutable _addressProvider;
@@ -43,6 +45,7 @@ contract Bonding is IBonding, Ownable {
         _baseForAllTlx = baseForAllTlx_;
     }
 
+    /// @inheritdoc IBonding
     function bond(
         address leveragedToken_,
         uint256 leveragedTokenAmount_,
@@ -88,6 +91,7 @@ contract Bonding is IBonding, Ownable {
         return tlxAmount_;
     }
 
+    /// @inheritdoc IBonding
     function setBaseForAllTlx(
         uint256 baseForAllTlx_
     ) external override onlyOwner {
@@ -96,12 +100,14 @@ contract Bonding is IBonding, Ownable {
         _baseForAllTlx = baseForAllTlx_;
     }
 
+    /// @inheritdoc IBonding
     function launch() external override onlyOwner {
         if (isLive) revert BondingAlreadyLive();
         isLive = true;
         _lastUpdate = block.timestamp;
     }
 
+    /// @inheritdoc IBonding
     function migrate() external override onlyOwner {
         address bonding_ = address(_addressProvider.bonding());
         if (address(bonding_) == address(this)) revert Errors.SameAsCurrent();
@@ -112,6 +118,7 @@ contract Bonding is IBonding, Ownable {
         emit Migrated(balance_);
     }
 
+    /// @inheritdoc IBonding
     function availableTlx() public view override returns (uint256) {
         if (!isLive) return 0;
 
@@ -127,6 +134,7 @@ contract Bonding is IBonding, Ownable {
             totalTlxBonded;
     }
 
+    /// @inheritdoc IBonding
     function exchangeRate() public view override returns (uint256) {
         return _exchangeRate(availableTlx());
     }

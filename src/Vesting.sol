@@ -16,7 +16,9 @@ contract Vesting is IVesting {
     uint256 internal immutable _start;
     uint256 internal immutable _duration;
 
+    /// @inheritdoc IVesting
     mapping(address => uint256) public override claimed;
+    /// @inheritdoc IVesting
     mapping(address => mapping(address => bool)) public override isDelegate;
 
     constructor(
@@ -35,10 +37,12 @@ contract Vesting is IVesting {
         }
     }
 
+    /// @inheritdoc IVesting
     function claim() public override {
         claim(msg.sender, msg.sender);
     }
 
+    /// @inheritdoc IVesting
     function claim(address account_, address to_) public override {
         bool isDelegate_ = isDelegate[account_][msg.sender];
         if (account_ != msg.sender && !isDelegate_) revert NotAuthorized();
@@ -50,6 +54,7 @@ contract Vesting is IVesting {
         emit Claimed(account_, to_, claimable_);
     }
 
+    /// @inheritdoc IVesting
     function addDelegate(address delegate_) public override {
         if (delegate_ == address(0)) revert Errors.ZeroAddress();
         if (isDelegate[msg.sender][delegate_]) revert Errors.AlreadyExists();
@@ -57,6 +62,7 @@ contract Vesting is IVesting {
         emit DelegateAdded(msg.sender, delegate_);
     }
 
+    /// @inheritdoc IVesting
     function removeDelegate(address delegate_) public override {
         if (delegate_ == address(0)) revert Errors.ZeroAddress();
         if (!isDelegate[msg.sender][delegate_]) revert Errors.DoesNotExist();
@@ -64,22 +70,26 @@ contract Vesting is IVesting {
         emit DelegateRemoved(msg.sender, delegate_);
     }
 
+    /// @inheritdoc IVesting
     function allocated(
         address account_
     ) public view override returns (uint256) {
         return _amounts[account_];
     }
 
+    /// @inheritdoc IVesting
     function claimable(
         address account_
     ) public view override returns (uint256) {
         return vested(account_) - claimed[account_];
     }
 
+    /// @inheritdoc IVesting
     function vesting(address account_) public view override returns (uint256) {
         return _amounts[account_] - vested(account_);
     }
 
+    /// @inheritdoc IVesting
     function vested(address account_) public view override returns (uint256) {
         uint256 percent_ = (block.timestamp - _start).div(_duration);
         if (percent_ > 1e18) percent_ = 1e18;

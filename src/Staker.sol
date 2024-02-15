@@ -16,8 +16,11 @@ contract Staker is IStaker, RewardsStreaming {
     using Unstakes for Unstakes.UserUnstakes;
 
     mapping(address => Unstakes.UserUnstakes) internal _queuedUnstakes;
+    /// @inheritdoc IStaker
     uint256 public immutable override unstakeDelay;
+    /// @inheritdoc IStaker
     uint256 public override totalPrepared;
+    /// @inheritdoc IStaker
     bool public override claimingEnabled;
 
     constructor(
@@ -28,6 +31,7 @@ contract Staker is IStaker, RewardsStreaming {
         unstakeDelay = unstakeDelay_;
     }
 
+    /// @inheritdoc IRewardsStreaming
     function donateRewards(uint256 amount_) external override {
         if (amount_ == 0) revert ZeroAmount();
         uint256 divisor_ = totalStaked - totalPrepared;
@@ -40,22 +44,26 @@ contract Staker is IStaker, RewardsStreaming {
         emit DonatedRewards(msg.sender, amount_);
     }
 
+    /// @inheritdoc IRewardsStreaming
     function claim() external override {
         if (!claimingEnabled) revert ClaimingNotEnabled();
 
         _claim();
     }
 
+    /// @inheritdoc IStaker
     function stake(uint256 amount_) external override {
         stakeFor(amount_, msg.sender);
     }
 
+    /// @inheritdoc IStaker
     function listQueuedUnstakes(
         address account
     ) external view returns (Unstakes.UserUnstakeData[] memory unstakes) {
         return _queuedUnstakes[account].list();
     }
 
+    /// @inheritdoc IStaker
     function stakeFor(uint256 amount_, address account_) public override {
         if (amount_ == 0) revert ZeroAmount();
         if (account_ == address(0)) revert Errors.ZeroAddress();
@@ -69,6 +77,7 @@ contract Staker is IStaker, RewardsStreaming {
         emit Staked(msg.sender, account_, amount_);
     }
 
+    /// @inheritdoc IStaker
     function prepareUnstake(
         uint256 amount_
     ) public override returns (uint256 id) {
@@ -85,16 +94,19 @@ contract Staker is IStaker, RewardsStreaming {
         emit PreparedUnstake(msg.sender);
     }
 
+    /// @inheritdoc IStaker
     function enableClaiming() public override onlyOwner {
         if (claimingEnabled) revert ClaimingAlreadyEnabled();
 
         claimingEnabled = true;
     }
 
+    /// @inheritdoc IStaker
     function unstake(uint256 withdrawalId_) public override {
         unstakeFor(msg.sender, withdrawalId_);
     }
 
+    /// @inheritdoc IStaker
     function restake(uint256 withdrawalId_) public override {
         _checkpoint(msg.sender);
 
@@ -105,6 +117,7 @@ contract Staker is IStaker, RewardsStreaming {
         emit Restaked(msg.sender, withdrawal_.amount);
     }
 
+    /// @inheritdoc IStaker
     function unstakeFor(
         address account_,
         uint256 withdrawalId_
@@ -127,6 +140,7 @@ contract Staker is IStaker, RewardsStreaming {
         emit Unstaked(msg.sender, account_, amount_);
     }
 
+    /// @inheritdoc IRewardsStreaming
     function activeBalanceOf(
         address account_
     )
@@ -138,10 +152,12 @@ contract Staker is IStaker, RewardsStreaming {
         return _balances[account_] - _queuedUnstakes[account_].totalQueued;
     }
 
+    /// @inheritdoc IStaker
     function symbol() public view override returns (string memory) {
         return string.concat("st", _addressProvider.tlx().symbol());
     }
 
+    /// @inheritdoc IStaker
     function name() public view override returns (string memory) {
         return string.concat("Staked ", _addressProvider.tlx().name());
     }
