@@ -58,4 +58,10 @@ interface IGenesisLocker is IRewardsStreaming {
      * @return time The time at which the given account's TLX tokens are unlocked.
      */
     function unlockTime(address account) external view returns (uint256 time);
+
+    /**
+     * @notice Returns the amount of TLX that has been streamed as rewards so far.
+     * @return amountStreamed The amount of TLX that has been streamed as rewards so far.
+     */
+    function amountStreamed() external view returns (uint256 amountStreamed);
 }

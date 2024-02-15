@@ -18,6 +18,7 @@ contract Timelock is ITimelock, Ownable {
     EnumerableSet.UintSet internal _proposalIds;
     mapping(uint256 => Proposal) internal _proposals;
 
+    /// @inheritdoc ITimelock
     function createProposal(
         Call[] calldata calls_
     ) external override onlyOwner returns (uint256) {
@@ -34,6 +35,7 @@ contract Timelock is ITimelock, Ownable {
         return id_;
     }
 
+    /// @inheritdoc ITimelock
     function cancelProposal(uint256 id_) external onlyOwner {
         Proposal memory proposal_ = _proposals[id_];
         if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
@@ -41,12 +43,14 @@ contract Timelock is ITimelock, Ownable {
         emit ProposalCancelled(id_);
     }
 
+    /// @inheritdoc ITimelock
     function setDelay(bytes4 selector_, uint256 delay_) external {
         if (msg.sender != address(this)) revert Errors.NotAuthorized();
         _delays[selector_] = delay_;
         emit DelaySet(selector_, delay_);
     }
 
+    /// @inheritdoc ITimelock
     function executeProposal(uint256 id_) external override onlyOwner {
         Proposal memory proposal_ = _proposals[id_];
         if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
@@ -61,6 +65,7 @@ contract Timelock is ITimelock, Ownable {
         emit ProposalExecuted(id_);
     }
 
+    /// @inheritdoc ITimelock
     function allProposals() external view returns (Proposal[] memory p) {
         uint256[] memory proposalIds_ = _proposalIds.values();
         Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
@@ -70,6 +75,7 @@ contract Timelock is ITimelock, Ownable {
         return proposals_;
     }
 
+    /// @inheritdoc ITimelock
     function readyProposals()
         external
         view
@@ -79,6 +85,7 @@ contract Timelock is ITimelock, Ownable {
         return _filterProposals(true);
     }
 
+    /// @inheritdoc ITimelock
     function pendingProposals()
         external
         view
@@ -88,6 +95,7 @@ contract Timelock is ITimelock, Ownable {
         return _filterProposals(false);
     }
 
+    /// @inheritdoc ITimelock
     function delay(bytes4 selector) external view override returns (uint256) {
         return _delays[selector];
     }

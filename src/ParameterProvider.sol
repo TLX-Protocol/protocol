@@ -35,6 +35,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
+    /// @inheritdoc IParameterProvider
     function updateParameter(
         bytes32 key_,
         uint256 value_
@@ -46,6 +47,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
         emit ParameterUpdated(key_, value_);
     }
 
+    /// @inheritdoc IParameterProvider
     function updateRebalanceThreshold(
         address leveragedToken_,
         uint256 value_
@@ -64,24 +66,29 @@ contract ParameterProvider is IParameterProvider, Ownable {
         emit RebalanceThresholdUpdated(leveragedToken_, value_);
     }
 
+    /// @inheritdoc IParameterProvider
     function parameterOf(
         bytes32 key_
     ) external view override returns (uint256) {
         return _getParameter(key_);
     }
 
+    /// @inheritdoc IParameterProvider
     function redemptionFee() external view override returns (uint256) {
         return _getParameter(ParameterKeys.REDEMPTION_FEE);
     }
 
+    /// @inheritdoc IParameterProvider
     function streamingFee() external view override returns (uint256) {
         return _getParameter(ParameterKeys.STREAMING_FEE);
     }
 
+    /// @inheritdoc IParameterProvider
     function rebalanceFee() external view override returns (uint256) {
         return _getParameter(ParameterKeys.REBALANCE_FEE);
     }
 
+    /// @inheritdoc IParameterProvider
     function parameters() external view override returns (Parameter[] memory) {
         uint256 length = _parameters.length();
         Parameter[] memory _params = new Parameter[](length);
@@ -92,6 +99,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
         return _params;
     }
 
+    /// @inheritdoc IParameterProvider
     function rebalanceThreshold(
         address leveragedToken_
     ) external view override returns (uint256) {

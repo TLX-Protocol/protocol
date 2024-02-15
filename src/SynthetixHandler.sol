@@ -22,6 +22,7 @@ contract SynthetixHandler is ISynthetixHandler {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
+    /// @inheritdoc ISynthetixHandler
     function depositMargin(
         string calldata targetAsset_,
         uint256 amount_
@@ -31,6 +32,7 @@ contract SynthetixHandler is ISynthetixHandler {
         market_.transferMargin(int256(amount_));
     }
 
+    /// @inheritdoc ISynthetixHandler
     function withdrawMargin(
         string calldata targetAsset_,
         uint256 amount_
@@ -38,6 +40,7 @@ contract SynthetixHandler is ISynthetixHandler {
         _market(targetAsset_).transferMargin(-int256(amount_));
     }
 
+    /// @inheritdoc ISynthetixHandler
     function submitLeverageUpdate(
         string calldata targetAsset_,
         uint256 leverage_,
@@ -62,12 +65,14 @@ contract SynthetixHandler is ISynthetixHandler {
         market_.submitOffchainDelayedOrder(sizeDelta_, price_);
     }
 
+    /// @inheritdoc ISynthetixHandler
     function cancelLeverageUpdate(
         string calldata targetAsset_
     ) public override {
         _market(targetAsset_).cancelOffchainDelayedOrder(address(this));
     }
 
+    /// @inheritdoc ISynthetixHandler
     function hasPendingLeverageUpdate(
         string calldata targetAsset_,
         address account_
@@ -75,6 +80,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return _market(targetAsset_).delayedOrders(account_).sizeDelta != 0;
     }
 
+    /// @inheritdoc ISynthetixHandler
     function hasOpenPosition(
         string calldata targetAsset_,
         address account_
@@ -82,6 +88,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return notionalValue(targetAsset_, account_) != 0;
     }
 
+    /// @inheritdoc ISynthetixHandler
     function totalValue(
         string calldata targetAsset_,
         address account_
@@ -92,6 +99,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return uint256(int256(remainingMargin_) + pnl_);
     }
 
+    /// @inheritdoc ISynthetixHandler
     function leverage(
         string calldata targetAsset_,
         address account_
@@ -102,6 +110,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return notionalValue_.div(marginRemaining_);
     }
 
+    /// @inheritdoc ISynthetixHandler
     function notionalValue(
         string calldata targetAsset_,
         address account_
@@ -113,6 +122,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return uint256(notionalValue_);
     }
 
+    /// @inheritdoc ISynthetixHandler
     function isLong(
         string calldata targetAsset_,
         address account_
@@ -124,6 +134,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return notionalValue_ > 0;
     }
 
+    /// @inheritdoc ISynthetixHandler
     function remainingMargin(
         string calldata targetAsset_,
         address account_
@@ -134,6 +145,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return marginRemaining_;
     }
 
+    /// @inheritdoc ISynthetixHandler
     function fillPrice(
         string calldata targetAsset_,
         int256 sizeDelta_
@@ -145,6 +157,7 @@ contract SynthetixHandler is ISynthetixHandler {
         return fillPrice_;
     }
 
+    /// @inheritdoc ISynthetixHandler
     function isAssetSupported(
         string calldata targetAsset_
     ) public view override returns (bool) {
@@ -157,6 +170,7 @@ contract SynthetixHandler is ISynthetixHandler {
         }
     }
 
+    /// @inheritdoc ISynthetixHandler
     function assetPrice(
         string calldata targetAsset_
     ) public view override returns (uint256) {

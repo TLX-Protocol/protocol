@@ -23,9 +23,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
 
     uint256 internal _lastRebalanceTimestamp;
 
+    /// @inheritdoc ILeveragedToken
     string public override targetAsset;
+    /// @inheritdoc ILeveragedToken
     uint256 public immutable override targetLeverage;
+    /// @inheritdoc ILeveragedToken
     bool public immutable override isLong;
+    /// @inheritdoc ILeveragedToken
     bool public override isPaused;
 
     constructor(
@@ -42,6 +46,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
+    /// @inheritdoc ILeveragedToken
     function mint(
         uint256 baseAmountIn_,
         uint256 minLeveragedTokenAmountOut_
@@ -74,6 +79,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         return leveragedTokenAmount_;
     }
 
+    /// @inheritdoc ILeveragedToken
     function redeem(
         uint256 leveragedTokenAmount_,
         uint256 minBaseAmountReceived_
@@ -121,6 +127,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         return baseAmountReceived_;
     }
 
+    /// @inheritdoc ILeveragedToken
     function rebalance() public override {
         bool canRebalance_ = _addressProvider.isRebalancer(msg.sender);
         if (!canRebalance_) revert Errors.NotAuthorized();
@@ -129,11 +136,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         _rebalance();
     }
 
+    /// @inheritdoc ILeveragedToken
     function setIsPaused(bool isPaused_) public override onlyOwner {
         if (isPaused == isPaused_) revert Errors.SameAsCurrent();
         isPaused = isPaused_;
     }
 
+    /// @inheritdoc ILeveragedToken
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = totalSupply();
         uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
@@ -144,10 +153,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         return totalValue.div(totalSupply_);
     }
 
+    /// @inheritdoc ILeveragedToken
     function isActive() public view override returns (bool) {
         return exchangeRate() > 0;
     }
 
+    /// @inheritdoc ILeveragedToken
     function canRebalance() public view override returns (bool) {
         // Can't rebalance if there is no margin
         if (
@@ -178,6 +189,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         return percentDiff_ >= rebalanceThreshold();
     }
 
+    /// @inheritdoc ILeveragedToken
     function rebalanceThreshold() public view override returns (uint256) {
         return
             _addressProvider.parameterProvider().rebalanceThreshold(

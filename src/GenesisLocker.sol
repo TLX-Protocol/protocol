@@ -18,9 +18,13 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
     uint256 internal _amountAccounted;
 
+    /// @inheritdoc IGenesisLocker
     uint256 public immutable override lockTime;
+    /// @inheritdoc IGenesisLocker
     uint256 public override totalRewards;
+    /// @inheritdoc IGenesisLocker
     uint256 public override rewardsStartTime;
+    /// @inheritdoc IGenesisLocker
     mapping(address => uint256) public override unlockTime;
 
     error RewardsAlreadyDonated();
@@ -38,6 +42,7 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         _addressProvider.tlx().approve(staker_, type(uint256).max);
     }
 
+    /// @inheritdoc IGenesisLocker
     function lock(uint256 amount_) external {
         if (amount_ == 0) revert ZeroAmount();
 
@@ -51,14 +56,17 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         emit Locked(msg.sender, amount_);
     }
 
+    /// @inheritdoc IRewardsStreaming
     function claim() external override {
         _claim();
     }
 
+    /// @inheritdoc IGenesisLocker
     function migrate() external {
         migrateFor(msg.sender);
     }
 
+    /// @inheritdoc IGenesisLocker
     function migrateFor(address receiver_) public {
         uint256 amount_ = _balances[msg.sender];
         if (amount_ == 0) revert ZeroAmount();
@@ -75,6 +83,7 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         emit Migrated(msg.sender, receiver_, amount_);
     }
 
+    /// @inheritdoc IRewardsStreaming
     function donateRewards(uint256 amount_) public override {
         if (amount_ == 0) revert ZeroAmount();
         if (totalRewards > 0) revert RewardsAlreadyDonated();
@@ -84,12 +93,14 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         emit DonatedRewards(msg.sender, amount_);
     }
 
-    function amountStreamed() public view returns (uint256) {
+    /// @inheritdoc IGenesisLocker
+    function amountStreamed() public view override returns (uint256) {
         uint256 elapsed = block.timestamp - rewardsStartTime;
         if (elapsed >= lockTime) return totalRewards;
         return (elapsed * totalRewards) / lockTime;
     }
 
+    /// @inheritdoc IRewardsStreaming
     function activeBalanceOf(
         address account_
     )

@@ -11,9 +11,13 @@ contract Airdrop is IAirdrop, Ownable {
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _airdropAmount;
 
+    /// @inheritdoc IAirdrop
     bytes32 public override merkleRoot;
+    /// @inheritdoc IAirdrop
     mapping(address => bool) public override hasClaimed;
+    /// @inheritdoc IAirdrop
     uint256 public override deadline;
+    /// @inheritdoc IAirdrop
     uint256 public override totalClaimed;
 
     constructor(
@@ -28,6 +32,7 @@ contract Airdrop is IAirdrop, Ownable {
         _airdropAmount = airdropAmount_;
     }
 
+    /// @inheritdoc IAirdrop
     function claim(
         uint256 amount_,
         bytes32[] calldata merkleProof_
@@ -54,11 +59,13 @@ contract Airdrop is IAirdrop, Ownable {
         emit Claimed(msg.sender, amount_);
     }
 
+    /// @inheritdoc IAirdrop
     function updateMerkleRoot(bytes32 merkleRoot_) external override onlyOwner {
         merkleRoot = merkleRoot_;
         emit MerkleRootUpdated(merkleRoot_);
     }
 
+    /// @inheritdoc IAirdrop
     function mintUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
         address treasury_ = _addressProvider.treasury();

@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
+import {AutomationCompatibleInterface} from "chainlink/src/v0.8/automation/AutomationCompatible.sol";
+
 import {Errors} from "./libraries/Errors.sol";
 
 import {IChainlinkAutomation} from "./interfaces/IChainlinkAutomation.sol";
@@ -14,6 +16,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _baseNextAttemptDelay;
 
+    /// @inheritdoc IChainlinkAutomation
     address public override forwarderAddress;
     mapping(address => uint256) internal _failedCounter;
     mapping(address => uint256) internal _nextAttempt;
@@ -28,6 +31,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         _baseNextAttemptDelay = baseNextAttemptDelay_;
     }
 
+    /// @inheritdoc AutomationCompatibleInterface
     function performUpkeep(bytes calldata performData) external override {
         if (msg.sender != forwarderAddress) revert NotForwarder();
 
@@ -57,6 +61,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         }
     }
 
+    /// @inheritdoc IChainlinkAutomation
     function setForwarderAddress(
         address forwarderAddress_
     ) external override onlyOwner {
@@ -66,6 +71,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         forwarderAddress = forwarderAddress_;
     }
 
+    /// @inheritdoc IChainlinkAutomation
     function resetFailedCounter(
         address leveragedToken_
     ) external override onlyOwner {
@@ -73,6 +79,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         delete _failedCounter[leveragedToken_];
     }
 
+    /// @inheritdoc AutomationCompatibleInterface
     function checkUpkeep(
         bytes calldata
     )
