@@ -16,4 +16,5 @@ library AddressKeys {
     bytes32 public constant POL = "pol";
     bytes32 public constant PARAMETER_PROVIDER = "parameterProvider";
     bytes32 public constant REBALANCE_FEE_RECEIVER = "rebalanceFeeReceiver";
+    bytes32 public constant ZAP_SWAP = "zapSwap";
 }

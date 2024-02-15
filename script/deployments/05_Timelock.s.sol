@@ -30,6 +30,7 @@ contract TimelockDeployment is DeploymentScript, Test {
             _getDeployedAddress("ParameterProvider")
         );
         IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
+        IOwnable zapSwap = IOwnable(_getDeployedAddress("ZapSwap"));
 
         // Timelock Deployment
         Timelock timelock = new Timelock();
@@ -43,6 +44,7 @@ contract TimelockDeployment is DeploymentScript, Test {
         staker.transferOwnership(address(timelock));
         parameterProvider.transferOwnership(address(timelock));
         referrals.transferOwnership(address(timelock));
+        zapSwap.transferOwnership(address(timelock));
 
         // Transfer ownership of leveraged tokens
         address[] memory tokens = ILeveragedTokenFactory(
@@ -89,6 +91,7 @@ contract TimelockDeployment is DeploymentScript, Test {
             _getDeployedAddress("ParameterProvider")
         );
         IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
+        IOwnable zapSwap = IOwnable(_getDeployedAddress("ZapSwap"));
 
         assertEq(addressProvider.owner(), address(timelock), "addressProvider");
         assertEq(airdrop.owner(), address(timelock), "airdrop");
@@ -105,6 +108,7 @@ contract TimelockDeployment is DeploymentScript, Test {
             "parameterProvider"
         );
         assertEq(referrals.owner(), address(timelock), "referrals");
+        assertEq(zapSwap.owner(), address(timelock), "zapSwap");
         assertEq(timelock.delay(bytes4(0)), 0, "delays");
 
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();

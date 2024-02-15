@@ -12,6 +12,7 @@ import {ITlxToken} from "./ITlxToken.sol";
 import {IStaker} from "./IStaker.sol";
 import {ISynthetixHandler} from "./ISynthetixHandler.sol";
 import {IParameterProvider} from "./IParameterProvider.sol";
+import {IZapSwap} from "./IZapSwap.sol";
 
 interface IAddressProvider {
     event AddressUpdated(bytes32 indexed key, address value);
@@ -112,6 +113,12 @@ interface IAddressProvider {
      * @return staker The Staker contract.
      */
     function staker() external view returns (IStaker staker);
+
+    /**
+     * @notice Returns the ZapSwap contract.
+     * @return zapSwap The ZapSwap contract.
+     */
+    function zapSwap() external view returns (IZapSwap zapSwap);
 
     /**
      * @notice Returns the base asset.

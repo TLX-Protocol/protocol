@@ -89,3 +89,7 @@ The `Timelock` contract will be set as the owner for all other contracts. It is 
 ## Helpers
 
 The helpers in directory `src/helpers` are not considered part of the core protocol. They are lightweight wrappers used to help with integration of off-chain components such as the UI or analytics ect.
+
+### ZapSwap
+
+The `ZapSwap` contract enables the minting and redeeming of leveraged tokens with assets other than the base asset. Swapping a zap asset can be routed through `Uniswap V3` or `Velodrome V2`. The base asset is always swapped on `Velodrome V2`. The `SwapData` of a particular asset which determines its swap route can be set, updated and disabled by the contract owner. 

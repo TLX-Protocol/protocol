@@ -13,16 +13,20 @@ import {Config} from "../../src/libraries/Config.sol";
 import {LeveragedTokens} from "../../src/libraries/LeveragedTokens.sol";
 import {Vestings} from "../../src/libraries/Vestings.sol";
 import {Config} from "../../src/libraries/Config.sol";
+import {Tokens} from "../../src/libraries/Tokens.sol";
+import {ZapAssetRoutes} from "../../src/libraries/ZapAssetRoutes.sol";
 
 import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
 import {IBonding} from "../../src/interfaces/IBonding.sol";
 import {ILeveragedToken} from "../../src/interfaces/ILeveragedToken.sol";
+import {IZapSwap} from "../../src/interfaces/IZapSwap.sol";
 
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {Referrals} from "../../src/Referrals.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
 import {ChainlinkAutomation} from "../../src/ChainlinkAutomation.sol";
 import {LeveragedTokenHelper} from "../../src/helpers/LeveragedTokenHelper.sol";
+import {ZapSwap} from "../../src/zaps/ZapSwap.sol";
 
 import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
 
@@ -101,6 +105,25 @@ contract ProtocolDeployment is DeploymentScript, Test {
         );
         _deployedAddress("LeveragedTokenHelper", address(leveragedTokenHelper));
 
+        // ZapSwap Deployment
+        ZapSwap zapSwap = new ZapSwap(
+            _getDeployedAddress("AddressProvider"),
+            Contracts.VELODROME_ROUTER,
+            Contracts.UNISWAP_V3_ROUTER
+        );
+        _deployedAddress("ZapSwap", address(zapSwap));
+        addressProvider.updateAddress(AddressKeys.ZAP_SWAP, address(zapSwap));
+
+        // Setting the swap routes for the zap assets
+        (
+            address[5] memory zapAssets,
+            IZapSwap.SwapData[] memory swapRoutes
+        ) = ZapAssetRoutes.zapAssetRoutes();
+
+        for (uint256 i; i < zapAssets.length; i++) {
+            zapSwap.setAssetSwapData(zapAssets[i], swapRoutes[i]);
+        }
+
         // Launching bonding
         bonding.launch();
     }
@@ -126,5 +149,27 @@ contract ProtocolDeployment is DeploymentScript, Test {
         assertGt(addressProvider.bonding().availableTlx(), 1e18);
         leveragedToken.approve(address(addressProvider.bonding()), 1_000e18);
         addressProvider.bonding().bond(address(leveragedToken), 1_000e18, 1);
+    }
+
+    function testZapSwapDeployment() public {
+        IAddressProvider addressProvider = IAddressProvider(
+            _getDeployedAddress("AddressProvider")
+        );
+        ILeveragedToken leveragedToken = ILeveragedToken(
+            addressProvider.leveragedTokenFactory().allTokens()[0]
+        );
+
+        // Test zapSwap
+        IZapSwap zapSwap = addressProvider.zapSwap();
+        address[] memory supportedAssets = zapSwap.supportedZapAssets();
+        assertEq(supportedAssets[0], Tokens.USDCE);
+        assertEq(supportedAssets.length, 5);
+
+        uint256 balanceBefore = leveragedToken.balanceOf(address(this));
+        _mintTokensFor(Tokens.USDCE, address(this), 10_000e6);
+        IERC20(Tokens.USDCE).approve(address(zapSwap), 10_000e6);
+        zapSwap.mint(Tokens.USDCE, address(leveragedToken), 10_000e6, 0);
+        uint256 balanceAfter = leveragedToken.balanceOf(address(this));
+        assertGt(balanceAfter, balanceBefore);
     }
 }

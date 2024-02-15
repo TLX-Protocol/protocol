@@ -18,6 +18,7 @@ import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
+import {IZapSwap} from "./interfaces/IZapSwap.sol";
 
 contract AddressProvider is IAddressProvider, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -118,6 +119,11 @@ contract AddressProvider is IAddressProvider, Ownable {
     /// @inheritdoc IAddressProvider
     function baseAsset() external view override returns (IERC20Metadata) {
         return IERC20Metadata(_getAddress(AddressKeys.BASE_ASSET));
+    }
+
+    /// @inheritdoc IAddressProvider
+    function zapSwap() external view override returns (IZapSwap) {
+        return IZapSwap(_getAddress(AddressKeys.ZAP_SWAP));
     }
 
     /// @inheritdoc IAddressProvider
