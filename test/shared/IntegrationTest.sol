@@ -187,9 +187,8 @@ contract IntegrationTest is Test {
 
         genesisLocker = new GenesisLocker(
             address(addressProvider),
-            Config.GENESIS_LOCKER_UNLOCK_DELAY,
-            address(tlx),
-            Config.GENESIS_LOCKER_STREAMING_PERIOD
+            Config.GENESIS_LOCKER_LOCK_TIME,
+            address(tlx)
         );
         addressProvider.updateAddress(
             AddressKeys.GENESIS_LOCKER,

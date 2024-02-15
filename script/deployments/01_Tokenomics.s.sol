@@ -17,6 +17,7 @@ import {ParameterProvider} from "../../src/ParameterProvider.sol";
 import {TlxToken} from "../../src/TlxToken.sol";
 import {Airdrop} from "../../src/Airdrop.sol";
 import {Staker} from "../../src/Staker.sol";
+import {GenesisLocker} from "../../src/GenesisLocker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 
@@ -99,6 +100,18 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         );
         _deployedAddress("Staker", address(staker));
         addressProvider.updateAddress(AddressKeys.STAKER, address(staker));
+
+        // Genesis Locker Deployment
+        GenesisLocker genesisLocker = new GenesisLocker(
+            address(addressProvider),
+            Config.GENESIS_LOCKER_LOCK_TIME,
+            Config.BASE_ASSET
+        );
+        _deployedAddress("GenesisLocker", address(genesisLocker));
+        addressProvider.updateAddress(
+            AddressKeys.GENESIS_LOCKER,
+            address(genesisLocker)
+        );
 
         // TLX Token Deployment
         TlxToken tlx = new TlxToken(

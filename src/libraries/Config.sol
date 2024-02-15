@@ -24,8 +24,7 @@ library Config {
     uint256 public constant BONDING_AMOUNT = 7_500_000e18; // 7.5 million TLX
     uint256 public constant VESTING_AMOUNT = 1_500_000e18; // 1.5 million TLX
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
-    uint256 public constant GENESIS_LOCKER_UNLOCK_DELAY = 180 days; // 6 months
-    uint256 public constant GENESIS_LOCKER_STREAMING_PERIOD = 180 days; // 6 months
+    uint256 public constant GENESIS_LOCKER_LOCK_TIME = 180 days; // 6 months
     uint256 public constant STAKER_UNSTAKE_DELAY = 5 days; // 5 days
     uint256 public constant INITIAL_TLX_PER_SECOND = 0.09645061728e18; // 250k TLX in first month / 30 days (in seconds)
     uint256 public constant PERIOD_DECAY_MULTIPLIER = 0.966666666666666667e18; // Very roughly gives 30% of supply in first year
