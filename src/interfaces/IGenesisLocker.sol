@@ -10,9 +10,11 @@ interface IGenesisLocker is IRewardsStreaming {
         address indexed receiver,
         uint256 amount
     );
+    event Shutdown();
 
     error NotUnlocked();
     error StakerNotDeployed();
+    error AlreadyShutdown();
 
     /**
      * @notice Locks the caller's TLX tokens.
@@ -30,6 +32,17 @@ interface IGenesisLocker is IRewardsStreaming {
      * @param receiver The account to migrate the TLX tokens to.
      */
     function migrateFor(address receiver) external;
+
+    /**
+     * @notice Shuts down the locker, allowing locked TLX tokens to be withdrawn and transfering
+     * the rest of the rewards to the treasury.
+     */
+    function shutdown() external;
+
+    /**
+     * @notice Returns whether the locker has been shut down.
+     */
+    function isShutdown() external view returns (bool);
 
     /**
      * @notice Returns the duration of the lock.
