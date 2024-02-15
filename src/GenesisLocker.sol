@@ -51,6 +51,10 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         emit Locked(msg.sender, amount_);
     }
 
+    function claim() external override {
+        _claim();
+    }
+
     function migrate() external {
         migrateFor(msg.sender);
     }
@@ -69,10 +73,6 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         _addressProvider.staker().stakeFor(amount_, receiver_);
 
         emit Migrated(msg.sender, receiver_, amount_);
-    }
-
-    function claim() external override {
-        _claim();
     }
 
     function donateRewards(uint256 amount_) public override {

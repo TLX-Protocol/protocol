@@ -9,13 +9,13 @@ import {Errors} from "./libraries/Errors.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 import {IRewardsStreaming} from "./interfaces/IRewardsStreaming.sol";
 import {RewardsStreaming} from "./RewardsStreaming.sol";
-import {Withdrawals} from "./libraries/Withdrawals.sol";
+import {Unstakes} from "./libraries/Unstakes.sol";
 
 contract Staker is IStaker, RewardsStreaming {
     using ScaledNumber for uint256;
-    using Withdrawals for Withdrawals.UserWithdrawals;
+    using Unstakes for Unstakes.UserUnstakes;
 
-    mapping(address => Withdrawals.UserWithdrawals) internal _queuedWithdrawals;
+    mapping(address => Unstakes.UserUnstakes) internal _queuedUnstakes;
     uint256 public immutable override unstakeDelay;
     uint256 public override totalPrepared;
     bool public override claimingEnabled;
@@ -28,7 +28,7 @@ contract Staker is IStaker, RewardsStreaming {
         unstakeDelay = unstakeDelay_;
     }
 
-    function donateRewards(uint256 amount_) public override {
+    function donateRewards(uint256 amount_) external override {
         if (amount_ == 0) revert ZeroAmount();
         uint256 divisor_ = totalStaked - totalPrepared;
         if (divisor_ == 0) revert ZeroBalance();
@@ -40,8 +40,20 @@ contract Staker is IStaker, RewardsStreaming {
         emit DonatedRewards(msg.sender, amount_);
     }
 
-    function stake(uint256 amount_) public override {
+    function claim() external override {
+        if (!claimingEnabled) revert ClaimingNotEnabled();
+
+        _claim();
+    }
+
+    function stake(uint256 amount_) external override {
         stakeFor(amount_, msg.sender);
+    }
+
+    function listQueuedUnstakes(
+        address account
+    ) external view returns (Unstakes.UserUnstakeData[] memory unstakes) {
+        return _queuedUnstakes[account].list();
     }
 
     function stakeFor(uint256 amount_, address account_) public override {
@@ -64,19 +76,13 @@ contract Staker is IStaker, RewardsStreaming {
         if (activeBalanceOf(msg.sender) < amount_) revert InsufficientBalance();
 
         _checkpoint(msg.sender);
-        id = _queuedWithdrawals[msg.sender].queue(
+        id = _queuedUnstakes[msg.sender].queue(
             amount_,
             block.timestamp + unstakeDelay
         );
         totalPrepared += amount_;
 
         emit PreparedUnstake(msg.sender);
-    }
-
-    function claim() external override {
-        if (!claimingEnabled) revert ClaimingNotEnabled();
-
-        _claim();
     }
 
     function enableClaiming() public override onlyOwner {
@@ -92,9 +98,8 @@ contract Staker is IStaker, RewardsStreaming {
     function restake(uint256 withdrawalId_) public override {
         _checkpoint(msg.sender);
 
-        Withdrawals.UserWithdrawal memory withdrawal_ = _queuedWithdrawals[
-            msg.sender
-        ].remove(withdrawalId_);
+        Unstakes.UserUnstake memory withdrawal_ = _queuedUnstakes[msg.sender]
+            .remove(withdrawalId_);
         totalPrepared -= withdrawal_.amount;
 
         emit Restaked(msg.sender, withdrawal_.amount);
@@ -106,9 +111,8 @@ contract Staker is IStaker, RewardsStreaming {
     ) public override {
         _checkpoint(msg.sender);
 
-        Withdrawals.UserWithdrawal memory withdrawal_ = _queuedWithdrawals[
-            msg.sender
-        ].remove(withdrawalId_);
+        Unstakes.UserUnstake memory withdrawal_ = _queuedUnstakes[msg.sender]
+            .remove(withdrawalId_);
         uint256 unstakeTime_ = withdrawal_.unstakeTime;
         if (unstakeTime_ > block.timestamp) revert NotUnstaked();
 
@@ -123,12 +127,6 @@ contract Staker is IStaker, RewardsStreaming {
         emit Unstaked(msg.sender, account_, amount_);
     }
 
-    function listQueuedUnstakes(
-        address account
-    ) external view returns (Withdrawals.UserWithdrawalData[] memory unstakes) {
-        return _queuedWithdrawals[account].list();
-    }
-
     function activeBalanceOf(
         address account_
     )
@@ -137,7 +135,7 @@ contract Staker is IStaker, RewardsStreaming {
         override(IRewardsStreaming, RewardsStreaming)
         returns (uint256)
     {
-        return _balances[account_] - _queuedWithdrawals[account_].totalQueued;
+        return _balances[account_] - _queuedUnstakes[account_].totalQueued;
     }
 
     function symbol() public view override returns (string memory) {

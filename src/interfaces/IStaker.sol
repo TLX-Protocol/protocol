@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {IRewardsStreaming} from "./IRewardsStreaming.sol";
-import {Withdrawals} from "../libraries/Withdrawals.sol";
+import {Unstakes} from "../libraries/Unstakes.sol";
 
 interface IStaker is IRewardsStreaming {
     event Staked(
@@ -98,7 +98,7 @@ interface IStaker is IRewardsStreaming {
      */
     function listQueuedUnstakes(
         address account
-    ) external view returns (Withdrawals.UserWithdrawalData[] memory unstakes);
+    ) external view returns (Unstakes.UserUnstakeData[] memory unstakes);
 
     /**
      * @notice Returns the delay the user must wait when unstakeing.

@@ -29,18 +29,6 @@ abstract contract RewardsStreaming is IRewardsStreaming, Ownable {
         rewardToken = rewardToken_;
     }
 
-    function _claim() internal {
-        _checkpoint(msg.sender);
-
-        uint256 amount_ = _usersRewards[msg.sender];
-        if (amount_ == 0) return;
-
-        delete _usersRewards[msg.sender];
-        IERC20(rewardToken).transfer(msg.sender, amount_);
-
-        emit Claimed(msg.sender, amount_);
-    }
-
     function claimable(
         address account_
     ) public view override returns (uint256) {
@@ -66,6 +54,18 @@ abstract contract RewardsStreaming is IRewardsStreaming, Ownable {
         _globalCheckpoint();
         _usersRewards[account_] += _newRewards(account_, _rewardIntegral);
         _usersRewardIntegral[account_] = _rewardIntegral;
+    }
+
+    function _claim() internal {
+        _checkpoint(msg.sender);
+
+        uint256 amount_ = _usersRewards[msg.sender];
+        if (amount_ == 0) return;
+
+        delete _usersRewards[msg.sender];
+        IERC20(rewardToken).transfer(msg.sender, amount_);
+
+        emit Claimed(msg.sender, amount_);
     }
 
     function _globalCheckpoint() internal virtual {}

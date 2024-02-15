@@ -10,7 +10,7 @@ import {IStaker} from "../src/interfaces/IStaker.sol";
 
 import {Config} from "../src/libraries/Config.sol";
 import {Errors} from "../src/libraries/Errors.sol";
-import {Withdrawals} from "../src/libraries/Withdrawals.sol";
+import {Unstakes} from "../src/libraries/Unstakes.sol";
 
 contract StakerTest is IntegrationTest {
     IERC20Metadata public reward;
@@ -246,8 +246,9 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 100e18, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
-        Withdrawals.UserWithdrawalData[] memory queued = staker
-            .listQueuedUnstakes(address(this));
+        Unstakes.UserUnstakeData[] memory queued = staker.listQueuedUnstakes(
+            address(this)
+        );
         assertEq(queued.length, 1, "listQueuedUnstakes");
         assertEq(queued[0].id, id, "id");
         assertEq(queued[0].amount, 100e18, "amount");
@@ -285,8 +286,9 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         uint256 id = staker.prepareUnstake(100e18);
-        Withdrawals.UserWithdrawalData[] memory queued = staker
-            .listQueuedUnstakes(address(this));
+        Unstakes.UserUnstakeData[] memory queued = staker.listQueuedUnstakes(
+            address(this)
+        );
         assertEq(queued.length, 1, "listQueuedUnstakes");
         skip(staker.unstakeDelay());
         staker.unstake(id);
@@ -331,8 +333,9 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         uint256 id = staker.prepareUnstake(100e18);
-        Withdrawals.UserWithdrawalData[] memory queued = staker
-            .listQueuedUnstakes(address(this));
+        Unstakes.UserUnstakeData[] memory queued = staker.listQueuedUnstakes(
+            address(this)
+        );
         assertEq(queued.length, 1, "listQueuedUnstakes");
         skip(staker.unstakeDelay());
         staker.unstakeFor(bob, id);
