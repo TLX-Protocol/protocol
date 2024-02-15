@@ -38,6 +38,7 @@ contract ZapSwap is IZapSwap, Ownable {
         );
     }
 
+    /// @inheritdoc IZapSwap
     function setAssetSwapData(
         address zapAsset_,
         SwapData memory swapData_
@@ -76,6 +77,7 @@ contract ZapSwap is IZapSwap, Ownable {
         _swapDB[zapAsset_] = swapData_;
     }
 
+    /// @inheritdoc IZapSwap
     function removeAssetSwapData(
         address zapAsset_
     ) external override onlyOwner {
@@ -93,6 +95,7 @@ contract ZapSwap is IZapSwap, Ownable {
         _supportedZapAssets.pop();
     }
 
+    /// @inheritdoc IZapSwap
     function mint(
         address zapAssetAddress_,
         address leveragedTokenAddress_,
@@ -149,6 +152,7 @@ contract ZapSwap is IZapSwap, Ownable {
         return leveragedTokenAmountOut_;
     }
 
+    /// @inheritdoc IZapSwap
     function redeem(
         address zapAssetAddress_,
         address leveragedTokenAddress_,
@@ -213,12 +217,14 @@ contract ZapSwap is IZapSwap, Ownable {
         return zapAssetAmountOut_;
     }
 
+    /// @inheritdoc IZapSwap
     function swapData(
         address zapAsset_
     ) public view override returns (SwapData memory) {
         return _swapDB[zapAsset_];
     }
 
+    /// @inheritdoc IZapSwap
     function supportedZapAssets()
         public
         view
