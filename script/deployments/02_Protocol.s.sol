@@ -79,8 +79,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
         ChainlinkAutomation chainlinkAutomation = new ChainlinkAutomation(
             address(addressProvider),
             Config.MAX_REBALANCES,
-            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY,
-            Config.REBALANCE_MAX_ATTEMPTS
+            Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY
         );
         _deployedAddress("ChainlinkAutomation", address(chainlinkAutomation));
         addressProvider.addRebalancer(address(chainlinkAutomation));
@@ -148,8 +147,8 @@ contract ProtocolDeployment is DeploymentScript, Test {
         skip(1 hours);
         assertApproxEqRel(leveragedToken.exchangeRate(), 1e18, 0.1e18);
         assertGt(addressProvider.bonding().availableTlx(), 1e18);
-        leveragedToken.approve(address(addressProvider.bonding()), 50_000e18);
-        addressProvider.bonding().bond(address(leveragedToken), 50_000e18, 1);
+        leveragedToken.approve(address(addressProvider.bonding()), 1_000e18);
+        addressProvider.bonding().bond(address(leveragedToken), 1_000e18, 1);
     }
 
     function testZapSwapDeployment() public {

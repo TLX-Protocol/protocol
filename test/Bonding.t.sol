@@ -81,17 +81,13 @@ contract BondingTest is IntegrationTest {
         bonding.launch();
 
         // Half of a period
-        skip(15 days);
+        skip(10 days);
 
-        // Half of the amount we should give out in the first period
-        uint256 expectedTlx_ = 250_000e18 / 2;
+        // Expected amount after 10 days
+        uint256 expectedTlx_ = 588_038.4e18;
 
-        assertApproxEqAbs(
-            bonding.availableTlx(),
-            expectedTlx_,
-            0.01e18,
-            "availableTlx"
-        );
+        assertEq(bonding.availableTlx(), expectedTlx_, "availableTlx");
+
         assertApproxEqAbs(
             bonding.totalTlxBonded(),
             0,
@@ -99,17 +95,17 @@ contract BondingTest is IntegrationTest {
             "totalTlxBonded"
         );
 
-        // 125,000 / 75,000 = 1.6666666667
-        uint256 expectedExchangeRate_ = 1.6666666667e18;
+        // 588,038 / 15,000 = 39.202533333333335
+        uint256 expectedExchangeRate_ = 39.202533333333335e18;
 
-        assertApproxEqAbs(
+        assertApproxEqRel(
             bonding.exchangeRate(),
             expectedExchangeRate_,
             0.01e18,
             "exchangeRate"
         );
 
-        uint256 amountRequired_ = 75_000e18;
+        uint256 amountRequired_ = 15_000e18;
         bonding.bond(
             leveragedToken,
             amountRequired_,
@@ -149,7 +145,7 @@ contract BondingTest is IntegrationTest {
         bonding.launch();
 
         // Half of a period
-        skip(15 days);
+        skip(10 days);
 
         _mintTokensFor(leveragedToken, address(this), 150_000e18);
         IERC20(leveragedToken).approve(address(bonding), 150_000e18);
@@ -161,13 +157,13 @@ contract BondingTest is IntegrationTest {
     function testShouldBondAllOverLongPeriod() public {
         bonding.launch();
 
-        // Half of a period
-        skip(45 days);
+        // One and a half of a period
+        skip(30 days);
 
-        // Half of the amount we should give out in the first period
-        uint256 firstMonthAmount_ = 250_000e18;
-        uint256 expectedTlx_ = firstMonthAmount_ +
-            firstMonthAmount_.mul(Config.PERIOD_DECAY_MULTIPLIER) /
+        // Expected amount we should give out over the first 30 days
+        uint256 firstPeriodAmount_ = 1_176_076.8e18;
+        uint256 expectedTlx_ = firstPeriodAmount_ +
+            firstPeriodAmount_.mul(Config.PERIOD_DECAY_MULTIPLIER) /
             2;
 
         assertApproxEqAbs(
@@ -183,8 +179,8 @@ contract BondingTest is IntegrationTest {
             "totalTlxBonded"
         );
 
-        // 125,000 / 75,000 = 1.6666666667
-        uint256 expectedExchangeRate_ = expectedTlx_.div(75_000e18);
+        // 1,747,649.05 / 15,000 = 116.50993666666668
+        uint256 expectedExchangeRate_ = expectedTlx_.div(15_000e18);
 
         assertApproxEqAbs(
             bonding.exchangeRate(),
@@ -193,7 +189,7 @@ contract BondingTest is IntegrationTest {
             "exchangeRate"
         );
 
-        uint256 amountRequired_ = 75_000e18;
+        uint256 amountRequired_ = 15_000e18;
         bonding.bond(
             leveragedToken,
             amountRequired_,
@@ -227,6 +223,39 @@ contract BondingTest is IntegrationTest {
             "staked balance"
         );
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
+    }
+
+    function testAvailabilityThreeYears() public {
+        bonding.launch();
+
+        // Three years forward
+        skip(1095 days);
+
+        // Expected amount after 3 years
+        uint256 expectedTlx_ = 33_129_143.3552428e18;
+
+        assertApproxEqRel(
+            bonding.availableTlx(),
+            expectedTlx_,
+            0.001e18,
+            "allAvailableTlx"
+        );
+
+    }
+
+    function testAllAvailable() public {
+        bonding.launch();
+
+        // Go forward 10,000 days
+        skip(10000 days);
+
+        // Close to all allocated TLX expected to be available
+        assertApproxEqRel(
+            bonding.availableTlx(),
+            Config.BONDING_AMOUNT,
+            0.001e18,
+            "allAvailableTlx"
+        );
     }
 
     function testMigration() public {

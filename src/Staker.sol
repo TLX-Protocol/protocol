@@ -2,118 +2,37 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
 
 import {IStaker} from "./interfaces/IStaker.sol";
-import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {IRewardsStreaming} from "./interfaces/IRewardsStreaming.sol";
+import {RewardsStreaming} from "./RewardsStreaming.sol";
+import {Unstakes} from "./libraries/Unstakes.sol";
 
-contract Staker is IStaker, Ownable {
+contract Staker is IStaker, RewardsStreaming {
     using ScaledNumber for uint256;
+    using Unstakes for Unstakes.UserUnstakes;
 
-    IAddressProvider internal immutable _addressProvider;
-
-    uint256 internal _rewardIntegral;
-    mapping(address => uint256) internal _balances;
-    mapping(address => uint256) internal _unstakeTimes;
-    mapping(address => uint256) internal _usersRewardIntegral;
-    mapping(address => uint256) internal _usersRewards;
-
+    mapping(address => Unstakes.UserUnstakes) internal _queuedUnstakes;
+    /// @inheritdoc IStaker
     uint256 public immutable override unstakeDelay;
-    address public immutable override rewardToken;
-
-    uint256 public override totalStaked;
+    /// @inheritdoc IStaker
     uint256 public override totalPrepared;
+    /// @inheritdoc IStaker
     bool public override claimingEnabled;
 
     constructor(
         address addressProvider_,
         uint256 unstakeDelay_,
         address rewardToken_
-    ) {
-        _addressProvider = IAddressProvider(addressProvider_);
+    ) RewardsStreaming(addressProvider_, rewardToken_) {
         unstakeDelay = unstakeDelay_;
-        rewardToken = rewardToken_;
     }
 
-    function stake(uint256 amount_) public override {
-        stakeFor(amount_, msg.sender);
-    }
-
-    function stakeFor(uint256 amount_, address account_) public override {
-        if (amount_ == 0) revert ZeroAmount();
-        if (account_ == address(0)) revert Errors.ZeroAddress();
-        if (_hasPreparedUnstake(account_)) revert UnstakePrepared();
-
-        _checkpoint(msg.sender);
-        _addressProvider.tlx().transferFrom(msg.sender, address(this), amount_);
-        _balances[account_] += amount_;
-        totalStaked += amount_;
-
-        emit Staked(msg.sender, account_, amount_);
-    }
-
-    function prepareUnstake() public override {
-        uint256 balance_ = _balances[msg.sender];
-        if (balance_ == 0) revert ZeroBalance();
-        if (_hasPreparedUnstake(msg.sender)) revert AlreadyPreparedUnstake();
-
-        _checkpoint(msg.sender);
-        _unstakeTimes[msg.sender] = block.timestamp + unstakeDelay;
-        totalPrepared += balance_;
-
-        emit PreparedUnstake(msg.sender);
-    }
-
-    function unstake() public override {
-        unstakeFor(msg.sender);
-    }
-
-    function restake() public override {
-        if (!_hasPreparedUnstake(msg.sender)) revert NoUnstakePrepared();
-
-        _checkpoint(msg.sender);
-        delete _unstakeTimes[msg.sender];
-        totalPrepared -= _balances[msg.sender];
-
-        emit Restaked(msg.sender, _balances[msg.sender]);
-    }
-
-    function unstakeFor(address account_) public override {
-        uint256 amount_ = _balances[msg.sender];
-        if (amount_ == 0) revert ZeroBalance();
-        uint256 unstakeTime_ = _unstakeTimes[msg.sender];
-        if (unstakeTime_ == 0) revert NoUnstakePrepared();
-        if (unstakeTime_ > block.timestamp) revert NotUnstaked();
-
-        _checkpoint(msg.sender);
-        delete _balances[msg.sender];
-        delete _unstakeTimes[msg.sender];
-        totalStaked -= amount_;
-        totalPrepared -= amount_;
-
-        _addressProvider.tlx().transfer(account_, amount_);
-
-        emit Unstaked(msg.sender, account_, amount_);
-    }
-
-    function claim() public override {
-        if (!claimingEnabled) revert ClaimingNotEnabled();
-
-        _checkpoint(msg.sender);
-
-        uint256 amount_ = _usersRewards[msg.sender];
-        if (amount_ == 0) return;
-
-        delete _usersRewards[msg.sender];
-        IERC20(rewardToken).transfer(msg.sender, amount_);
-
-        emit Claimed(msg.sender, amount_);
-    }
-
-    function donateRewards(uint256 amount_) public override {
+    /// @inheritdoc IRewardsStreaming
+    function donateRewards(uint256 amount_) external override {
         if (amount_ == 0) revert ZeroAmount();
         uint256 divisor_ = totalStaked - totalPrepared;
         if (divisor_ == 0) revert ZeroBalance();
@@ -125,59 +44,121 @@ contract Staker is IStaker, Ownable {
         emit DonatedRewards(msg.sender, amount_);
     }
 
+    /// @inheritdoc IRewardsStreaming
+    function claim() external override {
+        if (!claimingEnabled) revert ClaimingNotEnabled();
+
+        _claim();
+    }
+
+    /// @inheritdoc IStaker
+    function stake(uint256 amount_) external override {
+        stakeFor(amount_, msg.sender);
+    }
+
+    /// @inheritdoc IStaker
+    function listQueuedUnstakes(
+        address account
+    ) external view returns (Unstakes.UserUnstakeData[] memory unstakes) {
+        return _queuedUnstakes[account].list();
+    }
+
+    /// @inheritdoc IStaker
+    function stakeFor(uint256 amount_, address account_) public override {
+        if (amount_ == 0) revert ZeroAmount();
+        if (account_ == address(0)) revert Errors.ZeroAddress();
+
+        _checkpoint(account_);
+
+        _addressProvider.tlx().transferFrom(msg.sender, address(this), amount_);
+        _balances[account_] += amount_;
+        totalStaked += amount_;
+
+        emit Staked(msg.sender, account_, amount_);
+    }
+
+    /// @inheritdoc IStaker
+    function prepareUnstake(
+        uint256 amount_
+    ) public override returns (uint256 id) {
+        if (amount_ == 0) revert ZeroAmount();
+        if (activeBalanceOf(msg.sender) < amount_) revert InsufficientBalance();
+
+        _checkpoint(msg.sender);
+        id = _queuedUnstakes[msg.sender].queue(
+            amount_,
+            block.timestamp + unstakeDelay
+        );
+        totalPrepared += amount_;
+
+        emit PreparedUnstake(msg.sender);
+    }
+
+    /// @inheritdoc IStaker
     function enableClaiming() public override onlyOwner {
         if (claimingEnabled) revert ClaimingAlreadyEnabled();
 
         claimingEnabled = true;
     }
 
-    function claimable(
+    /// @inheritdoc IStaker
+    function unstake(uint256 withdrawalId_) public override {
+        unstakeFor(msg.sender, withdrawalId_);
+    }
+
+    /// @inheritdoc IStaker
+    function restake(uint256 withdrawalId_) public override {
+        _checkpoint(msg.sender);
+
+        Unstakes.UserUnstake memory withdrawal_ = _queuedUnstakes[msg.sender]
+            .remove(withdrawalId_);
+        totalPrepared -= withdrawal_.amount;
+
+        emit Restaked(msg.sender, withdrawal_.amount);
+    }
+
+    /// @inheritdoc IStaker
+    function unstakeFor(
+        address account_,
+        uint256 withdrawalId_
+    ) public override {
+        _checkpoint(msg.sender);
+
+        Unstakes.UserUnstake memory withdrawal_ = _queuedUnstakes[msg.sender]
+            .remove(withdrawalId_);
+        uint256 unstakeTime_ = withdrawal_.unstakeTime;
+        if (unstakeTime_ > block.timestamp) revert NotUnstaked();
+
+        uint256 amount_ = withdrawal_.amount;
+
+        _balances[msg.sender] -= amount_;
+        totalStaked -= amount_;
+        totalPrepared -= amount_;
+
+        _addressProvider.tlx().transfer(account_, amount_);
+
+        emit Unstaked(msg.sender, account_, amount_);
+    }
+
+    /// @inheritdoc IRewardsStreaming
+    function activeBalanceOf(
         address account_
-    ) public view override returns (uint256) {
-        return _usersRewards[account_] + _newRewards(account_);
+    )
+        public
+        view
+        override(IRewardsStreaming, RewardsStreaming)
+        returns (uint256)
+    {
+        return _balances[account_] - _queuedUnstakes[account_].totalQueued;
     }
 
-    function balanceOf(address account) public view override returns (uint256) {
-        return _balances[account];
-    }
-
-    function unstakeTime(
-        address account
-    ) public view override returns (uint256) {
-        return _unstakeTimes[account];
-    }
-
-    function isUnstaked(address account) public view override returns (bool) {
-        if (!_hasPreparedUnstake(account)) return false;
-        return _unstakeTimes[account] <= block.timestamp;
-    }
-
+    /// @inheritdoc IStaker
     function symbol() public view override returns (string memory) {
         return string.concat("st", _addressProvider.tlx().symbol());
     }
 
+    /// @inheritdoc IStaker
     function name() public view override returns (string memory) {
         return string.concat("Staked ", _addressProvider.tlx().name());
-    }
-
-    function decimals() public view override returns (uint8) {
-        return _addressProvider.tlx().decimals();
-    }
-
-    function _checkpoint(address account_) internal {
-        _usersRewards[account_] += _newRewards(account_);
-        _usersRewardIntegral[account_] = _rewardIntegral;
-    }
-
-    function _newRewards(address account_) internal view returns (uint256) {
-        if (_hasPreparedUnstake(account_)) return 0;
-        uint256 integral_ = _rewardIntegral - _usersRewardIntegral[account_];
-        return integral_.mul(_balances[account_]);
-    }
-
-    function _hasPreparedUnstake(
-        address account_
-    ) internal view returns (bool) {
-        return _unstakeTimes[account_] != 0;
     }
 }

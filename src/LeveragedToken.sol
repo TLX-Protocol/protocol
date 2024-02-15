@@ -5,6 +5,7 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
@@ -14,7 +15,7 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 
-contract LeveragedToken is ILeveragedToken, ERC20 {
+contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     using ScaledNumber for uint256;
     using Address for address;
 
@@ -22,9 +23,14 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
 
     uint256 internal _lastRebalanceTimestamp;
 
+    /// @inheritdoc ILeveragedToken
     string public override targetAsset;
+    /// @inheritdoc ILeveragedToken
     uint256 public immutable override targetLeverage;
+    /// @inheritdoc ILeveragedToken
     bool public immutable override isLong;
+    /// @inheritdoc ILeveragedToken
+    bool public override isPaused;
 
     constructor(
         string memory name_,
@@ -40,11 +46,13 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
+    /// @inheritdoc ILeveragedToken
     function mint(
         uint256 baseAmountIn_,
         uint256 minLeveragedTokenAmountOut_
     ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
+        if (isPaused) revert Paused();
         _ensureNoPendingLeverageUpdate();
 
         // Accounting
@@ -71,6 +79,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         return leveragedTokenAmount_;
     }
 
+    /// @inheritdoc ILeveragedToken
     function redeem(
         uint256 leveragedTokenAmount_,
         uint256 minBaseAmountReceived_
@@ -118,6 +127,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         return baseAmountReceived_;
     }
 
+    /// @inheritdoc ILeveragedToken
     function rebalance() public override {
         bool canRebalance_ = _addressProvider.isRebalancer(msg.sender);
         if (!canRebalance_) revert Errors.NotAuthorized();
@@ -126,6 +136,13 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         _rebalance();
     }
 
+    /// @inheritdoc ILeveragedToken
+    function setIsPaused(bool isPaused_) public override onlyOwner {
+        if (isPaused == isPaused_) revert Errors.SameAsCurrent();
+        isPaused = isPaused_;
+    }
+
+    /// @inheritdoc ILeveragedToken
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = totalSupply();
         uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
@@ -136,10 +153,12 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         return totalValue.div(totalSupply_);
     }
 
+    /// @inheritdoc ILeveragedToken
     function isActive() public view override returns (bool) {
         return exchangeRate() > 0;
     }
 
+    /// @inheritdoc ILeveragedToken
     function canRebalance() public view override returns (bool) {
         // Can't rebalance if there is no margin
         if (
@@ -170,6 +189,7 @@ contract LeveragedToken is ILeveragedToken, ERC20 {
         return percentDiff_ >= rebalanceThreshold();
     }
 
+    /// @inheritdoc ILeveragedToken
     function rebalanceThreshold() public view override returns (uint256) {
         return
             _addressProvider.parameterProvider().rebalanceThreshold(

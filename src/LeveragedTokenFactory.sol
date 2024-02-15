@@ -24,7 +24,9 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     mapping(string => mapping(uint256 => mapping(bool => address)))
         internal _tokens;
 
+    /// @inheritdoc ILeveragedTokenFactory
     mapping(address => address) public override pair;
+    /// @inheritdoc ILeveragedTokenFactory
     mapping(address => bool) public override isLeveragedToken;
 
     constructor(address addressProvider_, uint256 maxLeverage_) {
@@ -32,6 +34,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         _maxLeverage = maxLeverage_;
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function createLeveragedTokens(
         string calldata targetAsset_,
         uint256 targetLeverage_,
@@ -61,48 +64,57 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             true,
             rebalanceThreshold_
         );
+        Ownable(longToken).transferOwnership(msg.sender);
         shortToken = _deployToken(
             targetAsset_,
             targetLeverage_,
             false,
             rebalanceThreshold_
         );
+        Ownable(shortToken).transferOwnership(msg.sender);
 
         // Setting storage
         pair[longToken] = shortToken;
         pair[shortToken] = longToken;
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function allTokens() external view override returns (address[] memory) {
         return _allTokens;
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function longTokens() external view override returns (address[] memory) {
         return _longTokens;
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function shortTokens() external view override returns (address[] memory) {
         return _shortTokens;
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function allTokens(
         string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _allTargetTokens[targetAsset_];
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function longTokens(
         string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _longTargetTokens[targetAsset_];
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function shortTokens(
         string calldata targetAsset_
     ) external view override returns (address[] memory) {
         return _shortTargetTokens[targetAsset_];
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function token(
         string calldata targetAsset_,
         uint256 targetLeverage_,
@@ -111,6 +123,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
         return _tokens[targetAsset_][targetLeverage_][isLong_];
     }
 
+    /// @inheritdoc ILeveragedTokenFactory
     function tokenExists(
         string calldata targetAsset_,
         uint256 targetLeverage_,

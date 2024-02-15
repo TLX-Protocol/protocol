@@ -20,7 +20,9 @@ contract Referrals is IReferrals, Ownable {
     // Earnings contains both referrer earnings and rebates
     mapping(address => uint256) internal _earnings;
 
+    /// @inheritdoc IReferrals
     uint256 public override rebatePercent;
+    /// @inheritdoc IReferrals
     uint256 public override earningsPercent;
 
     constructor(
@@ -33,6 +35,7 @@ contract Referrals is IReferrals, Ownable {
         earningsPercent = earningsPercent_;
     }
 
+    /// @inheritdoc IReferrals
     function takeEarnings(
         uint256 fees_,
         address user_
@@ -59,6 +62,7 @@ contract Referrals is IReferrals, Ownable {
         return totalAmount_;
     }
 
+    /// @inheritdoc IReferrals
     function claimEarnings() external override returns (uint256) {
         uint256 amount_ = _earnings[msg.sender];
         if (amount_ == 0) return 0;
@@ -68,6 +72,7 @@ contract Referrals is IReferrals, Ownable {
         return amount_;
     }
 
+    /// @inheritdoc IReferrals
     function register(
         address referrer_,
         bytes32 code_
@@ -80,6 +85,7 @@ contract Referrals is IReferrals, Ownable {
         emit Registered(referrer_, code_);
     }
 
+    /// @inheritdoc IReferrals
     function updateReferral(bytes32 code_) external override {
         if (_referrals[msg.sender] == code_) revert SameCode();
         if (_referrers[code_] == address(0)) revert InvalidCode();
@@ -87,6 +93,7 @@ contract Referrals is IReferrals, Ownable {
         emit UpdatedReferral(msg.sender, code_);
     }
 
+    /// @inheritdoc IReferrals
     function setRebatePercent(
         uint256 rebatePercent_
     ) external override onlyOwner {
@@ -97,6 +104,7 @@ contract Referrals is IReferrals, Ownable {
         emit RebateSet(rebatePercent_);
     }
 
+    /// @inheritdoc IReferrals
     function setEarningsPercent(
         uint256 earningsPercent_
     ) external override onlyOwner {
@@ -106,12 +114,14 @@ contract Referrals is IReferrals, Ownable {
         emit EarningsSet(earningsPercent_);
     }
 
+    /// @inheritdoc IReferrals
     function codeRebate(
         bytes32 code_
     ) external view override returns (uint256) {
         return _codeRebate(code_);
     }
 
+    /// @inheritdoc IReferrals
     function userRebate(
         address user_
     ) external view override returns (uint256) {
@@ -120,18 +130,22 @@ contract Referrals is IReferrals, Ownable {
         return _codeRebate(code_);
     }
 
+    /// @inheritdoc IReferrals
     function referrer(bytes32 code_) external view override returns (address) {
         return _referrers[code_];
     }
 
+    /// @inheritdoc IReferrals
     function code(address referrer_) external view override returns (bytes32) {
         return _codes[referrer_];
     }
 
+    /// @inheritdoc IReferrals
     function referral(address user_) external view override returns (bytes32) {
         return _referrals[user_];
     }
 
+    /// @inheritdoc IReferrals
     function earned(
         address referrer_
     ) external view override returns (uint256) {

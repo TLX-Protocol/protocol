@@ -49,11 +49,6 @@ contract AirdropTest is IntegrationTest {
         assertEq(airdrop.hasClaimed(bob), true, "hasClaimed(bob)");
         assertEq(tlx.balanceOf(bob), 321e18, "balanceOf(bob)");
         assertEq(tlx.balanceOf(alice), 0, "balanceOf(alice)");
-        assertEq(
-            tlx.balanceOf(treasury),
-            Config.TREASURY_AMOUNT,
-            "balanceOf(treasury)"
-        );
     }
 
     function testRevertsWhenAlreadyClaimed() public {
@@ -94,7 +89,7 @@ contract AirdropTest is IntegrationTest {
         airdrop.mintUnclaimed();
         assertEq(
             tlx.balanceOf(treasury),
-            Config.AIRDROP_AMOUNT + Config.TREASURY_AMOUNT,
+            Config.AMM_AMOUNT,
             "balanceOf(treasury)"
         );
     }

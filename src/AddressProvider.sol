@@ -27,6 +27,7 @@ contract AddressProvider is IAddressProvider, Ownable {
     mapping(bytes32 => bool) internal _frozenAddresses;
     EnumerableSet.AddressSet internal _rebalancer;
 
+    /// @inheritdoc IAddressProvider
     function updateAddress(
         bytes32 key_,
         address value_
@@ -38,30 +39,36 @@ contract AddressProvider is IAddressProvider, Ownable {
         emit AddressUpdated(key_, value_);
     }
 
+    /// @inheritdoc IAddressProvider
     function freezeAddress(bytes32 key_) external override onlyOwner {
         if (_frozenAddresses[key_]) revert AddressIsFrozen(key_);
         _frozenAddresses[key_] = true;
         emit AddressFrozen(key_);
     }
 
+    /// @inheritdoc IAddressProvider
     function addRebalancer(address account_) external override onlyOwner {
         _rebalancer.add(account_);
         emit RebalancerAdded(account_);
     }
 
+    /// @inheritdoc IAddressProvider
     function removeRebalancer(address account_) external override onlyOwner {
         _rebalancer.remove(account_);
         emit RebalancerRemoved(account_);
     }
 
+    /// @inheritdoc IAddressProvider
     function addressOf(bytes32 key_) external view override returns (address) {
         return _addresses[key_];
     }
 
+    /// @inheritdoc IAddressProvider
     function isAddressFrozen(bytes32 key_) external view returns (bool) {
         return _frozenAddresses[key_];
     }
 
+    /// @inheritdoc IAddressProvider
     function leveragedTokenFactory()
         external
         view
@@ -74,42 +81,52 @@ contract AddressProvider is IAddressProvider, Ownable {
             );
     }
 
+    /// @inheritdoc IAddressProvider
     function referrals() external view override returns (IReferrals) {
         return IReferrals(_getAddress(AddressKeys.REFERRALS));
     }
 
+    /// @inheritdoc IAddressProvider
     function airdrop() external view override returns (IAirdrop) {
         return IAirdrop(_getAddress(AddressKeys.AIRDROP));
     }
 
+    /// @inheritdoc IAddressProvider
     function bonding() external view override returns (IBonding) {
         return IBonding(_getAddress(AddressKeys.BONDING));
     }
 
+    /// @inheritdoc IAddressProvider
     function treasury() external view override returns (address) {
         return _getAddress(AddressKeys.TREASURY);
     }
 
+    /// @inheritdoc IAddressProvider
     function vesting() external view override returns (IVesting) {
         return IVesting(_getAddress(AddressKeys.VESTING));
     }
 
+    /// @inheritdoc IAddressProvider
     function tlx() external view override returns (ITlxToken) {
         return ITlxToken(_getAddress(AddressKeys.TLX));
     }
 
+    /// @inheritdoc IAddressProvider
     function staker() external view override returns (IStaker) {
         return IStaker(_getAddress(AddressKeys.STAKER));
     }
 
+    /// @inheritdoc IAddressProvider
     function baseAsset() external view override returns (IERC20Metadata) {
         return IERC20Metadata(_getAddress(AddressKeys.BASE_ASSET));
     }
 
+    /// @inheritdoc IAddressProvider
     function zapSwap() external view override returns (IZapSwap) {
         return IZapSwap(_getAddress(AddressKeys.ZAP_SWAP));
     }
 
+    /// @inheritdoc IAddressProvider
     function synthetixHandler()
         external
         view
@@ -119,10 +136,12 @@ contract AddressProvider is IAddressProvider, Ownable {
         return ISynthetixHandler(_getAddress(AddressKeys.SYNTHETIX_HANDLER));
     }
 
+    /// @inheritdoc IAddressProvider
     function pol() external view override returns (address) {
         return _getAddress(AddressKeys.POL);
     }
 
+    /// @inheritdoc IAddressProvider
     function parameterProvider()
         external
         view
@@ -132,16 +151,19 @@ contract AddressProvider is IAddressProvider, Ownable {
         return IParameterProvider(_getAddress(AddressKeys.PARAMETER_PROVIDER));
     }
 
+    /// @inheritdoc IAddressProvider
     function isRebalancer(
         address account_
     ) external view override returns (bool) {
         return _rebalancer.contains(account_);
     }
 
+    /// @inheritdoc IAddressProvider
     function rebalancers() external view override returns (address[] memory) {
         return _rebalancer.values();
     }
 
+    /// @inheritdoc IAddressProvider
     function rebalanceFeeReceiver() external view override returns (address) {
         return _getAddress(AddressKeys.REBALANCE_FEE_RECEIVER);
     }
