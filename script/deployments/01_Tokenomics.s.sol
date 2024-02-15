@@ -101,18 +101,6 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         _deployedAddress("Staker", address(staker));
         addressProvider.updateAddress(AddressKeys.STAKER, address(staker));
 
-        // Genesis Locker Deployment
-        GenesisLocker genesisLocker = new GenesisLocker(
-            address(addressProvider),
-            Config.GENESIS_LOCKER_LOCK_TIME,
-            Config.BASE_ASSET
-        );
-        _deployedAddress("GenesisLocker", address(genesisLocker));
-        addressProvider.updateAddress(
-            AddressKeys.GENESIS_LOCKER,
-            address(genesisLocker)
-        );
-
         // TLX Token Deployment
         TlxToken tlx = new TlxToken(
             Config.TOKEN_NAME,
@@ -126,6 +114,18 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         );
         _deployedAddress("TLX", address(tlx));
         addressProvider.updateAddress(AddressKeys.TLX, address(tlx));
+
+        // Genesis Locker Deployment
+        GenesisLocker genesisLocker = new GenesisLocker(
+            address(addressProvider),
+            Config.GENESIS_LOCKER_LOCK_TIME,
+            Config.BASE_ASSET
+        );
+        _deployedAddress("GenesisLocker", address(genesisLocker));
+        addressProvider.updateAddress(
+            AddressKeys.GENESIS_LOCKER,
+            address(genesisLocker)
+        );
     }
 
     function testTokenomicsDeployment() public {
