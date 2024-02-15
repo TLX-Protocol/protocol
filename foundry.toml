@@ -4,4 +4,8 @@ out = "out"
 libs = ["lib"]
 via_ir = true
 ffi = true
-fs_permissions = [{ access = "read-write", path = "./"}]
+solc = "0.8.24"
+fs_permissions = [{ access = "read-write", path = "./" }]
+
+[profile.dev]
+optimizer = false
