@@ -109,7 +109,7 @@ contract Staker is IStaker, RewardsStreaming {
         Withdrawals.UserWithdrawal memory withdrawal_ = _queuedWithdrawals[
             msg.sender
         ].remove(withdrawalId_);
-        uint256 unstakeTime_ = withdrawal_.unlockTime;
+        uint256 unstakeTime_ = withdrawal_.unstakeTime;
         if (unstakeTime_ > block.timestamp) revert NotUnstaked();
 
         uint256 amount_ = withdrawal_.amount;
@@ -121,6 +121,12 @@ contract Staker is IStaker, RewardsStreaming {
         _addressProvider.tlx().transfer(account_, amount_);
 
         emit Unstaked(msg.sender, account_, amount_);
+    }
+
+    function listQueuedUnstakes(
+        address account
+    ) external view returns (Withdrawals.UserWithdrawalData[] memory unstakes) {
+        return _queuedWithdrawals[account].list();
     }
 
     function activeBalanceOf(
@@ -140,26 +146,5 @@ contract Staker is IStaker, RewardsStreaming {
 
     function name() public view override returns (string memory) {
         return string.concat("Staked ", _addressProvider.tlx().name());
-    }
-
-    function unstakeTime(
-        address account_,
-        uint256 withdrawalId_
-    ) public view override returns (uint256) {
-        (Withdrawals.UserWithdrawal memory withdrawal_, ) = _queuedWithdrawals[
-            account_
-        ].tryGet(withdrawalId_);
-        return withdrawal_.unlockTime;
-    }
-
-    function isUnstaked(
-        address account_,
-        uint256 withdrawalId_
-    ) public view override returns (bool) {
-        (
-            Withdrawals.UserWithdrawal memory withdrawal_,
-            bool exists_
-        ) = _queuedWithdrawals[account_].tryGet(withdrawalId_);
-        return exists_ && withdrawal_.unlockTime <= block.timestamp;
     }
 }

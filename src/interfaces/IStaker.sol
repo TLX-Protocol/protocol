@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {IRewardsStreaming} from "./IRewardsStreaming.sol";
+import {Withdrawals} from "../libraries/Withdrawals.sol";
 
 interface IStaker is IRewardsStreaming {
     event Staked(
@@ -91,27 +92,13 @@ interface IStaker is IRewardsStreaming {
     function totalPrepared() external view returns (uint256 amount);
 
     /**
-     * @notice Returns the timestamp for when the given account's TLX tokens are unstaked.
-     * @dev Returns 0 if the account's TLX tokens are not prepared for unstakeing.
-     * @param account The account to return the unstake time for.
-     * @param withdrawalId The ID of the withdrawal to return the unstake time for.
-     * @return time The timestamp for when the given account's TLX tokens are unstaked.
+     * @notice Returns all the queued unstakes for the given account.
+     * @param account The account to return the unstakes for.
+     * @return unstakes All the queued unstakes for the given account.
      */
-    function unstakeTime(
-        address account,
-        uint256 withdrawalId
-    ) external view returns (uint256 time);
-
-    /**
-     * @notice Returns whether the given account's TLX tokens are unstaked.
-     * @param account The account to return whether the TLX tokens are unstaked for.
-     * @param withdrawalId The ID of the withdrawal to check.
-     * @return unstaked Whether the given account's TLX tokens are unstaked.
-     */
-    function isUnstaked(
-        address account,
-        uint256 withdrawalId
-    ) external view returns (bool);
+    function listQueuedUnstakes(
+        address account
+    ) external view returns (Withdrawals.UserWithdrawalData[] memory unstakes);
 
     /**
      * @notice Returns the delay the user must wait when unstakeing.

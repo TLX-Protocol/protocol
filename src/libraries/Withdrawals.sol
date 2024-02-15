@@ -7,9 +7,15 @@ import {Errors} from "./Errors.sol";
 library Withdrawals {
     using EnumerableSet for EnumerableSet.UintSet;
 
+    struct UserWithdrawalData {
+        uint256 id;
+        uint256 amount;
+        uint256 unstakeTime;
+    }
+
     struct UserWithdrawal {
         uint192 amount;
-        uint64 unlockTime;
+        uint64 unstakeTime;
     }
 
     struct UserWithdrawals {
@@ -22,12 +28,12 @@ library Withdrawals {
     function queue(
         UserWithdrawals storage self,
         uint256 amount,
-        uint256 unlockTime
+        uint256 unstakeTime
     ) internal returns (uint256) {
         uint256 id = self.nextId;
         self.withdrawals[id] = UserWithdrawal({
             amount: uint192(amount),
-            unlockTime: uint64(unlockTime)
+            unstakeTime: uint64(unstakeTime)
         });
         self.ids.add(id);
         self.nextId++;
@@ -60,5 +66,21 @@ library Withdrawals {
         (UserWithdrawal memory withdrawal_, bool exists_) = tryGet(self, id);
         if (!exists_) revert Errors.DoesNotExist();
         return withdrawal_;
+    }
+
+    function list(
+        UserWithdrawals storage self
+    ) internal view returns (UserWithdrawalData[] memory withdrawals) {
+        uint256 length = self.ids.length();
+        withdrawals = new UserWithdrawalData[](length);
+        for (uint256 i; i < length; i++) {
+            uint256 id = self.ids.at(i);
+            UserWithdrawal memory withdrawal = self.withdrawals[id];
+            withdrawals[i] = UserWithdrawalData({
+                id: id,
+                amount: withdrawal.amount,
+                unstakeTime: withdrawal.unstakeTime
+            });
+        }
     }
 }

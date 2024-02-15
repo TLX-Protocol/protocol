@@ -10,6 +10,7 @@ import {IStaker} from "../src/interfaces/IStaker.sol";
 
 import {Config} from "../src/libraries/Config.sol";
 import {Errors} from "../src/libraries/Errors.sol";
+import {Withdrawals} from "../src/libraries/Withdrawals.sol";
 
 contract StakerTest is IntegrationTest {
     IERC20Metadata public reward;
@@ -47,8 +48,11 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
-        assertEq(staker.unstakeTime(address(this), 0), 0, "unstakeTime");
-        assertEq(staker.isUnstaked(address(this), 0), false, "isUnstaked");
+        assertEq(
+            staker.listQueuedUnstakes(address(this)).length,
+            0,
+            "listQueuedUnstakes"
+        );
     }
 
     function testAccounting() public {
@@ -220,10 +224,16 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.claimable(bob), 0, "claimable");
-        assertEq(staker.unstakeTime(address(this), 0), 0, "unstakeTime");
-        assertEq(staker.unstakeTime(bob, 0), 0, "unstakeTime");
-        assertEq(staker.isUnstaked(address(this), 0), false, "isUnstaked");
-        assertEq(staker.isUnstaked(bob, 0), false, "isUnstaked");
+        assertEq(
+            staker.listQueuedUnstakes(address(this)).length,
+            0,
+            "listQueuedUnstakes"
+        );
+        assertEq(
+            staker.listQueuedUnstakes(bob).length,
+            0,
+            "listQueuedUnstakes"
+        );
     }
 
     function testPrepareUnstake() public {
@@ -236,12 +246,16 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 100e18, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
+        Withdrawals.UserWithdrawalData[] memory queued = staker
+            .listQueuedUnstakes(address(this));
+        assertEq(queued.length, 1, "listQueuedUnstakes");
+        assertEq(queued[0].id, id, "id");
+        assertEq(queued[0].amount, 100e18, "amount");
         assertEq(
-            staker.unstakeTime(address(this), id),
+            queued[0].unstakeTime,
             block.timestamp + staker.unstakeDelay(),
             "unstakeTime"
         );
-        assertEq(staker.isUnstaked(address(this), id), false, "isUnstaked");
     }
 
     function testPrepareUnstakeFailsWithInsufficientBalance() public {
@@ -271,16 +285,18 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         uint256 id = staker.prepareUnstake(100e18);
-        assertEq(staker.isUnstaked(address(this), id), false, "isUnstaked");
+        Withdrawals.UserWithdrawalData[] memory queued = staker
+            .listQueuedUnstakes(address(this));
+        assertEq(queued.length, 1, "listQueuedUnstakes");
         skip(staker.unstakeDelay());
-        assertEq(staker.isUnstaked(address(this), id), true, "isUnstaked");
         staker.unstake(id);
         assertEq(tlx.balanceOf(address(this)), 100e18, "tlx balance");
         assertEq(staker.balanceOf(address(this)), 0, "staker balance");
         assertEq(staker.totalStaked(), 0, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
-        assertEq(staker.unstakeTime(address(this), id), 0, "unstakeTime");
+        queued = staker.listQueuedUnstakes(address(this));
+        assertEq(queued.length, 0, "listQueuedUnstakes");
     }
 
     function testUnstakeMultiple() public {
@@ -315,11 +331,10 @@ contract StakerTest is IntegrationTest {
         tlx.approve(address(staker), 100e18);
         staker.stake(100e18);
         uint256 id = staker.prepareUnstake(100e18);
-        assertEq(staker.isUnstaked(address(this), id), false, "isUnstaked");
-        assertEq(staker.isUnstaked(bob, id), false, "isUnstaked");
+        Withdrawals.UserWithdrawalData[] memory queued = staker
+            .listQueuedUnstakes(address(this));
+        assertEq(queued.length, 1, "listQueuedUnstakes");
         skip(staker.unstakeDelay());
-        assertEq(staker.isUnstaked(address(this), id), true, "isUnstaked");
-        assertEq(staker.isUnstaked(bob, id), false, "isUnstaked");
         staker.unstakeFor(bob, id);
         assertEq(tlx.balanceOf(bob), 100e18, "tlx balance");
         assertEq(tlx.balanceOf(address(this)), 0, "tlx balance");
@@ -329,8 +344,8 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
         assertEq(staker.claimable(bob), 0, "claimable");
-        assertEq(staker.unstakeTime(address(this), id), 0, "unstakeTime");
-        assertEq(staker.unstakeTime(bob, id), 0, "unstakeTime");
+        queued = staker.listQueuedUnstakes(address(this));
+        assertEq(queued.length, 0, "listQueuedUnstakes");
     }
 
     function testRestakeReversWithNoUnstakePrepared() public {
@@ -350,7 +365,11 @@ contract StakerTest is IntegrationTest {
         assertEq(staker.totalStaked(), 100e18, "totalStaked");
         assertEq(staker.totalPrepared(), 0, "totalPrepared");
         assertEq(staker.claimable(address(this)), 0, "claimable");
-        assertEq(staker.unstakeTime(address(this), 0), 0, "unstakeTime");
+        assertEq(
+            staker.listQueuedUnstakes(address(this)).length,
+            0,
+            "listQueuedUnstakes"
+        );
     }
 
     function testNonOwnerCantEnableClaiming() public {
