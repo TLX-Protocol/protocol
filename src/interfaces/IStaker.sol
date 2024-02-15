@@ -86,8 +86,8 @@ interface IStaker is IRewardsStreaming {
     function name() external view returns (string memory name);
 
     /**
-     * @notice Returns the total amount of TLX tokens prepared for unstakeing.
-     * @return amount The total amount of TLX tokens prepared for unstakeing.
+     * @notice Returns the total amount of TLX tokens prepared for unstaking.
+     * @return amount The total amount of TLX tokens prepared for unstaking.
      */
     function totalPrepared() external view returns (uint256 amount);
 
