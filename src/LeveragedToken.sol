@@ -201,6 +201,20 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     }
 
     function _rebalance() internal {
+        // Charging streaming fee
+        _chargeStreamingFee();
+
+        // Rebalancing
+        _submitLeverageUpdate();
+        _lastRebalanceTimestamp = block.timestamp;
+        uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
+            targetAsset,
+            address(this)
+        );
+        emit Rebalanced(currentLeverage_);
+    }
+
+    function _chargeStreamingFee() internal {
         // Accounting
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 streamingFeePercent_ = addressProvider_
@@ -223,15 +237,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
             addressProvider_.baseAsset().approve(address(staker_), fee_);
             staker_.donateRewards(fee_);
         }
-
-        // Rebalancing
-        _submitLeverageUpdate();
-        _lastRebalanceTimestamp = block.timestamp;
-        uint256 currentLeverage_ = synthetixHandler_.leverage(
-            targetAsset_,
-            address(this)
-        );
-        emit Rebalanced(currentLeverage_);
     }
 
     function _chargeRebalanceFee() internal {
