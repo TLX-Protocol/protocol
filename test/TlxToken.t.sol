@@ -13,15 +13,23 @@ contract TlxTokenTest is IntegrationTest {
         assertEq(tlx.name(), Config.TOKEN_NAME);
         assertEq(tlx.symbol(), Config.TOKEN_SYMBOL);
         assertEq(tlx.decimals(), 18);
+    }
+
+    function testMintInitialSupply() public {
         assertEq(
             tlx.totalSupply(),
-            Config.AIRDROP_AMOUNT +
+            Config.DIRECT_AIRDROP_AMOUNT +
+                Config.STREAMED_AIRDROP_AMOUNT +
                 Config.AMM_AMOUNT +
                 Config.BONDING_AMOUNT +
                 Config.VESTING_AMOUNT
         );
         assertEq(tlx.balanceOf(address(this)), 0);
-        assertEq(tlx.balanceOf(address(airdrop)), Config.AIRDROP_AMOUNT);
+        assertEq(tlx.balanceOf(address(airdrop)), Config.DIRECT_AIRDROP_AMOUNT);
+        assertEq(
+            tlx.balanceOf(address(genesisLocker)),
+            Config.STREAMED_AIRDROP_AMOUNT
+        );
         assertEq(tlx.balanceOf(address(bonding)), Config.BONDING_AMOUNT);
         assertEq(tlx.balanceOf(address(vesting)), Config.VESTING_AMOUNT);
     }

@@ -22,7 +22,8 @@ library Config {
     // Values
     uint256 public constant TOTAL_SUPPLY = 100_000_000e18; // 100 million TLX
     uint256 public constant AMM_AMOUNT = (TOTAL_SUPPLY * 10) / 100; // 10%
-    uint256 public constant AIRDROP_AMOUNT = (TOTAL_SUPPLY * 10) / 100; // 10%
+    uint256 public constant DIRECT_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 6) / 100; // 6% (goes to airdrop contract directly)
+    uint256 public constant STREAMED_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 4) / 100; // 4% (goes to Geneis Locker contract)
     uint256 public constant BONDING_AMOUNT = (TOTAL_SUPPLY * 42) / 100; // 42%
     uint256 public constant VESTING_AMOUNT = (TOTAL_SUPPLY * 38) / 100; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months

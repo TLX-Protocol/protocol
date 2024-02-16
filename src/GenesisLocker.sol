@@ -108,8 +108,11 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
     /// @inheritdoc IRewardsStreaming
     function donateRewards(uint256 amount_) public override {
+        if (msg.sender != address(_addressProvider.tlx()))
+            revert Errors.NotAuthorized();
         if (amount_ == 0) revert ZeroAmount();
         if (totalRewards > 0) revert RewardsAlreadyDonated();
+
         IERC20(rewardToken).transferFrom(msg.sender, address(this), amount_);
         totalRewards = amount_;
         rewardsStartTime = block.timestamp;
