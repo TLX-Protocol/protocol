@@ -22,7 +22,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
 
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal _lastRebalanceTimestamp;
+    uint256 internal _lastStreamingFeeTimestamp;
 
     /// @inheritdoc ILeveragedToken
     string public override targetAsset;
@@ -211,7 +211,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
 
         // Rebalancing
         _submitLeverageUpdate();
-        _lastRebalanceTimestamp = block.timestamp;
         uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
             targetAsset,
             address(this)
@@ -233,7 +232,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
             address(this)
         );
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
-        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
+        uint256 pastTime_ = block.timestamp - _lastStreamingFeeTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
         if (fee_ == 0) return;
 
@@ -242,6 +241,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         if (staker_.totalStaked() == 0) return;
         _addressProvider.baseAsset().approve(address(staker_), fee_);
         staker_.donateRewards(fee_);
+        _lastStreamingFeeTimestamp = block.timestamp;
     }
 
     function _chargeRebalanceFee() internal {
