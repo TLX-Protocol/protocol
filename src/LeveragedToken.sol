@@ -230,13 +230,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
         uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
+        if (fee_ == 0) return;
 
         // Sending fees to staker
-        IStaker staker_ = addressProvider_.staker();
-        if (fee_ != 0 && staker_.totalStaked() != 0) {
-            addressProvider_.baseAsset().approve(address(staker_), fee_);
-            staker_.donateRewards(fee_);
-        }
+        IStaker staker_ = _addressProvider.staker();
+        if (staker_.totalStaked() == 0) return;
+        _addressProvider.baseAsset().approve(address(staker_), fee_);
+        staker_.donateRewards(fee_);
     }
 
     function _chargeRebalanceFee() internal {
