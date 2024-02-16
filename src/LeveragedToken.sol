@@ -140,6 +140,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     }
 
     /// @inheritdoc ILeveragedToken
+    function chargeStreamingFee() public {
+        _chargeStreamingFee();
+    }
+
+    /// @inheritdoc ILeveragedToken
     function setIsPaused(bool isPaused_) public override onlyOwner {
         if (isPaused == isPaused_) revert Errors.SameAsCurrent();
         isPaused = isPaused_;
