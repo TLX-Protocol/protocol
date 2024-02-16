@@ -176,6 +176,43 @@ contract GenesisLockerTest is IntegrationTest {
         assertEq(tlx.balanceOf(alice), expectedAlice, "balance alice");
     }
 
+    function testShutdown() public {
+        _donateRewardAmount();
+
+        _mintTokensFor(address(tlx), bob, 100e18);
+
+        vm.startPrank(bob);
+        tlx.approve(address(genesisLocker), 100e18);
+        genesisLocker.lock(100e18);
+        vm.stopPrank();
+
+        skip(Config.GENESIS_LOCKER_LOCK_TIME / 4);
+
+        genesisLocker.shutdown();
+
+        assertTrue(genesisLocker.isShutdown(), "is shutdown");
+
+        assertEq(
+            tlx.balanceOf(treasury),
+            (rewardAmount * 3) / 4,
+            "balance treasury"
+        );
+
+        assertEq(
+            genesisLocker.claimable(bob),
+            rewardAmount / 4,
+            "claimable bob"
+        );
+        vm.prank(bob);
+        genesisLocker.migrate();
+        assertEq(staker.balanceOf(bob), 100e18, "staker balance bob");
+        vm.prank(bob);
+        genesisLocker.claim();
+        assertEq(tlx.balanceOf(bob), rewardAmount / 4, "balance bob");
+
+        assertEq(tlx.balanceOf(address(genesisLocker)), 0, "balance locker");
+    }
+
     function _donateRewardAmount() internal {
         _mintTokensFor(address(tlx), address(this), rewardAmount);
         tlx.approve(address(genesisLocker), rewardAmount);

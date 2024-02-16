@@ -16,6 +16,8 @@ import {RewardsStreaming} from "./RewardsStreaming.sol";
 contract GenesisLocker is IGenesisLocker, RewardsStreaming {
     using ScaledNumber for uint256;
 
+    bool internal _shutdown;
+
     uint256 internal _amountAccounted;
 
     /// @inheritdoc IGenesisLocker
@@ -62,8 +64,28 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
     }
 
     /// @inheritdoc IGenesisLocker
+    function shutdown() external onlyOwner {
+        if (_shutdown) revert AlreadyShutdown();
+        _globalCheckpoint();
+
+        _shutdown = true;
+
+        uint256 amount_ = totalRewards - _amountAccounted;
+        if (amount_ > 0) {
+            IERC20(rewardToken).transfer(_addressProvider.treasury(), amount_);
+        }
+
+        emit Shutdown();
+    }
+
+    /// @inheritdoc IGenesisLocker
     function migrate() external {
         migrateFor(msg.sender);
+    }
+
+    /// @inheritdoc IGenesisLocker
+    function isShutdown() external view override returns (bool) {
+        return _shutdown;
     }
 
     /// @inheritdoc IGenesisLocker
@@ -71,7 +93,8 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         uint256 amount_ = _balances[msg.sender];
         if (amount_ == 0) revert ZeroAmount();
         if (receiver_ == address(0)) revert Errors.ZeroAddress();
-        if (unlockTime[msg.sender] > block.timestamp) revert NotUnlocked();
+        if (!_shutdown && unlockTime[msg.sender] > block.timestamp)
+            revert NotUnlocked();
 
         _checkpoint(msg.sender);
 
