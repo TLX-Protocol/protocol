@@ -219,6 +219,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     }
 
     function _chargeStreamingFee() internal {
+        // First deposit, don't charge fee but start streaming
+        if (_lastStreamingFeeTimestamp == 0) {
+            _lastStreamingFeeTimestamp = block.timestamp;
+            return;
+        }
+
         // Accounting
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 streamingFeePercent_ = addressProvider_
@@ -239,6 +245,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Sending fees to staker
         IStaker staker_ = _addressProvider.staker();
         if (staker_.totalStaked() == 0) return;
+        _withdrawMargin(fee_);
         _addressProvider.baseAsset().approve(address(staker_), fee_);
         staker_.donateRewards(fee_);
         _lastStreamingFeeTimestamp = block.timestamp;
