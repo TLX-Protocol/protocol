@@ -129,17 +129,17 @@ contract ZapSwap is IZapSwap, Ownable {
         uint256 baseAmountIn_ = baseAsset_.balanceOf(address(this));
 
         // Minting leveraged tokens using baseAsset
-        ILeveragedToken targetLeveragedToken = ILeveragedToken(
+        ILeveragedToken targetLeveragedToken_ = ILeveragedToken(
             leveragedTokenAddress_
         );
         baseAsset_.approve(leveragedTokenAddress_, baseAmountIn_);
-        uint256 leveragedTokenAmountOut_ = targetLeveragedToken.mint(
+        uint256 leveragedTokenAmountOut_ = targetLeveragedToken_.mint(
             baseAmountIn_,
             minLeveragedTokenAmountOut_
         );
 
         // Transferring leveraged tokens to user
-        targetLeveragedToken.transfer(msg.sender, leveragedTokenAmountOut_);
+        targetLeveragedToken_.transfer(msg.sender, leveragedTokenAmountOut_);
 
         emit Minted(
             msg.sender,
@@ -421,7 +421,7 @@ contract ZapSwap is IZapSwap, Ownable {
         uint256 idx_ = numAssets_; // invalid index; used to determine whether zap asset is supported
 
         // Iterating through supported zap assets
-        for (uint256 i_ = 0; i_ < numAssets_; i_++) {
+        for (uint256 i_; i_ < numAssets_; i_++) {
             address asset_ = _supportedZapAssets[i_];
             if (asset_ == zapAssetToRemove_) {
                 // Capturing the index of the zap asset to be removed

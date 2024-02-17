@@ -90,13 +90,13 @@ contract ParameterProvider is IParameterProvider, Ownable {
 
     /// @inheritdoc IParameterProvider
     function parameters() external view override returns (Parameter[] memory) {
-        uint256 length = _parameters.length();
-        Parameter[] memory _params = new Parameter[](length);
-        for (uint256 i = 0; i < length; i++) {
-            (bytes32 key, uint256 value) = _parameters.at(i);
-            _params[i] = Parameter(key, value);
+        uint256 length_ = _parameters.length();
+        Parameter[] memory params_ = new Parameter[](length_);
+        for (uint256 i_; i_ < length_; i_++) {
+            (bytes32 key_, uint256 value_) = _parameters.at(i_);
+            params_[i_] = Parameter(key_, value_);
         }
-        return _params;
+        return params_;
     }
 
     /// @inheritdoc IParameterProvider

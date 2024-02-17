@@ -32,8 +32,8 @@ contract Vesting is IVesting {
         _start = block.timestamp;
         _duration = duration_;
 
-        for (uint256 i; i < amounts_.length; i++) {
-            _amounts[amounts_[i].account] = amounts_[i].amount;
+        for (uint256 i_; i_ < amounts_.length; i_++) {
+            _amounts[amounts_[i_].account] = amounts_[i_].amount;
         }
     }
 

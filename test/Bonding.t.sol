@@ -240,7 +240,6 @@ contract BondingTest is IntegrationTest {
             0.001e18,
             "allAvailableTlx"
         );
-
     }
 
     function testAllAvailable() public {

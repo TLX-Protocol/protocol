@@ -24,14 +24,14 @@ contract Timelock is ITimelock, Ownable {
     ) external override onlyOwner returns (uint256) {
         uint256 id_ = _nextProposalId++;
         _proposalIds.add(id_);
-        uint256 ready = uint256(block.timestamp) +
+        uint256 ready_ = uint256(block.timestamp) +
             _validateCallsAndGetMaxDelay(calls_);
         _proposals[id_].id = id_;
-        _proposals[id_].ready = ready;
-        for (uint256 i; i < calls_.length; i++) {
-            _proposals[id_].calls.push(calls_[i]);
+        _proposals[id_].ready = ready_;
+        for (uint256 i_; i_ < calls_.length; i_++) {
+            _proposals[id_].calls.push(calls_[i_]);
         }
-        emit ProposalCreated(id_, ready, calls_);
+        emit ProposalCreated(id_, ready_, calls_);
         return id_;
     }
 
@@ -56,8 +56,8 @@ contract Timelock is ITimelock, Ownable {
         if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
         if (proposal_.ready > block.timestamp) revert ProposalNotReady(id_);
 
-        for (uint256 i; i < proposal_.calls.length; i++) {
-            Call memory call_ = proposal_.calls[i];
+        for (uint256 i_; i_ < proposal_.calls.length; i_++) {
+            Call memory call_ = proposal_.calls[i_];
             call_.target.functionCall(call_.data);
         }
 
@@ -69,8 +69,8 @@ contract Timelock is ITimelock, Ownable {
     function allProposals() external view returns (Proposal[] memory p) {
         uint256[] memory proposalIds_ = _proposalIds.values();
         Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
-        for (uint256 i; i < proposalIds_.length; i++) {
-            proposals_[i] = _proposals[proposalIds_[i]];
+        for (uint256 i_; i_ < proposalIds_.length; i_++) {
+            proposals_[i_] = _proposals[proposalIds_[i_]];
         }
         return proposals_;
     }
@@ -106,15 +106,15 @@ contract Timelock is ITimelock, Ownable {
     }
 
     function _filterProposals(
-        bool ready
+        bool ready_
     ) internal view returns (Proposal[] memory) {
         uint256[] memory proposalIds_ = _proposalIds.values();
         Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
         uint256 count_;
-        for (uint256 i; i < proposalIds_.length; i++) {
-            uint256 id_ = proposalIds_[i];
+        for (uint256 i_; i_ < proposalIds_.length; i_++) {
+            uint256 id_ = proposalIds_[i_];
             Proposal memory proposal_ = _proposals[id_];
-            if (ready == proposal_.ready > block.timestamp) continue;
+            if (ready_ == proposal_.ready > block.timestamp) continue;
             proposals_[count_++] = proposal_;
         }
         // solhint-disable-next-line no-inline-assembly
@@ -129,9 +129,9 @@ contract Timelock is ITimelock, Ownable {
         Call[] calldata calls_
     ) internal view returns (uint256) {
         uint256 maxDelay_;
-        for (uint256 i; i < calls_.length; i++) {
-            if (calls_[i].target == address(0)) revert InvalidTarget();
-            uint256 delay_ = _getDelay(calls_[i].data);
+        for (uint256 i_; i_ < calls_.length; i_++) {
+            if (calls_[i_].target == address(0)) revert InvalidTarget();
+            uint256 delay_ = _getDelay(calls_[i_].data);
             if (delay_ > maxDelay_) maxDelay_ = delay_;
         }
         return maxDelay_;
