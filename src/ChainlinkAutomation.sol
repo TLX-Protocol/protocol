@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-
 import {AutomationCompatibleInterface} from "chainlink/src/v0.8/automation/AutomationCompatible.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 
@@ -11,7 +11,7 @@ import {IChainlinkAutomation} from "./interfaces/IChainlinkAutomation.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
+contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
     uint256 internal immutable _maxRebalances;
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _baseNextAttemptDelay;
@@ -25,7 +25,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
         address addressProvider_,
         uint256 maxReblances_,
         uint256 baseNextAttemptDelay_
-    ) {
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _maxRebalances = maxReblances_;
         _baseNextAttemptDelay = baseNextAttemptDelay_;

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 
@@ -11,7 +12,7 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
 
-contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
+contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _maxLeverage;
 
@@ -29,7 +30,10 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
     /// @inheritdoc ILeveragedTokenFactory
     mapping(address => bool) public override isLeveragedToken;
 
-    constructor(address addressProvider_, uint256 maxLeverage_) {
+    constructor(
+        address addressProvider_,
+        uint256 maxLeverage_
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _maxLeverage = maxLeverage_;
     }
@@ -64,14 +68,12 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, Ownable {
             true,
             rebalanceThreshold_
         );
-        Ownable(longToken).transferOwnership(msg.sender);
         shortToken = _deployToken(
             targetAsset_,
             targetLeverage_,
             false,
             rebalanceThreshold_
         );
-        Ownable(shortToken).transferOwnership(msg.sender);
 
         // Setting storage
         pair[longToken] = shortToken;

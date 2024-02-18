@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -12,7 +13,7 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 
-contract Bonding is IBonding, Ownable {
+contract Bonding is IBonding, TlxOwnable {
     using ScaledNumber for uint256;
 
     /// @inheritdoc IBonding
@@ -36,7 +37,7 @@ contract Bonding is IBonding, Ownable {
         uint256 periodDecayMultiplier_,
         uint256 periodDuration_,
         uint256 baseForAllTlx_
-    ) {
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _tlxPerSecond = initialTlxPerSecond_;
         _periodDecayMultiplier = periodDecayMultiplier_;

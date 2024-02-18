@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {AddressKeys} from "./libraries/AddressKeys.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -21,12 +22,16 @@ import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IParameterProvider} from "./interfaces/IParameterProvider.sol";
 import {IZapSwap} from "./interfaces/IZapSwap.sol";
 
-contract AddressProvider is IAddressProvider, Ownable {
+contract AddressProvider is IAddressProvider, TlxOwnable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(bytes32 => address) internal _addresses;
     mapping(bytes32 => bool) internal _frozenAddresses;
     EnumerableSet.AddressSet internal _rebalancer;
+
+    constructor() TlxOwnable(address(this)) {
+        _addresses[AddressKeys.OWNER] = msg.sender;
+    }
 
     /// @inheritdoc IAddressProvider
     function updateAddress(
@@ -167,6 +172,10 @@ contract AddressProvider is IAddressProvider, Ownable {
     /// @inheritdoc IAddressProvider
     function rebalanceFeeReceiver() external view override returns (address) {
         return _getAddress(AddressKeys.REBALANCE_FEE_RECEIVER);
+    }
+
+    function owner() external view returns (address) {
+        return _getAddress(AddressKeys.OWNER);
     }
 
     function _getAddress(bytes32 key_) internal view returns (address) {

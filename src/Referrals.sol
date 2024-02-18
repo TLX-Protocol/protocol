@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
@@ -9,7 +9,7 @@ import {IReferrals} from "./interfaces/IReferrals.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 
-contract Referrals is IReferrals, Ownable {
+contract Referrals is IReferrals, TlxOwnable {
     using ScaledNumber for uint256;
 
     IAddressProvider internal immutable _addressProvider;
@@ -29,7 +29,7 @@ contract Referrals is IReferrals, Ownable {
         address addressProvider_,
         uint256 rebatePercent_,
         uint256 earningsPercent_
-    ) {
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         rebatePercent = rebatePercent_;
         earningsPercent = earningsPercent_;

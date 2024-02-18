@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {MerkleProof} from "openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {IAirdrop} from "./interfaces/IAirdrop.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-contract Airdrop is IAirdrop, Ownable {
+contract Airdrop is IAirdrop, TlxOwnable {
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _airdropAmount;
 
@@ -25,7 +26,7 @@ contract Airdrop is IAirdrop, Ownable {
         bytes32 merkleRoot_,
         uint256 deadline_,
         uint256 airdropAmount_
-    ) {
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         merkleRoot = merkleRoot_;
         deadline = deadline_;

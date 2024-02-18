@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {EnumerableMap} from "openzeppelin-contracts/contracts/utils/structs/EnumerableMap.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 
@@ -11,7 +12,7 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 import {ParameterKeys} from "./libraries/ParameterKeys.sol";
 
-contract ParameterProvider is IParameterProvider, Ownable {
+contract ParameterProvider is IParameterProvider, TlxOwnable {
     using EnumerableMap for EnumerableMap.Bytes32ToUintMap;
 
     uint256 internal constant _MIN_REBALANCE_THRESHOLD = 0.01e18;
@@ -23,7 +24,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
 
     modifier onlyOwnerOrFactory() {
         if (
-            msg.sender != owner() &&
+            msg.sender != _addressProvider.owner() &&
             msg.sender != address(_addressProvider.leveragedTokenFactory())
         ) {
             revert Errors.NotAuthorized();
@@ -31,7 +32,7 @@ contract ParameterProvider is IParameterProvider, Ownable {
         _;
     }
 
-    constructor(address addressProvider_) {
+    constructor(address addressProvider_) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
     }
 
