@@ -85,6 +85,19 @@ interface ISynthetixHandler {
     ) external view returns (uint256 totalValue);
 
     /**
+     * @notice Returns the deviation factor from our target leverage.
+     * @dev Used for rebalances, if |1 - leverageDeviationFactor| exceeds our `rebalanceThreshold` then a rebalance is triggered.
+     * When this factoris below 1, it means we are underleveraged, when it is above 1, it means we are overleveraged.
+     * @param targetAsset The asset to get the leverage of the `account`'s position for.
+     * @param account The account to get the leverage of the `account`'s position for the `targetAsset`.
+     * @return leverageDeviationFactor The deviation factor from our target leverage.
+     */
+    function leverageDeviationFactor(
+        string calldata targetAsset,
+        address account
+    ) external view returns (uint256 leverageDeviationFactor);
+
+    /**
      * @notice Returns the leverage of the `account`'s position for the `targetAsset`.
      * @param targetAsset The asset to get the leverage of the `account`'s position for.
      * @param account The account to get the leverage of the `account`'s position for the `targetAsset`.
