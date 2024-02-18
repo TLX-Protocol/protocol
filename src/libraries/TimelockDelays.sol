@@ -14,22 +14,8 @@ library TimelockDelays {
         uint256 delay;
     }
 
-    // TODO: Set these with the actual values we want
     function delays() internal pure returns (TimelockDelay[] memory) {
-        TimelockDelay[] memory delays_ = new TimelockDelay[](3);
-
-        delays_[0] = TimelockDelay({
-            selector: IAddressProvider.updateAddress.selector,
-            delay: 1 days
-        });
-        delays_[1] = TimelockDelay({
-            selector: IBonding.setBaseForAllTlx.selector,
-            delay: 2 days
-        });
-        delays_[2] = TimelockDelay({
-            selector: IParameterProvider.updateRebalanceThreshold.selector,
-            delay: 3 days
-        });
+        TimelockDelay[] memory delays_ = new TimelockDelay[](0);
 
         return delays_;
     }
