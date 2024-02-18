@@ -11,7 +11,6 @@ library LeveragedTokens {
         uint256 rebalanceThreshold;
     }
 
-    // TODO: Set these with the actual values we want
     function tokens() internal pure returns (LeveragedTokenData[] memory) {
         LeveragedTokenData[] memory tokens_ = new LeveragedTokenData[](5);
 
