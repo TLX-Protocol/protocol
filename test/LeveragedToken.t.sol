@@ -161,6 +161,7 @@ contract LeveragedTokenTest is IntegrationTest {
             2e18 / 2,
             0.05e18
         );
+        assertFalse(leveragedToken.canRebalance());
     }
 
     function testCanNotRebalanceIfNotRebalancer() public {

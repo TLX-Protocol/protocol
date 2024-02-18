@@ -179,9 +179,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Can't rebalance if the leverageDeviationFactor is already within the threshold
         uint256 leverageDeviationFactor_ = _addressProvider
             .synthetixHandler()
-            .leverageDeviationFactor(targetAsset, address(this));
-        uint256 percentDiff_ = leverageDeviationFactor_.absSub(1e18);
-        return percentDiff_ >= rebalanceThreshold();
+            .leverageDeviationFactor(
+                targetAsset,
+                address(this),
+                targetLeverage
+            );
+        return leverageDeviationFactor_ >= rebalanceThreshold();
     }
 
     /// @inheritdoc ILeveragedToken

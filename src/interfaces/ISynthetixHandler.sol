@@ -94,7 +94,8 @@ interface ISynthetixHandler {
      */
     function leverageDeviationFactor(
         string calldata targetAsset,
-        address account
+        address account,
+        uint256 targetLeverage
     ) external view returns (uint256 leverageDeviationFactor);
 
     /**
@@ -130,6 +131,18 @@ interface ISynthetixHandler {
         string calldata targetAsset,
         address account
     ) external view returns (bool isLong);
+
+    /**
+     * @notice Returns the initial margin of the `account`'s position for the `targetAsset`.
+     * This does not take into account any profit or loss
+     * @param targetAsset The asset to get the remaining margin of the `account`'s position for.
+     * @param account The account to get the remaining margin of the `account`'s position for the `targetAsset`.
+     * @return initialMargin The initial margin of the `account`'s position for the `targetAsset`.
+     */
+    function initialMargin(
+        string calldata targetAsset,
+        address account
+    ) external view returns (uint256 initialMargin);
 
     /**
      * @notice Returns the remaining margin of the `account`'s position for the `targetAsset`.
