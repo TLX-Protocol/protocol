@@ -101,13 +101,15 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function leverageDeviationFactor(
-        string calldata targetAsset,
-        address account
+        string calldata targetAsset_,
+        address account_
     ) external view returns (uint256) {
-        bool hasOpenPosition_ = hasOpenPosition(targetAsset, account);
+        bool hasOpenPosition_ = hasOpenPosition(targetAsset_, account_);
         if (!hasOpenPosition_) return 1e18;
-        uint256 initialMargin_ = _market(targetAsset).positions(account).margin;
-        return initialMargin_.div(remainingMargin(targetAsset, account));
+        uint256 initialMargin_ = _market(targetAsset_)
+            .positions(account_)
+            .margin;
+        return initialMargin_.div(remainingMargin(targetAsset_, account_));
     }
 
     /// @inheritdoc ISynthetixHandler
