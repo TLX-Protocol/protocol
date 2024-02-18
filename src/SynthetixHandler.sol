@@ -103,7 +103,7 @@ contract SynthetixHandler is ISynthetixHandler {
     function leverageDeviationFactor(
         string calldata targetAsset_,
         address account_
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         bool hasOpenPosition_ = hasOpenPosition(targetAsset_, account_);
         if (!hasOpenPosition_) return 1e18;
         uint256 initialMargin_ = _market(targetAsset_)
