@@ -44,12 +44,13 @@ contract Airdrop is IAirdrop, Ownable {
             revert InvalidMerkleProof();
         }
         uint256 totalClaimed_ = totalClaimed;
-        bool completed_ = totalClaimed_ == _airdropAmount;
+        uint256 airdropAmount_ = _airdropAmount;
+        bool completed_ = totalClaimed_ == airdropAmount_;
         if (completed_) revert AirdropCompleted();
 
         // Minting tokens
-        if (totalClaimed_ + amount_ > _airdropAmount) {
-            amount_ = _airdropAmount - totalClaimed_;
+        if (totalClaimed_ + amount_ > airdropAmount_) {
+            amount_ = airdropAmount_ - totalClaimed_;
         }
 
         // Updating state
@@ -68,10 +69,11 @@ contract Airdrop is IAirdrop, Ownable {
     /// @inheritdoc IAirdrop
     function mintUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
-        address treasury_ = _addressProvider.treasury();
+        IAddressProvider addressProvider_ = _addressProvider;
+        address treasury_ = addressProvider_.treasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
-        _addressProvider.tlx().transfer(treasury_, unclaimed_);
+        addressProvider_.tlx().transfer(treasury_, unclaimed_);
         emit UnclaimedMinted(unclaimed_);
     }
 

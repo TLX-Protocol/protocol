@@ -30,14 +30,14 @@ contract TlxToken is ITlxToken, ERC20, Initializable {
     ) external initializer {
         if (msg.sender != owner) revert Errors.NotAuthorized();
 
-        for (uint256 i = 0; i < mintData_.length; i++) {
-            InitialMint.Data memory data = mintData_[i];
-            _mint(data.receiver, data.amount);
+        for (uint256 i_; i_ < mintData_.length; i_++) {
+            InitialMint.Data memory data_ = mintData_[i_];
+            _mint(data_.receiver, data_.amount);
 
-            for (uint256 j; j < data.actions.length; j++) {
-                InitialMint.Action memory action = data.actions[j];
-                action.target.functionCall(
-                    action.data,
+            for (uint256 j_; j_ < data_.actions.length; j_++) {
+                InitialMint.Action memory action_ = data_.actions[j_];
+                action_.target.functionCall(
+                    action_.data,
                     "TlxToken: action call failed"
                 );
             }

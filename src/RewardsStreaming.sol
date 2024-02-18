@@ -57,8 +57,9 @@ abstract contract RewardsStreaming is IRewardsStreaming, Ownable {
 
     function _checkpoint(address account_) internal {
         _globalCheckpoint();
-        _usersRewards[account_] += _newRewards(account_, _rewardIntegral);
-        _usersRewardIntegral[account_] = _rewardIntegral;
+        uint256 rewardIntegral_ = _rewardIntegral;
+        _usersRewards[account_] += _newRewards(account_, rewardIntegral_);
+        _usersRewardIntegral[account_] = rewardIntegral_;
     }
 
     function _claim() internal {

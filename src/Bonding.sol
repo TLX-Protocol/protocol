@@ -58,9 +58,10 @@ contract Bonding is IBonding, Ownable {
         if (!_isLeveragedToken(leveragedToken_)) revert NotLeveragedToken();
 
         // Transfer the leveraged token from the user to the POL
+        IAddressProvider addressProvider_ = _addressProvider;
         IERC20(leveragedToken_).transferFrom(
             msg.sender,
-            _addressProvider.pol(),
+            addressProvider_.pol(),
             leveragedTokenAmount_
         );
 
@@ -77,8 +78,8 @@ contract Bonding is IBonding, Ownable {
         totalTlxBonded += tlxAmount_;
 
         // Transfer the TLX tokens to the user
-        IStaker staker_ = _addressProvider.staker();
-        _addressProvider.tlx().approve(address(staker_), tlxAmount_);
+        IStaker staker_ = addressProvider_.staker();
+        addressProvider_.tlx().approve(address(staker_), tlxAmount_);
         staker_.stakeFor(tlxAmount_, msg.sender);
 
         // Emit the event
@@ -109,9 +110,10 @@ contract Bonding is IBonding, Ownable {
 
     /// @inheritdoc IBonding
     function migrate() external override onlyOwner {
-        address bonding_ = address(_addressProvider.bonding());
+        IAddressProvider addressProvider_ = _addressProvider;
+        address bonding_ = address(addressProvider_.bonding());
         if (address(bonding_) == address(this)) revert Errors.SameAsCurrent();
-        IERC20 tlx_ = _addressProvider.tlx();
+        IERC20 tlx_ = addressProvider_.tlx();
         uint256 balance_ = tlx_.balanceOf(address(this));
         if (balance_ == 0) revert AlreadyMigrated();
         tlx_.transfer(bonding_, balance_);
@@ -153,8 +155,9 @@ contract Bonding is IBonding, Ownable {
         else {
             // Update the cache with the remaining time in the current period
             uint256 periodTime_ = nextDecay_ - _lastUpdate;
-            _availableTlxCache += periodTime_ * _tlxPerSecond;
-            _tlxPerSecond = _tlxPerSecond.mul(_periodDecayMultiplier);
+            uint256 tlxPerSecond_ = _tlxPerSecond;
+            _availableTlxCache += periodTime_ * tlxPerSecond_;
+            _tlxPerSecond = tlxPerSecond_.mul(_periodDecayMultiplier);
             _lastDecayTimestamp = nextDecay_;
             _lastUpdate = nextDecay_;
 

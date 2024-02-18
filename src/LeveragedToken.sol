@@ -14,6 +14,7 @@ import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {IStaker} from "./interfaces/IStaker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
+import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 
 contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     using ScaledNumber for uint256;
@@ -90,7 +91,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
-        uint256 feePercent_ = _addressProvider
+        IAddressProvider addressProvider_ = _addressProvider;
+        uint256 feePercent_ = addressProvider_
             .parameterProvider()
             .redemptionFee();
         uint256 fee_ = baseWithdrawn_.mul(targetLeverage).mul(feePercent_);
@@ -104,21 +106,22 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         _withdrawMargin(baseWithdrawn_);
 
         // Paying referrals
-        IReferrals referrals_ = _addressProvider.referrals();
-        _addressProvider.baseAsset().approve(address(referrals_), fee_);
+        IReferrals referrals_ = addressProvider_.referrals();
+        IERC20 baseAsset_ = addressProvider_.baseAsset();
+        baseAsset_.approve(address(referrals_), fee_);
         uint256 referralAmount_ = referrals_.takeEarnings(fee_, msg.sender);
 
         // Sending fees to staker
-        IStaker staker_ = _addressProvider.staker();
+        IStaker staker_ = addressProvider_.staker();
         uint256 amount_ = fee_ - referralAmount_;
         if (amount_ != 0 && staker_.totalStaked() != 0) {
-            _addressProvider.baseAsset().approve(address(staker_), amount_);
+            baseAsset_.approve(address(staker_), amount_);
             staker_.donateRewards(amount_);
         }
 
         // Redeeming
         _burn(msg.sender, leveragedTokenAmount_);
-        _addressProvider.baseAsset().transfer(msg.sender, baseAmountReceived_);
+        baseAsset_.transfer(msg.sender, baseAmountReceived_);
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
@@ -145,12 +148,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
     /// @inheritdoc ILeveragedToken
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = totalSupply();
-        uint256 totalValue = _addressProvider.synthetixHandler().totalValue(
+        uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
             targetAsset,
             address(this)
         );
         if (totalSupply_ == 0) return 1e18;
-        return totalValue.div(totalSupply_);
+        return totalValue_.div(totalSupply_);
     }
 
     /// @inheritdoc ILeveragedToken
@@ -199,42 +202,48 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
 
     function _rebalance() internal {
         // Accounting
-        uint256 streamingFeePercent_ = _addressProvider
+        IAddressProvider addressProvider_ = _addressProvider;
+        uint256 streamingFeePercent_ = addressProvider_
             .parameterProvider()
             .streamingFee();
-        uint256 notionalValue_ = _addressProvider
-            .synthetixHandler()
-            .notionalValue(targetAsset, address(this));
+        ISynthetixHandler synthetixHandler_ = addressProvider_
+            .synthetixHandler();
+        string memory targetAsset_ = targetAsset;
+        uint256 notionalValue_ = synthetixHandler_.notionalValue(
+            targetAsset_,
+            address(this)
+        );
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
         uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
 
         // Sending fees to staker
-        IStaker staker_ = _addressProvider.staker();
+        IStaker staker_ = addressProvider_.staker();
         if (fee_ != 0 && staker_.totalStaked() != 0) {
-            _addressProvider.baseAsset().approve(address(staker_), fee_);
+            addressProvider_.baseAsset().approve(address(staker_), fee_);
             staker_.donateRewards(fee_);
         }
 
         // Rebalancing
         _submitLeverageUpdate();
         _lastRebalanceTimestamp = block.timestamp;
-        uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
-            targetAsset,
+        uint256 currentLeverage_ = synthetixHandler_.leverage(
+            targetAsset_,
             address(this)
         );
         emit Rebalanced(currentLeverage_);
     }
 
     function _chargeRebalanceFee() internal {
-        uint256 fee_ = _addressProvider.parameterProvider().rebalanceFee();
-        uint256 remainingMargin_ = _addressProvider
+        IAddressProvider addressProvider_ = _addressProvider;
+        uint256 fee_ = addressProvider_.parameterProvider().rebalanceFee();
+        uint256 remainingMargin_ = addressProvider_
             .synthetixHandler()
             .remainingMargin(targetAsset, address(this));
         if (fee_ >= remainingMargin_) return;
         _withdrawMargin(fee_);
-        address receiver_ = _addressProvider.rebalanceFeeReceiver();
-        _addressProvider.baseAsset().transfer(receiver_, fee_);
+        address receiver_ = addressProvider_.rebalanceFeeReceiver();
+        addressProvider_.baseAsset().transfer(receiver_, fee_);
     }
 
     function _depositMargin(uint256 amount_) internal {

@@ -71,11 +71,9 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
         _shutdown = true;
 
         uint256 amount_ = totalRewards - _amountAccounted;
-        if (amount_ > 0) {
-            IERC20(rewardToken).transfer(_addressProvider.treasury(), amount_);
-        }
-
         emit Shutdown();
+        if (amount_ == 0) return;
+        IERC20(rewardToken).transfer(_addressProvider.treasury(), amount_);
     }
 
     /// @inheritdoc IGenesisLocker
@@ -121,9 +119,9 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
     /// @inheritdoc IGenesisLocker
     function amountStreamed() public view override returns (uint256) {
-        uint256 elapsed = block.timestamp - rewardsStartTime;
-        if (elapsed >= lockTime) return totalRewards;
-        return (elapsed * totalRewards) / lockTime;
+        uint256 elapsed_ = block.timestamp - rewardsStartTime;
+        if (elapsed_ >= lockTime) return totalRewards;
+        return (elapsed_ * totalRewards) / lockTime;
     }
 
     /// @inheritdoc IRewardsStreaming
@@ -140,11 +138,10 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
     function _globalCheckpoint() internal virtual override {
         uint256 divisor_ = totalStaked;
-        if (divisor_ > 0) {
-            uint256 amount_ = amountStreamed() - _amountAccounted;
-            _amountAccounted += amount_;
-            _rewardIntegral += amount_.div(divisor_);
-        }
+        if (divisor_ == 0) return;
+        uint256 amount_ = amountStreamed() - _amountAccounted;
+        _amountAccounted += amount_;
+        _rewardIntegral += amount_.div(divisor_);
     }
 
     function _latestIntegral()

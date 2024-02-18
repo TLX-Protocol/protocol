@@ -32,19 +32,19 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
     }
 
     /// @inheritdoc AutomationCompatibleInterface
-    function performUpkeep(bytes calldata performData) external override {
+    function performUpkeep(bytes calldata performData_) external override {
         if (msg.sender != forwarderAddress) revert NotForwarder();
 
         address[] memory rebalancableTokens_ = abi.decode(
-            performData,
+            performData_,
             (address[])
         );
 
         uint256 rebalancableTokensCount_ = rebalancableTokens_.length;
         if (rebalancableTokensCount_ == 0) revert NoRebalancableTokens();
 
-        for (uint256 i; i < rebalancableTokensCount_; i++) {
-            address token_ = rebalancableTokens_[i];
+        for (uint256 i_; i_ < rebalancableTokensCount_; i_++) {
+            address token_ = rebalancableTokens_[i_];
             try ILeveragedToken(token_).rebalance() {
                 delete _failedCounter[token_];
                 delete _nextAttempt[token_];
@@ -92,15 +92,16 @@ contract ChainlinkAutomation is IChainlinkAutomation, Ownable {
             .leveragedTokenFactory()
             .allTokens();
 
-        address[] memory rebalancableTokens_ = new address[](_maxRebalances);
+        uint256 maxRebalances_ = _maxRebalances;
+        address[] memory rebalancableTokens_ = new address[](maxRebalances_);
         uint256 rebalancableTokensCount_;
-        for (uint256 i; i < tokens_.length; i++) {
-            address token_ = tokens_[i];
+        for (uint256 i_; i_ < tokens_.length; i_++) {
+            address token_ = tokens_[i_];
             if (!ILeveragedToken(token_).canRebalance()) continue;
             if (_nextAttempt[token_] > block.timestamp) continue;
             rebalancableTokens_[rebalancableTokensCount_] = token_;
             rebalancableTokensCount_++;
-            if (rebalancableTokensCount_ == _maxRebalances) break;
+            if (rebalancableTokensCount_ == maxRebalances_) break;
         }
 
         if (rebalancableTokensCount_ == 0) return (false, "");
