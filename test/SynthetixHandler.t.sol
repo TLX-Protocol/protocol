@@ -193,50 +193,52 @@ contract SynthetixHandlerTest is IntegrationTest {
 
     function testNotional() public {
         assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
-        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
-        _depositMargin(100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 1000e18);
+        _depositMargin(1000e18);
         assertEq(synthetixHandler.notionalValue(Symbols.ETH, address(this)), 0);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
             synthetixHandler.notionalValue(Symbols.ETH, address(this)),
-            100e18 * 2,
+            1000e18 * 2,
             0.01e18
         );
-        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
-        _depositMargin(100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 1000e18);
+        _depositMargin(1000e18);
         assertApproxEqRel(
             synthetixHandler.notionalValue(Symbols.ETH, address(this)),
-            100e18 * 2,
+            1000e18 * 2,
             0.01e18
         );
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
             synthetixHandler.notionalValue(Symbols.ETH, address(this)),
-            200e18 * 2,
+            2000e18 * 2,
             0.01e18
         );
     }
 
     function testLeverage() public {
-        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
-        _depositMargin(100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 1000e18);
+        _depositMargin(1000e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(this)),
             2e18,
-            0.01e18
+            0.01e18,
+            "First leverage check"
         );
-        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
-        _depositMargin(100e18);
+        _mintTokensFor(Config.BASE_ASSET, address(this), 1000e18);
+        _depositMargin(1000e18);
         _submitLeverageUpdate(2e18, true);
         _executeOrder();
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(this)),
             2e18,
-            0.01e18
+            0.01e18,
+            "Second leverage check"
         );
     }
 

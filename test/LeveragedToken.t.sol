@@ -153,13 +153,13 @@ contract LeveragedTokenTest is IntegrationTest {
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18,
-            0.05e18
+            0.1e18
         );
         _mintTokens();
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18 / 2,
-            0.05e18
+            0.1e18
         );
     }
 

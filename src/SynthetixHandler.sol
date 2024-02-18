@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {IFuturesMarketSettings} from "./interfaces/synthetix/IFuturesMarketSettings.sol";
 import {IPerpsV2MarketData} from "./interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "./interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBaseTypes.sol";
@@ -13,13 +14,19 @@ contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
+    IFuturesMarketSettings internal immutable _futuresMarketSettings;
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
 
-    constructor(address addressProvider_, address perpsV2MarketData_) {
+    constructor(
+        address addressProvider_,
+        address perpsV2MarketData_,
+        address futuresMarketSettings_
+    ) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
         _addressProvider = IAddressProvider(addressProvider_);
+        _futuresMarketSettings = IFuturesMarketSettings(futuresMarketSettings_);
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -48,6 +55,7 @@ contract SynthetixHandler is ISynthetixHandler {
     ) public override {
         uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
+        marginAmount_ -= _minKeeperFee(); // Subtract keeper fee
         uint256 assetPrice_ = assetPrice(targetAsset_);
         uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
         notionalValue_ = notionalValue_.div(assetPrice_); // Convert to target units
@@ -62,6 +70,11 @@ contract SynthetixHandler is ISynthetixHandler {
         } else {
             price_ = price_.div(1e18 + _SLIPPAGE_TOLERANCE);
         }
+
+        // This does not take into account the `dynamicFeeRate`, the `makerFee` and the `takerFee`
+        // So the leverage we end up at will be slightly higher than our target
+        // In practice, this is typically in the order of 0.2%, which is an order of magnitude smaller than our
+        // rebalance threshold, so it is not an issue
         market_.submitOffchainDelayedOrder(sizeDelta_, price_);
     }
 
@@ -209,6 +222,10 @@ contract SynthetixHandler is ISynthetixHandler {
         IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
             .marketDetailsForKey(_key(targetAsset_));
         return IPerpsV2MarketConsolidated(marketData_.market);
+    }
+
+    function _minKeeperFee() internal view returns (uint256) {
+        return _futuresMarketSettings.minKeeperFee();
     }
 
     function _key(
