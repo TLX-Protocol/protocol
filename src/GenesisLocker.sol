@@ -45,6 +45,8 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
     /// @inheritdoc IGenesisLocker
     function lock(uint256 amount_) external {
+        if (_shutdown || block.timestamp >= rewardsStartTime + lockTime)
+            revert AlreadyShutdown();
         if (amount_ == 0) revert ZeroAmount();
 
         _checkpoint(msg.sender);

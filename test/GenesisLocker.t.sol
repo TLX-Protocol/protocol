@@ -41,9 +41,9 @@ contract GenesisLockerTest is IntegrationTest {
     }
 
     function testLock() public {
-        _mintTokensFor(address(tlx), bob, 100e18);
+        _mintTokensFor(address(tlx), bob, 200e18);
         vm.startPrank(bob);
-        tlx.approve(address(genesisLocker), 100e18);
+        tlx.approve(address(genesisLocker), 200e18);
         genesisLocker.lock(100e18);
         vm.stopPrank();
 
@@ -53,6 +53,11 @@ contract GenesisLockerTest is IntegrationTest {
             "unlock time"
         );
         assertEq(genesisLocker.balanceOf(bob), 100e18);
+
+        skip(Config.GENESIS_LOCKER_LOCK_TIME);
+        vm.prank(bob);
+        vm.expectRevert(IGenesisLocker.AlreadyShutdown.selector);
+        genesisLocker.lock(100e18);
     }
 
     function testMigrateFor() public {
@@ -165,7 +170,7 @@ contract GenesisLockerTest is IntegrationTest {
         _mintTokensFor(address(tlx), bob, 100e18);
 
         vm.startPrank(bob);
-        tlx.approve(address(genesisLocker), 100e18);
+        tlx.approve(address(genesisLocker), 200e18);
         genesisLocker.lock(100e18);
         vm.stopPrank();
 
@@ -194,5 +199,10 @@ contract GenesisLockerTest is IntegrationTest {
         assertEq(tlx.balanceOf(bob), rewardAmount / 4, "balance bob");
 
         assertEq(tlx.balanceOf(address(genesisLocker)), 0, "balance locker");
+
+        _mintTokensFor(address(tlx), bob, 100e18);
+        vm.prank(bob);
+        vm.expectRevert(IGenesisLocker.AlreadyShutdown.selector);
+        genesisLocker.lock(100e18);
     }
 }
