@@ -23,7 +23,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal _lastRebalanceTimestamp;
+    uint256 internal _lastStreamingFeeTimestamp;
 
     /// @inheritdoc ILeveragedToken
     string public override targetAsset;
@@ -141,6 +141,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     }
 
     /// @inheritdoc ILeveragedToken
+    function chargeStreamingFee() public {
+        _chargeStreamingFee();
+    }
+
+    /// @inheritdoc ILeveragedToken
     function setIsPaused(bool isPaused_) public override onlyOwner {
         if (isPaused == isPaused_) revert Errors.SameAsCurrent();
         isPaused = isPaused_;
@@ -200,6 +205,25 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     }
 
     function _rebalance() internal {
+        // Charging streaming fee
+        _chargeStreamingFee();
+
+        // Rebalancing
+        _submitLeverageUpdate();
+        uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
+            targetAsset,
+            address(this)
+        );
+        emit Rebalanced(currentLeverage_);
+    }
+
+    function _chargeStreamingFee() internal {
+        // First deposit, don't charge fee but start streaming
+        if (_lastStreamingFeeTimestamp == 0) {
+            _lastStreamingFeeTimestamp = block.timestamp;
+            return;
+        }
+
         // Accounting
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 streamingFeePercent_ = addressProvider_
@@ -213,24 +237,17 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             address(this)
         );
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
-        uint256 pastTime_ = block.timestamp - _lastRebalanceTimestamp;
+        uint256 pastTime_ = block.timestamp - _lastStreamingFeeTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
+        if (fee_ == 0) return;
 
         // Sending fees to staker
-        IStaker staker_ = addressProvider_.staker();
-        if (fee_ != 0 && staker_.totalStaked() != 0) {
-            addressProvider_.baseAsset().approve(address(staker_), fee_);
-            staker_.donateRewards(fee_);
-        }
-
-        // Rebalancing
-        _submitLeverageUpdate();
-        _lastRebalanceTimestamp = block.timestamp;
-        uint256 currentLeverage_ = synthetixHandler_.leverage(
-            targetAsset_,
-            address(this)
-        );
-        emit Rebalanced(currentLeverage_);
+        IStaker staker_ = _addressProvider.staker();
+        if (staker_.totalStaked() == 0) return;
+        _withdrawMargin(fee_);
+        _addressProvider.baseAsset().approve(address(staker_), fee_);
+        staker_.donateRewards(fee_);
+        _lastStreamingFeeTimestamp = block.timestamp;
     }
 
     function _chargeRebalanceFee() internal {

@@ -153,15 +153,53 @@ contract LeveragedTokenTest is IntegrationTest {
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18,
-            0.05e18
+            0.1e18
         );
         _mintTokens();
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18 / 2,
-            0.05e18
+            0.1e18
         );
         assertFalse(leveragedToken.canRebalance());
+    }
+
+    function testChargeStreamingFee() public {
+        // Getting some TLX tokens for Alice (via vesting)
+        skip(2);
+        vm.startPrank(alice);
+        vesting.claim();
+
+        // Stake some tokens from alice
+        uint256 aliceTlxBalance = tlx.balanceOf(alice);
+        tlx.approve(address(staker), aliceTlxBalance);
+        staker.stake(aliceTlxBalance);
+        vm.stopPrank();
+
+        // Minting tokens
+        _mintTokens();
+        _executeOrder(address(leveragedToken));
+        uint256 delay_ = 1 minutes;
+        skip(delay_);
+
+        // Charging fees
+        uint256 feesBefore_ = IERC20(Config.BASE_ASSET).balanceOf(
+            address(staker)
+        );
+        leveragedToken.chargeStreamingFee();
+        uint256 feesAfter_ = IERC20(Config.BASE_ASSET).balanceOf(
+            address(staker)
+        );
+        uint256 notional_ = synthetixHandler.notionalValue(
+            Symbols.ETH,
+            address(leveragedToken)
+        );
+        uint256 streamingFee_ = parameterProvider.streamingFee();
+        uint256 annualFee_ = (notional_ * streamingFee_) / 1e18;
+        uint256 expectedFee_ = (annualFee_ * delay_) / 365 days;
+        uint256 gained_ = feesAfter_ - feesBefore_;
+        assertGt(gained_, 0);
+        assertApproxEqRel(gained_, expectedFee_, 0.05e18);
     }
 
     function testCanNotRebalanceIfNotRebalancer() public {

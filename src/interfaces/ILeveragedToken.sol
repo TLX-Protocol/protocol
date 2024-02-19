@@ -49,6 +49,12 @@ interface ILeveragedToken is IERC20Metadata {
     function rebalance() external;
 
     /**
+     * @notice Charges the streaming fee.
+     * @dev This is done automatically during rebalances, but we might want to do this more frequently.
+     */
+    function chargeStreamingFee() external;
+
+    /**
      * @notice Sets if the leveraged token is paused.
      * @dev Only callable by the contract owner.
      * @param isPaused If the leveraged token should be paused or not.
