@@ -61,13 +61,13 @@ library Vestings {
 
         // Treasury (DAO)
         vestings_[7] = IVesting.VestingAmount({
-            account: Config.TREASURY,
+            account: Config.DAO_TREASURY,
             amount: 0 // TODO (should be 3% of total supply)
         });
 
         // Company Reserves
         vestings_[7] = IVesting.VestingAmount({
-            account: Config.TREASURY,
+            account: Config.GOVERNANCE_MULTISIG,
             amount: 0 // TODO (should be 7% of total supply)
         });
 

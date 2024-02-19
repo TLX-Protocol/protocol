@@ -29,7 +29,10 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         // AddressProvider Deployment
         AddressProvider addressProvider = new AddressProvider();
         _deployedAddress("AddressProvider", address(addressProvider));
-        addressProvider.updateAddress(AddressKeys.TREASURY, Config.TREASURY);
+        addressProvider.updateAddress(
+            AddressKeys.TREASURY,
+            Config.DAO_TREASURY
+        );
         addressProvider.updateAddress(
             AddressKeys.BASE_ASSET,
             Config.BASE_ASSET
