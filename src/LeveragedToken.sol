@@ -180,17 +180,15 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             )
         ) return false;
 
-        // Can't rebalance if the leverage is already within the threshold
-        uint256 current_ = _addressProvider.synthetixHandler().leverage(
-            targetAsset,
-            address(this)
-        );
-        uint256 target_ = targetLeverage;
-        uint256 diff_ = current_ > target_
-            ? current_ - target_
-            : target_ - current_;
-        uint256 percentDiff_ = diff_.div(target_);
-        return percentDiff_ >= rebalanceThreshold();
+        // Can't rebalance if the leverageDeviationFactor is already within the threshold
+        uint256 leverageDeviationFactor_ = _addressProvider
+            .synthetixHandler()
+            .leverageDeviationFactor(
+                targetAsset,
+                address(this),
+                targetLeverage
+            );
+        return leverageDeviationFactor_ >= rebalanceThreshold();
     }
 
     /// @inheritdoc ILeveragedToken

@@ -112,6 +112,50 @@ contract SynthetixHandlerTest is IntegrationTest {
         );
     }
 
+    function testLeverageDeviationFactor() public {
+        assertEq(
+            synthetixHandler.leverageDeviationFactor(
+                Symbols.ETH,
+                address(this),
+                2e18
+            ),
+            0
+        );
+        _mintTokensFor(Config.BASE_ASSET, address(this), 1_000e18);
+        _depositMargin(1_000e18);
+        assertEq(
+            synthetixHandler.leverageDeviationFactor(
+                Symbols.ETH,
+                address(this),
+                2e18
+            ),
+            1e18,
+            "after deposit margin"
+        );
+        _submitLeverageUpdate(2e18, true);
+        assertApproxEqRel(
+            synthetixHandler.leverageDeviationFactor(
+                Symbols.ETH,
+                address(this),
+                2e18
+            ),
+            1e18,
+            0,
+            "leverage factor before execution"
+        );
+        _executeOrder();
+        assertApproxEqAbs(
+            synthetixHandler.leverageDeviationFactor(
+                Symbols.ETH,
+                address(this),
+                2e18
+            ),
+            0,
+            0.1e18,
+            "leverage factor after execution"
+        );
+    }
+
     function testCancelLeverageUpdate() public {
         _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);

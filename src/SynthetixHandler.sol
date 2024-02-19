@@ -100,6 +100,28 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
+    function initialMargin(
+        string calldata targetAsset_,
+        address account_
+    ) public view returns (uint256) {
+        return _market(targetAsset_).positions(account_).margin;
+    }
+
+    /// @inheritdoc ISynthetixHandler
+    function leverageDeviationFactor(
+        string calldata targetAsset_,
+        address account_,
+        uint256 targetLeverage_
+    ) public view returns (uint256) {
+        uint256 initialNotional = initialMargin(targetAsset_, account_).mul(
+            targetLeverage_
+        );
+        if (initialNotional == 0) return 0;
+        uint256 currentNotional = notionalValue(targetAsset_, account_);
+        return currentNotional.absSub(initialNotional).div(initialNotional);
+    }
+
+    /// @inheritdoc ISynthetixHandler
     function leverage(
         string calldata targetAsset_,
         address account_

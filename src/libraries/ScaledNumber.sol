@@ -43,4 +43,12 @@ library ScaledNumber {
     ) internal pure returns (uint256) {
         return (value * multiplier) / 10 ** _DEFAULT_DECIMALS;
     }
+
+    function absSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a > b ? a - b : b - a;
+    }
+
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
+    }
 }
