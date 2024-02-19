@@ -7,53 +7,27 @@ import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
 import {Config} from "../../src/libraries/Config.sol";
 import {TimelockDelays} from "../../src/libraries/TimelockDelays.sol";
+import {AddressKeys} from "../../src/libraries/AddressKeys.sol";
 
-import {IOwnable} from "../../src/interfaces/libraries/IOwnable.sol";
 import {ITimelock} from "../../src/interfaces/ITimelock.sol";
 import {ILeveragedTokenFactory} from "../../src/interfaces/ILeveragedTokenFactory.sol";
+import {IAddressProvider} from "../../src/interfaces/IAddressProvider.sol";
 
 import {Timelock} from "../../src/Timelock.sol";
 
 contract TimelockDeployment is DeploymentScript, Test {
     function _run() internal override {
         // Getting deployed contracts
-        IOwnable addressProvider = IOwnable(
+        IAddressProvider addressProvider = IAddressProvider(
             _getDeployedAddress("AddressProvider")
         );
-        IOwnable airdrop = IOwnable(_getDeployedAddress("Airdrop"));
-        IOwnable bonding = IOwnable(_getDeployedAddress("Bonding"));
-        IOwnable leveragedTokenFactory = IOwnable(
-            _getDeployedAddress("LeveragedTokenFactory")
-        );
-        IOwnable staker = IOwnable(_getDeployedAddress("Staker"));
-        IOwnable parameterProvider = IOwnable(
-            _getDeployedAddress("ParameterProvider")
-        );
-        IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
-        IOwnable zapSwap = IOwnable(_getDeployedAddress("ZapSwap"));
 
         // Timelock Deployment
         Timelock timelock = new Timelock();
         _deployedAddress("Timelock", address(timelock));
 
         // Transferring ownership
-        addressProvider.transferOwnership(address(timelock));
-        airdrop.transferOwnership(address(timelock));
-        bonding.transferOwnership(address(timelock));
-        leveragedTokenFactory.transferOwnership(address(timelock));
-        staker.transferOwnership(address(timelock));
-        parameterProvider.transferOwnership(address(timelock));
-        referrals.transferOwnership(address(timelock));
-        zapSwap.transferOwnership(address(timelock));
-
-        // Transfer ownership of leveraged tokens
-        address[] memory tokens = ILeveragedTokenFactory(
-            address(leveragedTokenFactory)
-        ).allTokens();
-        for (uint256 i; i < tokens.length; i++) {
-            IOwnable token = IOwnable(tokens[i]);
-            token.transferOwnership(address(timelock));
-        }
+        addressProvider.updateAddress(AddressKeys.OWNER, address(timelock));
 
         // Setting delays
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();
@@ -78,39 +52,13 @@ contract TimelockDeployment is DeploymentScript, Test {
 
     function testTimelockDeployment() public {
         ITimelock timelock = ITimelock(_getDeployedAddress("Timelock"));
-        IOwnable addressProvider = IOwnable(
+        IAddressProvider addressProvider = IAddressProvider(
             _getDeployedAddress("AddressProvider")
         );
-        IOwnable airdrop = IOwnable(_getDeployedAddress("Airdrop"));
-        IOwnable bonding = IOwnable(_getDeployedAddress("Bonding"));
-        IOwnable leveragedTokenFactory = IOwnable(
-            _getDeployedAddress("LeveragedTokenFactory")
-        );
-        IOwnable staker = IOwnable(_getDeployedAddress("Staker"));
-        IOwnable parameterProvider = IOwnable(
-            _getDeployedAddress("ParameterProvider")
-        );
-        IOwnable referrals = IOwnable(_getDeployedAddress("Referrals"));
-        IOwnable zapSwap = IOwnable(_getDeployedAddress("ZapSwap"));
 
-        assertEq(addressProvider.owner(), address(timelock), "addressProvider");
-        assertEq(airdrop.owner(), address(timelock), "airdrop");
-        assertEq(bonding.owner(), address(timelock), "bonding");
-        assertEq(
-            leveragedTokenFactory.owner(),
-            address(timelock),
-            "leveragedTokenFactory"
-        );
-        assertEq(staker.owner(), address(timelock), "staker");
-        assertEq(
-            parameterProvider.owner(),
-            address(timelock),
-            "parameterProvider"
-        );
-        assertEq(referrals.owner(), address(timelock), "referrals");
-        assertEq(zapSwap.owner(), address(timelock), "zapSwap");
+        assertEq(addressProvider.owner(), address(timelock), "owner");
+
         assertEq(timelock.delay(bytes4(0)), 0, "delays");
-
         TimelockDelays.TimelockDelay[] memory delays_ = TimelockDelays.delays();
         for (uint256 i; i < delays_.length; i++) {
             assertEq(

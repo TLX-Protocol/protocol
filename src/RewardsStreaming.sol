@@ -2,7 +2,8 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 import {Errors} from "./libraries/Errors.sol";
@@ -10,7 +11,7 @@ import {Errors} from "./libraries/Errors.sol";
 import {IRewardsStreaming} from "./interfaces/IRewardsStreaming.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-abstract contract RewardsStreaming is IRewardsStreaming, Ownable {
+abstract contract RewardsStreaming is IRewardsStreaming, TlxOwnable {
     using ScaledNumber for uint256;
 
     IAddressProvider internal immutable _addressProvider;
@@ -25,7 +26,10 @@ abstract contract RewardsStreaming is IRewardsStreaming, Ownable {
     /// @inheritdoc IRewardsStreaming
     uint256 public override totalStaked;
 
-    constructor(address addressProvider_, address rewardToken_) {
+    constructor(
+        address addressProvider_,
+        address rewardToken_
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         rewardToken = rewardToken_;
     }

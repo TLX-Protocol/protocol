@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.13;
 
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
+import {TlxOwnable} from "../utils/TlxOwnable.sol";
+
+import {Errors} from "../libraries/Errors.sol";
+
 import {IZapSwap} from "../interfaces/IZapSwap.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 import {IVelodromeRouter} from "../interfaces/exchanges/IVelodromeRouter.sol";
 import {IUniswapRouter} from "../interfaces/exchanges/IUniswapRouter.sol";
 import {ILeveragedToken} from "../interfaces/ILeveragedToken.sol";
 
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-
-import {Errors} from "../libraries/Errors.sol";
-
-contract ZapSwap is IZapSwap, Ownable {
+contract ZapSwap is IZapSwap, TlxOwnable {
     IAddressProvider internal immutable _addressProvider;
     IVelodromeRouter internal immutable _velodromeRouter;
     IUniswapRouter internal immutable _uniswapRouter;
@@ -26,7 +27,7 @@ contract ZapSwap is IZapSwap, Ownable {
         address addressProvider_,
         address velodromeRouter_,
         address uniswapRouter_
-    ) {
+    ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
         _velodromeRouter = IVelodromeRouter(velodromeRouter_);
         _uniswapRouter = IUniswapRouter(uniswapRouter_);

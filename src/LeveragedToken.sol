@@ -5,7 +5,8 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
@@ -16,7 +17,7 @@ import {IStaker} from "./interfaces/IStaker.sol";
 import {IReferrals} from "./interfaces/IReferrals.sol";
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 
-contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
+contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     using ScaledNumber for uint256;
     using Address for address;
 
@@ -40,7 +41,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, Ownable {
         uint256 targetLeverage_,
         bool isLong_,
         address addressProvider_
-    ) ERC20(name_, symbol_) {
+    ) ERC20(name_, symbol_) TlxOwnable(addressProvider_) {
         targetAsset = targetAsset_;
         targetLeverage = targetLeverage_;
         isLong = isLong_;

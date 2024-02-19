@@ -5,33 +5,28 @@ import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {Address} from "openzeppelin-contracts/contracts/utils/Address.sol";
 import {Initializable} from "openzeppelin-contracts/contracts/proxy/utils/Initializable.sol";
 
-import {IOwnable} from "./interfaces/libraries/IOwnable.sol";
+import {TlxOwnable} from "./utils/TlxOwnable.sol";
+
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
 import {Errors} from "./libraries/Errors.sol";
 import {InitialMint} from "./libraries/InitialMint.sol";
 
-contract TlxToken is ITlxToken, ERC20, Initializable {
+contract TlxToken is ITlxToken, ERC20, Initializable, TlxOwnable {
     using Address for address;
-
-    address public immutable owner;
 
     constructor(
         string memory name_,
         string memory symbol_,
         address addressProvider_
-    ) ERC20(name_, symbol_) {
-        owner = IOwnable(addressProvider_).owner();
-    }
+    ) ERC20(name_, symbol_) TlxOwnable(addressProvider_) {}
 
     function mintInitialSupply(
         InitialMint.Data[] memory mintData_
-    ) external initializer {
-        if (msg.sender != owner) revert Errors.NotAuthorized();
-
-        for (uint256 i_; i_ < mintData_.length; i_++) {
-            InitialMint.Data memory data_ = mintData_[i_];
+    ) external initializer onlyOwner {
+        for (uint256 i; i < mintData_.length; i++) {
+            InitialMint.Data memory data_ = mintData_[i];
             _mint(data_.receiver, data_.amount);
 
             for (uint256 j_; j_ < data_.actions.length; j_++) {

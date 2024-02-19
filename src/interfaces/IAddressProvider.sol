@@ -173,4 +173,10 @@ interface IAddressProvider {
         external
         view
         returns (address rebalanceFeeReceiver);
+
+    /**
+     * @notice Returns the owner of all TLX contracts.
+     * @return owner The owner of all TLX contracts.
+     */
+    function owner() external view returns (address owner);
 }
