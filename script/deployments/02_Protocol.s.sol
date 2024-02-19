@@ -67,7 +67,8 @@ contract ProtocolDeployment is DeploymentScript, Test {
         // SynthetixHandler Deployment
         SynthetixHandler synthetixHandler = new SynthetixHandler(
             address(addressProvider),
-            address(Contracts.PERPS_V2_MARKET_DATA)
+            Contracts.PERPS_V2_MARKET_DATA,
+            Contracts.PERPS_V2_MARKET_SETTINGS
         );
         _deployedAddress("SynthetixHandler", address(synthetixHandler));
         addressProvider.updateAddress(
