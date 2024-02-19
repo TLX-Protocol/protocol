@@ -116,12 +116,9 @@ contract SynthetixHandler is ISynthetixHandler {
         uint256 initialNotional = initialMargin(targetAsset_, account_).mul(
             targetLeverage_
         );
+        if (initialNotional == 0) return 0;
         uint256 currentNotional = notionalValue(targetAsset_, account_);
-        uint256 divisor = currentNotional == 0
-            ? initialNotional
-            : currentNotional.min(initialNotional);
-        if (divisor == 0) return 0;
-        return currentNotional.absSub(initialNotional).div(divisor);
+        return currentNotional.absSub(initialNotional).div(initialNotional);
     }
 
     /// @inheritdoc ISynthetixHandler
