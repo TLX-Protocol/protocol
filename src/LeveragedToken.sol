@@ -55,6 +55,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
         if (isPaused) revert Paused();
+        if (!isActive()) revert Inactive();
         _ensureNoPendingLeverageUpdate();
 
         // Accounting
