@@ -10,7 +10,6 @@ interface IBonding {
     );
     event Migrated(uint256 amount);
 
-    error NotLeveragedToken();
     error MinTlxNotReached();
     error ExceedsAvailable();
     error BondingNotLive();

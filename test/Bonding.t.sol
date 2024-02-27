@@ -66,7 +66,7 @@ contract BondingTest is IntegrationTest {
     function testShouldRevertForNonLeveragedToken() public {
         bonding.launch();
 
-        vm.expectRevert(IBonding.NotLeveragedToken.selector);
+        vm.expectRevert(Errors.NotLeveragedToken.selector);
         bonding.bond(Tokens.UNI, 1e18, 0);
     }
 
