@@ -81,6 +81,29 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     }
 
     /// @inheritdoc ILeveragedTokenFactory
+    function redeployInactiveToken(
+        address tokenAddress_
+    ) external onlyOwner returns (address) {
+        if (!isLeveragedToken[tokenAddress_]) revert Errors.NotLeveragedToken();
+        ILeveragedToken leveragedToken_ = ILeveragedToken(tokenAddress_);
+        if (leveragedToken_.isActive()) revert NotInactive();
+        address pair_ = pair[tokenAddress_];
+
+        address newToken_ = _deployToken(
+            leveragedToken_.targetAsset(),
+            leveragedToken_.targetLeverage(),
+            false,
+            leveragedToken_.rebalanceThreshold()
+        );
+
+        pair[pair_] = newToken_;
+        pair[newToken_] = pair_;
+        delete isLeveragedToken[tokenAddress_];
+
+        return newToken_;
+    }
+
+    /// @inheritdoc ILeveragedTokenFactory
     function allTokens() external view override returns (address[] memory) {
         return _allTokens;
     }
@@ -135,7 +158,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     }
 
     function _deployToken(
-        string calldata targetAsset_,
+        string memory targetAsset_,
         uint256 targetLeverage_,
         bool isLong_,
         uint256 rebalanceThreshold_
@@ -170,7 +193,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     }
 
     function _getName(
-        string calldata targetAsset_,
+        string memory targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal pure returns (string memory) {
@@ -183,7 +206,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     }
 
     function _getSymbol(
-        string calldata targetAsset_,
+        string memory targetAsset_,
         uint256 targetLeverage_,
         bool isLong_
     ) internal pure returns (string memory) {
