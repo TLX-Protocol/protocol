@@ -56,6 +56,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         if (baseAmountIn_ == 0) return 0;
         if (isPaused) revert Paused();
         _ensureNoPendingLeverageUpdate();
+        uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount();
+        if (baseAmountIn_ > maxBaseAssetAmount_) revert ExceedsLimit();
 
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
@@ -92,6 +94,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Accounting
         uint256 exchangeRate_ = exchangeRate();
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
+        uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount();
+        if (baseWithdrawn_ > maxBaseAssetAmount_) revert ExceedsLimit();
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 feePercent_ = addressProvider_
             .parameterProvider()
@@ -260,6 +264,16 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         _withdrawMargin(fee_);
         address receiver_ = addressProvider_.rebalanceFeeReceiver();
         addressProvider_.baseAsset().transfer(receiver_, fee_);
+    }
+
+    function _maxBaseAssetAmount() internal view returns (uint256) {
+        return
+            _addressProvider.synthetixHandler().maxMarketValue(targetAsset).mul(
+                1e18 -
+                    _addressProvider
+                        .parameterProvider()
+                        .maxBaseAssetAmountBuffer()
+            );
     }
 
     function _depositMargin(uint256 amount_) internal {
