@@ -98,7 +98,7 @@ contract SynthetixHandler is ISynthetixHandler {
         string calldata targetAsset_,
         address account_
     ) public view override returns (bool) {
-        return notionalValue(targetAsset_, account_) != 0;
+        return _market(targetAsset_).positions(account_).size != 0;
     }
 
     /// @inheritdoc ISynthetixHandler
