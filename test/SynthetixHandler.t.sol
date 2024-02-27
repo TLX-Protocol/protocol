@@ -351,6 +351,10 @@ contract SynthetixHandlerTest is IntegrationTest {
         assertFalse(synthetixHandler.isAssetSupported("BABYDOGE"));
     }
 
+    function testMaxMarketValue() public {
+        assertGt(synthetixHandler.maxMarketValue(Symbols.ETH), 0);
+    }
+
     function _depositMargin(uint256 amount_) internal {
         address(synthetixHandler).functionDelegateCall(
             abi.encodeWithSignature(

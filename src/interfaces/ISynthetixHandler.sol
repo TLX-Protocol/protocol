@@ -183,4 +183,13 @@ interface ISynthetixHandler {
     function isAssetSupported(
         string calldata targetAsset
     ) external view returns (bool isSupported);
+
+    /**
+     * @notice Returns the Maximum Market value for the `targetAsset`.
+     * @param targetAsset The asset to get the Maximum Market value for.
+     * @return maxMarketValue The Maximum Market value for the `targetAsset`.
+     */
+    function maxMarketValue(
+        string calldata targetAsset
+    ) external view returns (uint256 maxMarketValue);
 }
