@@ -266,16 +266,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         addressProvider_.baseAsset().transfer(receiver_, fee_);
     }
 
-    function _maxBaseAssetAmount() internal view returns (uint256) {
-        return
-            _addressProvider.synthetixHandler().maxMarketValue(targetAsset).mul(
-                1e18 -
-                    _addressProvider
-                        .parameterProvider()
-                        .maxBaseAssetAmountBuffer()
-            );
-    }
-
     function _depositMargin(uint256 amount_) internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
             abi.encodeWithSignature(
@@ -305,6 +295,16 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
                 isLong
             )
         );
+    }
+
+    function _maxBaseAssetAmount() internal view returns (uint256) {
+        return
+            _addressProvider.synthetixHandler().maxMarketValue(targetAsset).mul(
+                1e18 -
+                    _addressProvider
+                        .parameterProvider()
+                        .maxBaseAssetAmountBuffer()
+            );
     }
 
     function _ensureNoPendingLeverageUpdate() internal view {

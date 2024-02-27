@@ -218,7 +218,7 @@ contract SynthetixHandler is ISynthetixHandler {
     /// @inheritdoc ISynthetixHandler
     function maxMarketValue(
         string calldata targetAsset_
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         uint256 price_ = assetPrice(targetAsset_);
         return _marketSettings.maxMarketValue(_key(targetAsset_)).mul(price_);
     }
