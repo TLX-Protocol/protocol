@@ -8,6 +8,17 @@ pragma solidity ^0.8.13;
  * and v0.5 AggregatorV3Interface.sol.
  */
 interface AggregatorV2V3Interface {
+    event AnswerUpdated(
+        int256 indexed current,
+        uint256 indexed roundId,
+        uint256 timestamp
+    );
+    event NewRound(
+        uint256 indexed roundId,
+        address indexed startedBy,
+        uint256 startedAt
+    );
+
     //
     // V2 Interface:
     //
@@ -20,17 +31,6 @@ interface AggregatorV2V3Interface {
     function getAnswer(uint256 roundId) external view returns (int256);
 
     function getTimestamp(uint256 roundId) external view returns (uint256);
-
-    event AnswerUpdated(
-        int256 indexed current,
-        uint256 indexed roundId,
-        uint256 timestamp
-    );
-    event NewRound(
-        uint256 indexed roundId,
-        address indexed startedBy,
-        uint256 startedAt
-    );
 
     //
     // V3 Interface:
