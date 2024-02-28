@@ -15,6 +15,7 @@ interface IGenesisLocker is IRewardsStreaming {
     error NotUnlocked();
     error StakerNotDeployed();
     error AlreadyShutdown();
+    error RewardsAlreadyDonated();
 
     /**
      * @notice Locks the caller's TLX tokens.
