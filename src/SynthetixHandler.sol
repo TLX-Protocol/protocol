@@ -226,18 +226,6 @@ contract SynthetixHandler is ISynthetixHandler {
         return pnl_;
     }
 
-    function _orderFee(
-        string calldata targetAsset_,
-        int256 sizeDelta_
-    ) internal view returns (uint256) {
-        (uint256 fee_, bool invalid_) = _market(targetAsset_).orderFee(
-            sizeDelta_,
-            IPerpsV2MarketBaseTypes.OrderType.Delayed
-        );
-        if (invalid_) revert ErrorGettingOrderFee();
-        return fee_;
-    }
-
     function _market(
         string calldata targetAsset_
     ) internal view returns (IPerpsV2MarketConsolidated) {
