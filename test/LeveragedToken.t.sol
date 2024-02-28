@@ -35,6 +35,11 @@ contract LeveragedTokenTest is IntegrationTest {
         assertTrue(leveragedToken.isLong());
     }
 
+    function testMintWithZeroAmount() public {
+        uint256 leveragedTokenAmountOut = leveragedToken.mint(0, 0);
+        assertEq(leveragedTokenAmountOut, 0);
+    }
+
     function testMint() public {
         uint256 baseAmountIn = 100e18;
         _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
@@ -87,6 +92,11 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         vm.expectRevert(ILeveragedToken.LeverageUpdatePending.selector);
         leveragedToken.mint(baseAmountIn, 0);
+    }
+
+    function testRedeemWithZeroAmount() public {
+        uint256 baseAmountOut = leveragedToken.redeem(0, 0);
+        assertEq(baseAmountOut, 0);
     }
 
     function testRedeem() public {
@@ -147,19 +157,39 @@ contract LeveragedTokenTest is IntegrationTest {
         assertFalse(leveragedToken.canRebalance(), "4");
     }
 
+    function testRebalanceRevertsIfNotRebalancer() public {
+        vm.startPrank(alice);
+        vm.expectRevert(Errors.NotAuthorized.selector);
+        leveragedToken.rebalance();
+    }
+
+    function testRebalanceRevertsIfCantRebalance() public {
+        vm.expectRevert(ILeveragedToken.CannotRebalance.selector);
+        leveragedToken.rebalance();
+    }
+
     function testRebalance() public {
         _mintTokens();
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18,
-            0.1e18
+            0.03e18
         );
-        _mintTokens();
+        assertFalse(leveragedToken.canRebalance());
+        _modifyPrice(Symbols.ETH, 1.5e18);
+        assertLt(
+            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            1.8e18
+        );
+        assertTrue(leveragedToken.canRebalance());
+        leveragedToken.rebalance();
+        skip(30 seconds);
+        _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
-            2e18 / 2,
-            0.1e18
+            2e18,
+            0.03e18
         );
         assertFalse(leveragedToken.canRebalance());
     }
