@@ -9,10 +9,13 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Config} from "../src/libraries/Config.sol";
 import {Errors} from "../src/libraries/Errors.sol";
+import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenTest is IntegrationTest {
+    using ScaledNumber for uint256;
+
     ILeveragedToken public leveragedToken;
 
     function setUp() public override {
@@ -177,10 +180,13 @@ contract LeveragedTokenTest is IntegrationTest {
             0.03e18
         );
         assertFalse(leveragedToken.canRebalance());
-        _modifyPrice(Symbols.ETH, 1.5e18);
-        assertLt(
+        _modifyPrice(Symbols.ETH, 2e18);
+        uint256 notional_ = 400e18;
+        uint256 margin_ = 300e18;
+        assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
-            1.8e18
+            notional_.div(margin_),
+            0.03e18
         );
         assertTrue(leveragedToken.canRebalance());
         leveragedToken.rebalance();
