@@ -1,15 +1,7 @@
-# Compiler files
 cache/
 out/
-
-# Ignores development broadcast logs
 broadcast
-
-# Docs
 docs/
-
-# Dotenv file
 .env
-
-# Node
 node_modules/
+lcov.info
