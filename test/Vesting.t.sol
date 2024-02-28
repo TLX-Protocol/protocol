@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
+import {Errors} from "../src/libraries/Errors.sol";
+
 import {IVesting} from "../src/interfaces/IVesting.sol";
 
 contract Vesting is IntegrationTest {
@@ -99,6 +101,14 @@ contract Vesting is IntegrationTest {
         vm.prank(alice);
         vesting.addDelegate(bob);
 
+        // Reverts
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        vm.prank(alice);
+        vesting.addDelegate(address(0));
+        vm.expectRevert(Errors.AlreadyExists.selector);
+        vm.prank(alice);
+        vesting.addDelegate(bob);
+
         // Testing can claim as delegate
         vm.prank(bob);
         vesting.claim(alice, bob);
@@ -107,6 +117,14 @@ contract Vesting is IntegrationTest {
         // Removing delegate
         vm.prank(alice);
         vesting.removeDelegate(bob);
+
+        // Reverts
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        vm.prank(alice);
+        vesting.removeDelegate(address(0));
+        vm.expectRevert(Errors.DoesNotExist.selector);
+        vm.prank(alice);
+        vesting.removeDelegate(address(7));
 
         skip(365 days / 2);
         vm.startPrank(bob);
