@@ -270,7 +270,6 @@ contract IntegrationTest is Test {
                 uint80(answeredInRound)
             )
         );
-        console.log(newAnswer);
         IPerpsV2MarketData.MarketData memory marketData_ = IPerpsV2MarketData(
             Contracts.PERPS_V2_MARKET_DATA
         ).marketDetailsForKey(_key(asset_));
@@ -278,8 +277,6 @@ contract IntegrationTest is Test {
             marketData_.market
         );
         uint8 decimals_ = exchangeRates_.currencyKeyDecimals(key_);
-        console.log(decimals_);
-        console.log(_convertDecimals(decimals_, newAnswer));
         vm.mockCall(
             Contracts.PERPS_V2_EXCHANGE_RATE,
             abi.encodeWithSelector(
