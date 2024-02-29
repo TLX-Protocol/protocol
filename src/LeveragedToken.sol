@@ -145,7 +145,9 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );
-        _chargeStreamingFee(_getStreamingFee(market_));
+        uint256 fee_ = _getStreamingFee(market_);
+        _withdrawMargin(fee_, market_);
+        _chargeStreamingFee(fee_);
     }
 
     /// @inheritdoc ILeveragedToken
