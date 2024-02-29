@@ -164,17 +164,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         return _exchangeRate(market_);
     }
 
-    function _exchangeRate(address market_) public view returns (uint256) {
-        uint256 totalSupply_ = totalSupply();
-
-        uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
-            market_,
-            address(this)
-        );
-        if (totalSupply_ == 0) return 1e18;
-        return totalValue_.div(totalSupply_);
-    }
-
     /// @inheritdoc ILeveragedToken
     function isActive() public view override returns (bool) {
         return exchangeRate() > 0;
@@ -186,31 +175,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             targetAsset
         );
         return _canRebalance(market_);
-    }
-
-    function _canRebalance(address market_) public view returns (bool) {
-        // Can't rebalance if there is no margin
-
-        if (
-            _addressProvider.synthetixHandler().remainingMargin(
-                market_,
-                address(this)
-            ) == 0
-        ) return false;
-
-        // Can't rebalance if there is a pending leverage update
-        if (
-            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                market_,
-                address(this)
-            )
-        ) return false;
-
-        // Can't rebalance if the leverageDeviationFactor is already within the threshold
-        uint256 leverageDeviationFactor_ = _addressProvider
-            .synthetixHandler()
-            .leverageDeviationFactor(market_, address(this), targetLeverage);
-        return leverageDeviationFactor_ >= rebalanceThreshold();
     }
 
     /// @inheritdoc ILeveragedToken
@@ -328,6 +292,42 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
                 isLong
             )
         );
+    }
+
+    function _canRebalance(address market_) internal view returns (bool) {
+        // Can't rebalance if there is no margin
+
+        if (
+            _addressProvider.synthetixHandler().remainingMargin(
+                market_,
+                address(this)
+            ) == 0
+        ) return false;
+
+        // Can't rebalance if there is a pending leverage update
+        if (
+            _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
+                market_,
+                address(this)
+            )
+        ) return false;
+
+        // Can't rebalance if the leverageDeviationFactor is already within the threshold
+        uint256 leverageDeviationFactor_ = _addressProvider
+            .synthetixHandler()
+            .leverageDeviationFactor(market_, address(this), targetLeverage);
+        return leverageDeviationFactor_ >= rebalanceThreshold();
+    }
+
+    function _exchangeRate(address market_) internal view returns (uint256) {
+        uint256 totalSupply_ = totalSupply();
+
+        uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
+            market_,
+            address(this)
+        );
+        if (totalSupply_ == 0) return 1e18;
+        return totalValue_.div(totalSupply_);
     }
 
     function _ensureNoPendingLeverageUpdate(address market_) internal view {

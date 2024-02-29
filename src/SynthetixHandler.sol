@@ -30,6 +30,15 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
+    function market(
+        string calldata targetAsset_
+    ) external view returns (address) {
+        IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
+            .marketDetailsForKey(_key(targetAsset_));
+        return marketData_.market;
+    }
+
+    /// @inheritdoc ISynthetixHandler
     function depositMargin(address market_, uint256 amount_) public override {
         _addressProvider.baseAsset().approve(market_, amount_);
         IPerpsV2MarketConsolidated(market_).transferMargin(int256(amount_));
@@ -78,15 +87,6 @@ contract SynthetixHandler is ISynthetixHandler {
         IPerpsV2MarketConsolidated(market_).cancelOffchainDelayedOrder(
             address(this)
         );
-    }
-
-    /// @inheritdoc ISynthetixHandler
-    function market(
-        string calldata targetAsset_
-    ) external view returns (address) {
-        IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
-            .marketDetailsForKey(_key(targetAsset_));
-        return marketData_.market;
     }
 
     /// @inheritdoc ISynthetixHandler
