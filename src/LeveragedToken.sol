@@ -79,7 +79,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (_canRebalance(market_)) _rebalance(market_);
+        if (_canRebalance(market_)) _rebalance(market_, 0);
 
         return leveragedTokenAmount_;
     }
@@ -121,7 +121,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (_canRebalance(market_)) _rebalance(market_);
+        if (_canRebalance(market_)) _rebalance(market_, 0);
 
         return baseAmountReceived_;
     }
@@ -134,8 +134,10 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             targetAsset
         );
         if (!_canRebalance(market_)) revert CannotRebalance();
-        _chargeRebalanceFee(market_);
-        _rebalance(market_);
+        _rebalance(
+            market_,
+            _addressProvider.parameterProvider().rebalanceFee()
+        );
     }
 
     /// @inheritdoc ILeveragedToken
@@ -143,7 +145,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );
-        _chargeStreamingFee(market_);
+        _chargeStreamingFee(_getStreamingFee(market_));
     }
 
     /// @inheritdoc ILeveragedToken
@@ -217,9 +219,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             );
     }
 
-    function _rebalance(address market_) internal {
-        // Charging streaming fee
-        _chargeStreamingFee(market_);
+    function _rebalance(address market_, uint256 rebalanceFee_) internal {
+        // Charging fees
+        uint256 streamingFee_ = _getStreamingFee(market_);
+        _withdrawMargin(streamingFee_ + rebalanceFee_, market_);
+        _chargeRebalanceFee(rebalanceFee_);
+        _chargeStreamingFee(streamingFee_);
 
         // Rebalancing
         _submitLeverageUpdate(market_);
@@ -248,11 +253,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         }
     }
 
-    function _chargeStreamingFee(address market_) internal {
+    function _getStreamingFee(address market_) internal returns (uint256) {
         // First deposit, don't charge fee but start streaming
         if (_lastStreamingFeeTimestamp == 0) {
             _lastStreamingFeeTimestamp = block.timestamp;
-            return;
+            return 0;
         }
 
         // Accounting
@@ -269,25 +274,25 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
         uint256 pastTime_ = block.timestamp - _lastStreamingFeeTimestamp;
         uint256 fee_ = annualStreamingFee_.mul(pastTime_).div(365 days);
-        if (fee_ == 0) return;
+        if (fee_ == 0) return 0;
 
-        // Sending fees to staker
+        // Return fees
         IStaker staker_ = _addressProvider.staker();
-        if (staker_.totalStaked() == 0) return;
-        _withdrawMargin(fee_, market_);
+        if (staker_.totalStaked() == 0) return 0;
+        return fee_;
+    }
+
+    function _chargeStreamingFee(uint256 fee_) internal {
+        if (fee_ == 0) return;
+        IStaker staker_ = _addressProvider.staker();
         _addressProvider.baseAsset().approve(address(staker_), fee_);
         staker_.donateRewards(fee_);
         _lastStreamingFeeTimestamp = block.timestamp;
     }
 
-    function _chargeRebalanceFee(address market_) internal {
+    function _chargeRebalanceFee(uint256 fee_) internal {
+        if (fee_ == 0) return;
         IAddressProvider addressProvider_ = _addressProvider;
-        uint256 fee_ = addressProvider_.parameterProvider().rebalanceFee();
-        uint256 remainingMargin_ = addressProvider_
-            .synthetixHandler()
-            .remainingMargin(market_, address(this));
-        if (fee_ >= remainingMargin_) return;
-        _withdrawMargin(fee_, market_);
         address receiver_ = addressProvider_.rebalanceFeeReceiver();
         addressProvider_.baseAsset().transfer(receiver_, fee_);
     }
