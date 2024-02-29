@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 interface IReferrals {
     event Registered(address indexed user, bytes32 code);
-    event UpdatedReferral(address indexed user, bytes32 code);
+    event SetReferral(address indexed user, bytes32 code);
     event RebateSet(uint256 rebate);
     event EarningsSet(uint256 earnings);
     event EarningsTaken(address indexed user, uint256 amount);
@@ -12,7 +12,6 @@ interface IReferrals {
     error AlreadyRegistered();
     error InvalidCode();
     error CodeTaken();
-    error SameCode();
     error AlreadyOpen();
     error NotLeveragedToken();
     error NotChanged();
@@ -42,10 +41,11 @@ interface IReferrals {
     function register(address referrer, bytes32 code) external;
 
     /**
-     * @notice Updates the referral code for the sender.
-     * @param code The code to update to.
+     * @notice Sets the referral code for the sender.
+     * @dev Reverts if the user has already set a code.
+     * @param code The code to use.
      */
-    function updateReferral(bytes32 code) external;
+    function setReferral(bytes32 code) external;
 
     /**
      * @notice Sets the rebate percent.

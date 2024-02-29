@@ -86,11 +86,11 @@ contract Referrals is IReferrals, TlxOwnable {
     }
 
     /// @inheritdoc IReferrals
-    function updateReferral(bytes32 code_) external override {
-        if (_referrals[msg.sender] == code_) revert SameCode();
+    function setReferral(bytes32 code_) external override {
         if (_referrers[code_] == address(0)) revert InvalidCode();
+        if (_referrals[msg.sender] != bytes32(0)) revert AlreadyRegistered();
         _referrals[msg.sender] = code_;
-        emit UpdatedReferral(msg.sender, code_);
+        emit SetReferral(msg.sender, code_);
     }
 
     /// @inheritdoc IReferrals
