@@ -18,13 +18,6 @@ library ScaledNumber {
         return (value * multiplier) / 10 ** _DEFAULT_DECIMALS;
     }
 
-    function mul(
-        int256 value,
-        int256 multiplier
-    ) internal pure returns (int256) {
-        return (value * multiplier) / int256(10 ** _DEFAULT_DECIMALS);
-    }
-
     function absSub(uint256 a, uint256 b) internal pure returns (uint256) {
         return a > b ? a - b : b - a;
     }

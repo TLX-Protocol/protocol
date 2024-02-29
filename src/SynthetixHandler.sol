@@ -98,8 +98,8 @@ contract SynthetixHandler is ISynthetixHandler {
         if (!isDeposit_) targetSizeDelta_ = -targetSizeDelta_; // Invert if redeeming
         uint256 fillPrice_ = fillPrice(market_, targetSizeDelta_);
 
-        bool isLoss = (isLong_ && assetPrice_ > fillPrice_) ||
-            (!isLong_ && assetPrice_ < fillPrice_);
+        bool isLoss = (isLong_ && fillPrice_ > assetPrice_) ||
+            (!isLong_ && fillPrice_ < assetPrice_);
         uint256 slippage = absTargetSizeDelta_.mul(
             assetPrice_.absSub(fillPrice_)
         );
