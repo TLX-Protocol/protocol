@@ -15,6 +15,7 @@ interface IBonding {
     error BondingNotLive();
     error BondingAlreadyLive();
     error AlreadyMigrated();
+    error InactiveToken();
 
     /**
      * @notice Bond leveraged tokens for TLX.
