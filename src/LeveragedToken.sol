@@ -55,10 +55,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
         if (isPaused) revert Paused();
-        _ensureNoPendingLeverageUpdate();
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        _ensureNoPendingLeverageUpdate(market_);
 
         // Accounting
-        uint256 exchangeRate_ = exchangeRate();
+        uint256 exchangeRate_ = _exchangeRate(market_);
         uint256 leveragedTokenAmount_ = baseAmountIn_.div(exchangeRate_);
 
         // Verifying sufficient amount
@@ -71,12 +74,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             address(this),
             baseAmountIn_
         );
-        _depositMargin(baseAmountIn_);
+        _depositMargin(baseAmountIn_, market_);
         _mint(msg.sender, leveragedTokenAmount_);
         emit Minted(msg.sender, baseAmountIn_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) _rebalance();
+        if (_canRebalance(market_)) _rebalance(market_);
 
         return leveragedTokenAmount_;
     }
@@ -87,10 +90,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         uint256 minBaseAmountReceived_
     ) public override returns (uint256) {
         if (leveragedTokenAmount_ == 0) return 0;
-        _ensureNoPendingLeverageUpdate();
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        _ensureNoPendingLeverageUpdate(market_);
 
         // Accounting
-        uint256 exchangeRate_ = exchangeRate();
+        uint256 exchangeRate_ = _exchangeRate(market_);
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 feePercent_ = addressProvider_
@@ -104,7 +110,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         if (!sufficient_) revert InsufficientAmount();
 
         // Withdrawing margin
-        _withdrawMargin(baseWithdrawn_);
+        _withdrawMargin(baseWithdrawn_, market_);
 
         // Charging fees
         _chargeRedemptionFee(fee_);
@@ -115,7 +121,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
-        if (canRebalance()) _rebalance();
+        if (_canRebalance(market_)) _rebalance(market_);
 
         return baseAmountReceived_;
     }
@@ -124,14 +130,20 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     function rebalance() public override {
         bool canRebalance_ = _addressProvider.isRebalancer(msg.sender);
         if (!canRebalance_) revert Errors.NotAuthorized();
-        if (!canRebalance()) revert CannotRebalance();
-        _chargeRebalanceFee();
-        _rebalance();
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        if (!_canRebalance(market_)) revert CannotRebalance();
+        _chargeRebalanceFee(market_);
+        _rebalance(market_);
     }
 
     /// @inheritdoc ILeveragedToken
     function chargeStreamingFee() public {
-        _chargeStreamingFee();
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        _chargeStreamingFee(market_);
     }
 
     /// @inheritdoc ILeveragedToken
@@ -142,9 +154,17 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
     /// @inheritdoc ILeveragedToken
     function exchangeRate() public view override returns (uint256) {
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        return _exchangeRate(market_);
+    }
+
+    function _exchangeRate(address market_) public view returns (uint256) {
         uint256 totalSupply_ = totalSupply();
+
         uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
-            targetAsset,
+            market_,
             address(this)
         );
         if (totalSupply_ == 0) return 1e18;
@@ -158,10 +178,18 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
     /// @inheritdoc ILeveragedToken
     function canRebalance() public view override returns (bool) {
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        return _canRebalance(market_);
+    }
+
+    function _canRebalance(address market_) public view returns (bool) {
         // Can't rebalance if there is no margin
+
         if (
             _addressProvider.synthetixHandler().remainingMargin(
-                targetAsset,
+                market_,
                 address(this)
             ) == 0
         ) return false;
@@ -169,7 +197,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Can't rebalance if there is a pending leverage update
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                targetAsset,
+                market_,
                 address(this)
             )
         ) return false;
@@ -177,11 +205,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Can't rebalance if the leverageDeviationFactor is already within the threshold
         uint256 leverageDeviationFactor_ = _addressProvider
             .synthetixHandler()
-            .leverageDeviationFactor(
-                targetAsset,
-                address(this),
-                targetLeverage
-            );
+            .leverageDeviationFactor(market_, address(this), targetLeverage);
         return leverageDeviationFactor_ >= rebalanceThreshold();
     }
 
@@ -193,14 +217,14 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             );
     }
 
-    function _rebalance() internal {
+    function _rebalance(address market_) internal {
         // Charging streaming fee
-        _chargeStreamingFee();
+        _chargeStreamingFee(market_);
 
         // Rebalancing
-        _submitLeverageUpdate();
+        _submitLeverageUpdate(market_);
         uint256 currentLeverage_ = _addressProvider.synthetixHandler().leverage(
-            targetAsset,
+            market_,
             address(this)
         );
         emit Rebalanced(currentLeverage_);
@@ -224,7 +248,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         }
     }
 
-    function _chargeStreamingFee() internal {
+    function _chargeStreamingFee(address market_) internal {
         // First deposit, don't charge fee but start streaming
         if (_lastStreamingFeeTimestamp == 0) {
             _lastStreamingFeeTimestamp = block.timestamp;
@@ -238,9 +262,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             .streamingFee();
         ISynthetixHandler synthetixHandler_ = addressProvider_
             .synthetixHandler();
-        string memory targetAsset_ = targetAsset;
         uint256 notionalValue_ = synthetixHandler_.notionalValue(
-            targetAsset_,
+            market_,
             address(this)
         );
         uint256 annualStreamingFee_ = notionalValue_.mul(streamingFeePercent_);
@@ -251,59 +274,59 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Sending fees to staker
         IStaker staker_ = _addressProvider.staker();
         if (staker_.totalStaked() == 0) return;
-        _withdrawMargin(fee_);
+        _withdrawMargin(fee_, market_);
         _addressProvider.baseAsset().approve(address(staker_), fee_);
         staker_.donateRewards(fee_);
         _lastStreamingFeeTimestamp = block.timestamp;
     }
 
-    function _chargeRebalanceFee() internal {
+    function _chargeRebalanceFee(address market_) internal {
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 fee_ = addressProvider_.parameterProvider().rebalanceFee();
         uint256 remainingMargin_ = addressProvider_
             .synthetixHandler()
-            .remainingMargin(targetAsset, address(this));
+            .remainingMargin(market_, address(this));
         if (fee_ >= remainingMargin_) return;
-        _withdrawMargin(fee_);
+        _withdrawMargin(fee_, market_);
         address receiver_ = addressProvider_.rebalanceFeeReceiver();
         addressProvider_.baseAsset().transfer(receiver_, fee_);
     }
 
-    function _depositMargin(uint256 amount_) internal {
+    function _depositMargin(uint256 amount_, address market_) internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
-            abi.encodeWithSignature(
-                "depositMargin(string,uint256)",
-                targetAsset,
+            abi.encodeWithSelector(
+                ISynthetixHandler.depositMargin.selector,
+                market_,
                 amount_
             )
         );
     }
 
-    function _withdrawMargin(uint256 amount_) internal {
+    function _withdrawMargin(uint256 amount_, address market_) internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
-            abi.encodeWithSignature(
-                "withdrawMargin(string,uint256)",
-                targetAsset,
+            abi.encodeWithSelector(
+                ISynthetixHandler.withdrawMargin.selector,
+                market_,
                 amount_
             )
         );
     }
 
-    function _submitLeverageUpdate() internal {
+    function _submitLeverageUpdate(address market_) internal {
         address(_addressProvider.synthetixHandler()).functionDelegateCall(
-            abi.encodeWithSignature(
-                "submitLeverageUpdate(string,uint256,bool)",
-                targetAsset,
+            abi.encodeWithSelector(
+                ISynthetixHandler.submitLeverageUpdate.selector,
+                market_,
                 targetLeverage,
                 isLong
             )
         );
     }
 
-    function _ensureNoPendingLeverageUpdate() internal view {
+    function _ensureNoPendingLeverageUpdate(address market_) internal view {
         if (
             _addressProvider.synthetixHandler().hasPendingLeverageUpdate(
-                targetAsset,
+                market_,
                 address(this)
             )
         ) revert LeverageUpdatePending();
