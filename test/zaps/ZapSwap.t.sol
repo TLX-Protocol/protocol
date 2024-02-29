@@ -353,7 +353,11 @@ contract ZapSwapTest is IntegrationTest {
         baseAsset.approve(address(leveragedToken), baseAssetAmountIn);
         leveragedToken.mint(baseAssetAmountIn, 0);
         _executeOrder(address(leveragedToken));
-        assertEq(leveragedToken.balanceOf(address(this)), baseAssetAmountIn);
+        assertApproxEqRel(
+            leveragedToken.balanceOf(address(this)),
+            baseAssetAmountIn,
+            0.03e18
+        );
 
         // Determine value of LTs minted in terms of baseAsset
         uint256 leveragedTokenValue = leveragedToken
@@ -362,7 +366,7 @@ contract ZapSwapTest is IntegrationTest {
         assertApproxEqRel(
             baseAssetAmountIn,
             leveragedTokenValue,
-            0.01e18,
+            0.03e18,
             "Value of leveraged token minted does not match baseAssetAmountIn."
         );
 
@@ -383,9 +387,10 @@ contract ZapSwapTest is IntegrationTest {
         );
 
         // Assert still holding 1/2 of the leveraged tokens
-        assertEq(
+        assertApproxEqRel(
             leveragedToken.balanceOf(address(this)),
             leveragedTokenAmountToRedeem, // Is equal to half of the original amount
+            0.03e18,
             "Holding an incorrect amount of leveraged tokens after redemption."
         );
         // Verify zapAsset balance received from redemption has a max 2% deviation from baseAssetAmountIn

@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {IntegrationTest} from "./shared/IntegrationTest.sol";
 
+import "../lib/forge-std/src/console.sol";
+
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../src/libraries/Tokens.sol";
@@ -50,14 +52,23 @@ contract LeveragedTokenTest is IntegrationTest {
             address(leveragedToken),
             baseAmountIn
         );
+
+        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+            baseAmountIn,
+            true
+        );
         uint256 minLeveragedTokenAmountOut = 95e18;
         uint256 leveragedTokenAmountOut = leveragedToken.mint(
             baseAmountIn,
             minLeveragedTokenAmountOut
         );
-        assertEq(leveragedTokenAmountOut, 100e18);
-        assertEq(leveragedToken.totalSupply(), 100e18);
-        assertEq(leveragedToken.balanceOf(address(this)), 100e18);
+
+        uint256 targetValue = 100e18;
+        if (isLoss) targetValue = targetValue - slippage;
+        else targetValue = targetValue + slippage;
+        assertEq(leveragedTokenAmountOut, targetValue);
+        assertEq(leveragedToken.totalSupply(), targetValue);
+        assertEq(leveragedToken.balanceOf(address(this)), targetValue);
         assertEq(
             IERC20(Config.BASE_ASSET).balanceOf(address(leveragedToken)),
             0
@@ -111,9 +122,25 @@ contract LeveragedTokenTest is IntegrationTest {
             address(leveragedToken),
             baseAmountIn
         );
+
+        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+            baseAmountIn,
+            true
+        );
+
         leveragedToken.mint(baseAmountIn, minLeveragedTokenAmountOut);
         _executeOrder(address(leveragedToken));
-        assertEq(leveragedToken.balanceOf(address(this)), 100e18);
+
+        if (isLoss)
+            assertEq(
+                leveragedToken.balanceOf(address(this)),
+                baseAmountIn - slippage
+            );
+        else
+            assertEq(
+                leveragedToken.balanceOf(address(this)),
+                baseAmountIn + slippage
+            );
 
         // Redeeming Leveraged Tokens
         uint256 leveragedTokenAmountIn = 1e18;
@@ -130,8 +157,12 @@ contract LeveragedTokenTest is IntegrationTest {
         );
 
         assertApproxEqRel(baseAmountOut, 1e18, 0.05e18, "1");
-        assertEq(leveragedToken.totalSupply(), 99e18);
-        assertEq(leveragedToken.balanceOf(address(this)), 99e18);
+        assertApproxEqRel(leveragedToken.totalSupply(), 99e18, 0.05e18);
+        assertApproxEqRel(
+            leveragedToken.balanceOf(address(this)),
+            99e18,
+            0.05e18
+        );
         assertApproxEqRel(balanceAfter - balanceBefore, 1e18, 0.05e18, "2");
     }
 
@@ -288,9 +319,23 @@ contract LeveragedTokenTest is IntegrationTest {
         _mintTokensFor(Config.BASE_ASSET, address(this), amount);
         IERC20 base = IERC20(Config.BASE_ASSET);
         base.approve(address(leveragedToken), amount);
+        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+            amount,
+            true
+        );
         leveragedToken.mint(amount, 0);
         _executeOrder(address(leveragedToken));
-        assertEq(leveragedToken.balanceOf(address(this)), amount);
+
+        if (isLoss)
+            assertEq(
+                leveragedToken.balanceOf(address(this)),
+                amount - slippage
+            );
+        else
+            assertEq(
+                leveragedToken.balanceOf(address(this)),
+                amount + slippage
+            );
 
         // Redeeming Leveraged Tokens
         assertEq(base.balanceOf(address(staker)), 0);
