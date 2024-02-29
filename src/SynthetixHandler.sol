@@ -12,6 +12,7 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
+    using ScaledNumber for int256;
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
     IPerpsV2MarketSettings internal immutable _marketSettings;
@@ -79,6 +80,30 @@ contract SynthetixHandler is ISynthetixHandler {
             sizeDelta_,
             price_
         );
+    }
+
+    function computeSlippage(
+        address market_,
+        uint256 leverage_,
+        uint256 baseAmount_,
+        bool isLong_,
+        bool isDeposit_
+    ) public view override returns (uint256, bool) {
+        uint256 assetPrice_ = assetPrice(market_);
+        uint256 absTargetSizeDelta_ = baseAmount_.mul(leverage_).div(
+            assetPrice_
+        );
+        int256 targetSizeDelta_ = int256(absTargetSizeDelta_);
+        if (!isLong_) targetSizeDelta_ = -targetSizeDelta_; // Invert if shorting
+        if (!isDeposit_) targetSizeDelta_ = -targetSizeDelta_; // Invert if redeeming
+        uint256 fillPrice_ = fillPrice(market_, targetSizeDelta_);
+
+        bool isLoss = (isLong_ && assetPrice_ > fillPrice_) ||
+            (!isLong_ && assetPrice_ < fillPrice_);
+        uint256 slippage = absTargetSizeDelta_.mul(
+            assetPrice_.absSub(fillPrice_)
+        );
+        return (slippage, isLoss);
     }
 
     /// @inheritdoc ISynthetixHandler

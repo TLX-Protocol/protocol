@@ -64,8 +64,22 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         _ensureNoPendingLeverageUpdate(market_);
 
         // Accounting
+        (uint256 slippage_, bool isLoss_) = _computeSlippage(
+            market_,
+            baseAmountIn_,
+            true
+        );
         uint256 exchangeRate_ = _exchangeRate(market_);
-        uint256 leveragedTokenAmount_ = baseAmountIn_.div(exchangeRate_);
+        uint256 leveragedTokenAmount_;
+        if (isLoss_) {
+            leveragedTokenAmount_ = (baseAmountIn_ - slippage_).div(
+                exchangeRate_
+            );
+        } else {
+            leveragedTokenAmount_ = (baseAmountIn_ + slippage_).div(
+                exchangeRate_
+            );
+        }
 
         // Verifying sufficient amount
         bool sufficient_ = leveragedTokenAmount_ >= minLeveragedTokenAmountOut_;
@@ -103,12 +117,18 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
         uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount(market_);
         if (baseWithdrawn_ > maxBaseAssetAmount_) revert ExceedsLimit();
+        (uint256 slippage_, bool isLoss_) = _computeSlippage(
+            market_,
+            baseWithdrawn_,
+            false
+        );
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 feePercent_ = addressProvider_
             .parameterProvider()
             .redemptionFee();
         uint256 fee_ = baseWithdrawn_.mul(targetLeverage).mul(feePercent_);
         uint256 baseAmountReceived_ = baseWithdrawn_ - fee_;
+        if (isLoss_) baseAmountReceived_ = baseAmountReceived_ - slippage_;
 
         // Verifying sufficient amount
         bool sufficient_ = baseAmountReceived_ >= minBaseAmountReceived_;
@@ -168,6 +188,17 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             targetAsset
         );
         return _exchangeRate(market_);
+    }
+
+    /// @inheritdoc ILeveragedToken
+    function computeSlippage(
+        uint256 baseAmount_,
+        bool isDeposit_
+    ) public view override returns (uint256, bool) {
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        return _computeSlippage(market_, baseAmount_, isDeposit_);
     }
 
     /// @inheritdoc ILeveragedToken
@@ -350,6 +381,21 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             address(this)
         );
         return totalValue_.div(totalSupply_);
+    }
+
+    function _computeSlippage(
+        address market_,
+        uint256 baseAmount_,
+        bool isDeposit_
+    ) internal view returns (uint256, bool) {
+        return
+            _addressProvider.synthetixHandler().computeSlippage(
+                market_,
+                targetLeverage,
+                baseAmount_,
+                isLong,
+                isDeposit_
+            );
     }
 
     function _ensureNoPendingLeverageUpdate(address market_) internal view {

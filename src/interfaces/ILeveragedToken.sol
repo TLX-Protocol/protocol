@@ -114,6 +114,18 @@ interface ILeveragedToken is IERC20Metadata {
     function exchangeRate() external view returns (uint256 exchangeRate);
 
     /**
+     * @notice Returns the expected slippage from making an adjustment to a position.
+     * @param baseAmount_ Margin amount to deposit in units of base asset.
+     * @param isDeposit_ If the adjustment is a deposit.
+     * @return slippage Slippage in units of base asset.
+     * @return isLoss Whether the slippage is a loss.
+     */
+    function computeSlippage(
+        uint256 baseAmount_,
+        bool isDeposit_
+    ) external view returns (uint256 slippage, bool isLoss);
+
+    /**
      * @notice Returns if the leveraged token can be rebalanced.
      * @return canRebalance If the leveraged token can be rebalanced.
      */

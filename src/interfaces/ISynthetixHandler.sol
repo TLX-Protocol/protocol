@@ -39,6 +39,24 @@ interface ISynthetixHandler {
     ) external;
 
     /**
+     * @notice Computes expected slippage for a position adjustment at current prices.
+     * @param market_ The market for which to compute slippage for.
+     * @param leverage_ The leverage to target.
+     * @param baseAmount_ The margin amount to compute slippage for.
+     * @param isLong_ Whether the position is long or short.
+     * @param isDeposit_ Whether the adjustment is a deposit.
+     * @return slippage The expected slippage for the position adjustment.
+     * @return isLoss Whether the expected slippage is a loss.
+     */
+    function computeSlippage(
+        address market_,
+        uint256 leverage_,
+        uint256 baseAmount_,
+        bool isLong_,
+        bool isDeposit_
+    ) external view returns (uint256 slippage, bool isLoss);
+
+    /**
      * @notice Returns the address for the market of the `targetAsset`.
      * @param targetAsset The asset to return the market for.
      * @return market The address for the market of the `targetAsset`.
