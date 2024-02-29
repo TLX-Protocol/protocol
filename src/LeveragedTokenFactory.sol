@@ -92,7 +92,7 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
         address newToken_ = _deployToken(
             leveragedToken_.targetAsset(),
             leveragedToken_.targetLeverage(),
-            false,
+            leveragedToken_.isLong(),
             leveragedToken_.rebalanceThreshold()
         );
 
