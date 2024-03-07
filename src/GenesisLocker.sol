@@ -28,8 +28,6 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
     /// @inheritdoc IGenesisLocker
     mapping(address => uint256) public override unlockTime;
 
-    error RewardsAlreadyDonated();
-
     constructor(
         address addressProvider_,
         uint256 lockTime_,

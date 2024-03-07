@@ -3,12 +3,15 @@ pragma solidity ^0.8.13;
 
 import "forge-std/console.sol";
 
+import {IntegrationTest} from "./shared/IntegrationTest.sol";
+
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {IGenesisLocker} from "../src/interfaces/IGenesisLocker.sol";
 import {Config} from "../src/libraries/Config.sol";
+import {Errors} from "../src/libraries/Errors.sol";
 
-import {IntegrationTest} from "./shared/IntegrationTest.sol";
+import {IGenesisLocker} from "../src/interfaces/IGenesisLocker.sol";
+import {IRewardsStreaming} from "../src/interfaces/IRewardsStreaming.sol";
 
 contract GenesisLockerTest is IntegrationTest {
     IERC20Metadata public reward;
@@ -29,6 +32,7 @@ contract GenesisLockerTest is IntegrationTest {
             "lock time"
         );
         assertEq(genesisLocker.rewardToken(), address(tlx), "reward token");
+        assertEq(genesisLocker.decimals(), 18, "decimals");
     }
 
     function testDonateRewards() public {
@@ -38,6 +42,17 @@ contract GenesisLockerTest is IntegrationTest {
             block.timestamp,
             "donated at"
         );
+
+        vm.expectRevert(Errors.NotAuthorized.selector);
+        genesisLocker.donateRewards(100e18);
+
+        vm.expectRevert(IRewardsStreaming.ZeroAmount.selector);
+        vm.prank(address(tlx));
+        genesisLocker.donateRewards(0);
+
+        vm.expectRevert(IGenesisLocker.RewardsAlreadyDonated.selector);
+        vm.prank(address(tlx));
+        genesisLocker.donateRewards(1);
     }
 
     function testLock() public {
@@ -107,6 +122,11 @@ contract GenesisLockerTest is IntegrationTest {
         genesisLocker.claim();
 
         assertEq(tlx.balanceOf(bob), rewardAmount / 4, "balance");
+    }
+
+    function testClaimWithNoAssets() public {
+        skip(Config.GENESIS_LOCKER_LOCK_TIME / 4);
+        genesisLocker.claim();
     }
 
     function testManyStakers() public {

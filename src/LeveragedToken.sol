@@ -107,23 +107,12 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Withdrawing margin
         _withdrawMargin(baseWithdrawn_);
 
-        // Paying referrals
-        IReferrals referrals_ = addressProvider_.referrals();
-        IERC20 baseAsset_ = addressProvider_.baseAsset();
-        baseAsset_.approve(address(referrals_), fee_);
-        uint256 referralAmount_ = referrals_.takeEarnings(fee_, msg.sender);
-
-        // Sending fees to staker
-        IStaker staker_ = addressProvider_.staker();
-        uint256 amount_ = fee_ - referralAmount_;
-        if (amount_ != 0 && staker_.totalStaked() != 0) {
-            baseAsset_.approve(address(staker_), amount_);
-            staker_.donateRewards(amount_);
-        }
+        // Charging fees
+        _chargeRedemptionFee(fee_);
 
         // Redeeming
         _burn(msg.sender, leveragedTokenAmount_);
-        baseAsset_.transfer(msg.sender, baseAmountReceived_);
+        addressProvider_.baseAsset().transfer(msg.sender, baseAmountReceived_);
         emit Redeemed(msg.sender, baseAmountReceived_, leveragedTokenAmount_);
 
         // Rebalancing if necessary
@@ -216,6 +205,24 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             address(this)
         );
         emit Rebalanced(currentLeverage_);
+    }
+
+    function _chargeRedemptionFee(uint256 fee_) internal {
+        // Paying referrals
+        IAddressProvider addressProvider_ = _addressProvider;
+        IReferrals referrals_ = addressProvider_.referrals();
+        IERC20 baseAsset_ = addressProvider_.baseAsset();
+        baseAsset_.approve(address(referrals_), fee_);
+        uint256 referralAmount_ = referrals_.takeEarnings(fee_, msg.sender);
+
+        // Sending fees to staker
+        IStaker staker_ = addressProvider_.staker();
+        uint256 amount_ = fee_ - referralAmount_;
+        // TODO: Test
+        if (amount_ != 0 && staker_.totalStaked() != 0) {
+            baseAsset_.approve(address(staker_), amount_);
+            staker_.donateRewards(amount_);
+        }
     }
 
     function _chargeStreamingFee() internal {

@@ -67,6 +67,51 @@ contract ChainlinkAutomationTest is IntegrationTest {
         assertEq(performData.length, 0);
     }
 
+    function testWithSomeUpkeeps() public {
+        // Create tokens
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.ETH,
+            2e18,
+            Config.REBALANCE_THRESHOLD
+        );
+
+        // Mint token
+        ILeveragedToken leveragedToken = ILeveragedToken(
+            leveragedTokenFactory.allTokens()[0]
+        );
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+        leveragedToken.mint(baseAmountIn, 0);
+        _executeOrder(address(leveragedToken));
+
+        // Modify price
+        _modifyPrice(Symbols.ETH, 2e18);
+        assertTrue(leveragedToken.canRebalance());
+
+        // Validate
+        (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
+            .checkUpkeep("");
+        address[] memory rebalancableTokens_ = abi.decode(
+            performData,
+            (address[])
+        );
+        assertEq(upkeepNeeded, true);
+        assertEq(rebalancableTokens_.length, 1);
+
+        // Execute
+        vm.prank(chainlinkAutomation.forwarderAddress());
+        chainlinkAutomation.performUpkeep(performData);
+        _executeOrder(address(leveragedToken));
+
+        // Validate
+        (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep("");
+        assertEq(upkeepNeeded, false);
+    }
+
     function testRevertsWithNotForwarder() public {
         address[] memory rebalancableTokens = new address[](0);
         bytes memory performData = abi.encode(rebalancableTokens);

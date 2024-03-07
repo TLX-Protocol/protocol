@@ -28,6 +28,17 @@ contract LeveragedTokenHelperTest is IntegrationTest {
         assertEq(leveragedTokens.length, 0);
     }
 
+    function testQueryDataNoMints() public {
+        leveragedTokenFactory.createLeveragedTokens(
+            Symbols.ETH,
+            2e18,
+            Config.REBALANCE_THRESHOLD
+        );
+        LeveragedTokenHelper.LeveragedTokenData[]
+            memory leveragedTokens = leveragedTokenHelper.leveragedTokenData();
+        assertEq(leveragedTokens[0].leverage, 0);
+    }
+
     function testQueryData() public {
         leveragedTokenFactory.createLeveragedTokens(
             Symbols.ETH,
