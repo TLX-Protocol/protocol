@@ -154,11 +154,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     /// @inheritdoc ILeveragedToken
     function exchangeRate() public view override returns (uint256) {
         uint256 totalSupply_ = totalSupply();
+        if (totalSupply_ == 0) return 1e18;
         uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
             targetAsset,
             address(this)
         );
-        if (totalSupply_ == 0) return 1e18;
         return totalValue_.div(totalSupply_);
     }
 
