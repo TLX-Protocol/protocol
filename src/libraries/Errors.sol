@@ -9,4 +9,5 @@ library Errors {
     error SameAsCurrent();
     error InvalidAddress();
     error InsufficientAmount();
+    error NotLeveragedToken();
 }
