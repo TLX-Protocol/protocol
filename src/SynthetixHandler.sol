@@ -98,7 +98,7 @@ contract SynthetixHandler is ISynthetixHandler {
         string calldata targetAsset_,
         address account_
     ) public view override returns (bool) {
-        return notionalValue(targetAsset_, account_) != 0;
+        return _market(targetAsset_).positions(account_).size != 0;
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -232,18 +232,6 @@ contract SynthetixHandler is ISynthetixHandler {
         );
         if (invalid_) revert ErrorGettingPnl();
         return pnl_;
-    }
-
-    function _orderFee(
-        string calldata targetAsset_,
-        int256 sizeDelta_
-    ) internal view returns (uint256) {
-        (uint256 fee_, bool invalid_) = _market(targetAsset_).orderFee(
-            sizeDelta_,
-            IPerpsV2MarketBaseTypes.OrderType.Delayed
-        );
-        if (invalid_) revert ErrorGettingOrderFee();
-        return fee_;
     }
 
     function _market(

@@ -10,12 +10,12 @@ interface IBonding {
     );
     event Migrated(uint256 amount);
 
-    error NotLeveragedToken();
     error MinTlxNotReached();
     error ExceedsAvailable();
     error BondingNotLive();
     error BondingAlreadyLive();
     error AlreadyMigrated();
+    error InactiveToken();
 
     /**
      * @notice Bond leveraged tokens for TLX.

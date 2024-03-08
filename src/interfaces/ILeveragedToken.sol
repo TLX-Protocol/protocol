@@ -21,6 +21,7 @@ interface ILeveragedToken is IERC20Metadata {
     error LeverageUpdatePending();
     error Paused();
     error ExceedsLimit();
+    error Inactive();
 
     /**
      * @notice Mints some leveraged tokens to the caller with the given baseAmountIn of the base asset.

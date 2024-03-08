@@ -15,8 +15,11 @@ library Config {
     address public constant GOVERNANCE_MULTISIG =
         0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90;
     address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens ar sent to
-    address public constant REBALANCE_FEE_RECEIVER = GOVERNANCE_MULTISIG; // Receiver of rebalance fees (may be treasury to start)
+    address public constant REBALANCE_FEE_RECEIVER =
+        0xf6A741259da6ee0d1A863bd847b12A6c2943Ea57; // Receiver of rebalance fees
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
+    address public constant TEAM_MULTISIG =
+        0xeD7E46Dfe30589a7fa219F049282F5Fa9ca7D47F; // Set as the owner of the Timelock contract
 
     // Strings
     string public constant TOKEN_NAME = "TLX DAO Token"; // TLX DAO Token
@@ -46,7 +49,7 @@ library Config {
     uint256 public constant EARNINGS_PERCENT = 0.5e18; // 50%
     uint256 public constant REBALANCE_THRESHOLD = 0.25e18; // 25%
     uint256 public constant STREAMING_FEE = 0.02e18; // 2%
-    uint256 public constant MAX_REBALANCES = 5; // The maximum number of rebalances that can be performed in a single transaction
+    uint256 public constant MAX_REBALANCES = 2; // The maximum number of rebalances that can be performed in a single transaction
 
     // Bytes
     bytes32 public constant MERKLE_ROOT =

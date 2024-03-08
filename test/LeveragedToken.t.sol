@@ -9,10 +9,13 @@ import {Tokens} from "../src/libraries/Tokens.sol";
 import {Symbols} from "../src/libraries/Symbols.sol";
 import {Config} from "../src/libraries/Config.sol";
 import {Errors} from "../src/libraries/Errors.sol";
+import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract LeveragedTokenTest is IntegrationTest {
+    using ScaledNumber for uint256;
+
     ILeveragedToken public leveragedToken;
 
     function setUp() public override {
@@ -33,6 +36,11 @@ contract LeveragedTokenTest is IntegrationTest {
         assertEq(leveragedToken.targetAsset(), Symbols.ETH);
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());
+    }
+
+    function testMintWithZeroAmount() public {
+        uint256 leveragedTokenAmountOut = leveragedToken.mint(0, 0);
+        assertEq(leveragedTokenAmountOut, 0);
     }
 
     function testMint() public {
@@ -87,6 +95,11 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         vm.expectRevert(ILeveragedToken.LeverageUpdatePending.selector);
         leveragedToken.mint(baseAmountIn, 0);
+    }
+
+    function testRedeemWithZeroAmount() public {
+        uint256 baseAmountOut = leveragedToken.redeem(0, 0);
+        assertEq(baseAmountOut, 0);
     }
 
     function testRedeem() public {
@@ -147,19 +160,42 @@ contract LeveragedTokenTest is IntegrationTest {
         assertFalse(leveragedToken.canRebalance(), "4");
     }
 
+    function testRebalanceRevertsIfNotRebalancer() public {
+        vm.startPrank(alice);
+        vm.expectRevert(Errors.NotAuthorized.selector);
+        leveragedToken.rebalance();
+    }
+
+    function testRebalanceRevertsIfCantRebalance() public {
+        vm.expectRevert(ILeveragedToken.CannotRebalance.selector);
+        leveragedToken.rebalance();
+    }
+
     function testRebalance() public {
         _mintTokens();
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
             2e18,
-            0.1e18
+            0.03e18
         );
-        _mintTokens();
+        assertFalse(leveragedToken.canRebalance());
+        _modifyPrice(Symbols.ETH, 2e18);
+        uint256 notional_ = 400e18;
+        uint256 margin_ = 300e18;
         assertApproxEqRel(
             synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
-            2e18 / 2,
-            0.1e18
+            notional_.div(margin_),
+            0.03e18
+        );
+        assertTrue(leveragedToken.canRebalance());
+        leveragedToken.rebalance();
+        skip(30 seconds);
+        _executeOrder(address(leveragedToken));
+        assertApproxEqRel(
+            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            2e18,
+            0.03e18
         );
         assertFalse(leveragedToken.canRebalance());
     }

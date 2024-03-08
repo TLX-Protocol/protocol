@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Test, stdStorage, StdStorage} from "forge-std/Test.sol";
+import "forge-std/console.sol";
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
@@ -14,10 +15,16 @@ import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 import {InitialMint} from "../../src/libraries/InitialMint.sol";
 import {ForkBlock} from "./ForkBlock.sol";
+import {ScaledNumber} from "../../src/libraries/ScaledNumber.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
 import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "../../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
+import {IExchangeRates} from "../../src/interfaces/synthetix/IExchangeRates.sol";
+import {AggregatorV2V3Interface} from "../../src/interfaces/chainlink/AggregatorV2V3Interface.sol";
+import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
+import {IPerpsV2MarketConsolidated} from "../../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
+import {IPerpsV2ExchangeRate} from "../../src/interfaces/synthetix/IPerpsV2ExchangeRate.sol";
 
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
@@ -38,6 +45,7 @@ import "forge-std/StdJson.sol";
 contract IntegrationTest is Test {
     using stdStorage for StdStorage;
     using stdJson for string;
+    using ScaledNumber for uint256;
 
     // Some notes on why this is commented out below
     // string constant PYTH_URL = "https://hermes.pyth.network/api/get_vaa";
@@ -235,6 +243,70 @@ contract IntegrationTest is Test {
             account_,
             priceUpdateData
         );
+    }
+
+    function _modifyPrice(string memory asset_, uint256 multiplier_) internal {
+        bytes32 key_ = bytes32(bytes(abi.encodePacked(asset_)));
+        IExchangeRates exchangeRates_ = IExchangeRates(
+            Contracts.EXCHANGE_RATES
+        );
+        AggregatorV2V3Interface aggregator = AggregatorV2V3Interface(
+            exchangeRates_.aggregators(key_)
+        );
+        (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        ) = aggregator.latestRoundData();
+
+        require(answer > 0, "Invalid answer");
+        uint256 newAnswer = uint256(answer).mul(multiplier_);
+        vm.mockCall(
+            address(aggregator),
+            abi.encodeWithSelector(aggregator.latestRoundData.selector),
+            abi.encode(
+                uint80(roundId),
+                int256(newAnswer),
+                uint256(startedAt),
+                uint256(updatedAt),
+                uint80(answeredInRound)
+            )
+        );
+        IPerpsV2MarketData.MarketData memory marketData_ = IPerpsV2MarketData(
+            Contracts.PERPS_V2_MARKET_DATA
+        ).marketDetailsForKey(_key(asset_));
+        IPerpsV2MarketConsolidated market_ = IPerpsV2MarketConsolidated(
+            marketData_.market
+        );
+        uint8 decimals_ = exchangeRates_.currencyKeyDecimals(key_);
+        vm.mockCall(
+            Contracts.PERPS_V2_EXCHANGE_RATE,
+            abi.encodeWithSelector(
+                IPerpsV2ExchangeRate.resolveAndGetPrice.selector,
+                market_.baseAsset()
+            ),
+            abi.encode(
+                _convertDecimals(decimals_, newAnswer),
+                block.timestamp + 30 seconds
+            )
+        );
+    }
+
+    function _convertDecimals(
+        uint8 from,
+        uint256 rate
+    ) internal pure returns (uint256) {
+        if (from == 0 || from == 18) {
+            return rate;
+        }
+        if (from < 18) {
+            uint256 multiplier = 10 ** (18 - from);
+            return rate * multiplier;
+        }
+        uint256 divisor = 10 ** (from - 18);
+        return rate / divisor;
     }
 
     // We used to use this API logic, allowing us to get it at any timestamp.
