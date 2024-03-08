@@ -161,4 +161,14 @@ contract Staker is IStaker, RewardsStreaming {
     function name() public view override returns (string memory) {
         return string.concat("Staked ", _addressProvider.tlx().name());
     }
+
+    function _latestIntegral()
+        internal
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return _rewardIntegral;
+    }
 }

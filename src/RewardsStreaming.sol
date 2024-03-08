@@ -88,7 +88,5 @@ abstract contract RewardsStreaming is IRewardsStreaming, TlxOwnable {
         return integral_.mul(activeBalanceOf(account_));
     }
 
-    function _latestIntegral() internal view virtual returns (uint256) {
-        return _rewardIntegral;
-    }
+    function _latestIntegral() internal view virtual returns (uint256) {}
 }
