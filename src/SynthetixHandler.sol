@@ -106,10 +106,7 @@ contract SynthetixHandler is ISynthetixHandler {
         string calldata targetAsset_,
         address account_
     ) public view override returns (uint256) {
-        uint256 remainingMargin_ = remainingMargin(targetAsset_, account_);
-        if (!hasOpenPosition(targetAsset_, account_)) return remainingMargin_;
-        int256 pnl_ = _pnl(targetAsset_, account_);
-        return uint256(int256(remainingMargin_) + pnl_);
+        return remainingMargin(targetAsset_, account_);
     }
 
     /// @inheritdoc ISynthetixHandler
