@@ -103,6 +103,7 @@ contract Bonding is IBonding, TlxOwnable {
         uint256 baseForAllTlx_
     ) external override onlyOwner {
         if (!isLive) revert BondingNotLive();
+        if (baseForAllTlx_ == 0) revert Errors.InsufficientAmount();
         _updateCache();
         _baseForAllTlx = baseForAllTlx_;
     }
