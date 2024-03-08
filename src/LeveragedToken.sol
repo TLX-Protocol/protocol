@@ -247,14 +247,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
         // Return fees
         IStaker staker_ = _addressProvider.staker();
-        if (staker_.totalStaked() == 0) return 0;
+        if (staker_.totalStaked() == staker_.totalPrepared()) return 0;
         return fee_;
     }
 
     function _chargeStreamingFee(uint256 fee_) internal {
         if (fee_ == 0) return;
         IStaker staker_ = _addressProvider.staker();
-        if (staker_.totalStaked() == staker_.totalPrepared()) return;
         _addressProvider.baseAsset().approve(address(staker_), fee_);
         staker_.donateRewards(fee_);
         _lastStreamingFeeTimestamp = block.timestamp;
