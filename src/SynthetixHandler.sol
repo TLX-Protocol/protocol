@@ -79,13 +79,6 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
-    function cancelLeverageUpdate(
-        string calldata targetAsset_
-    ) public override {
-        _market(targetAsset_).cancelOffchainDelayedOrder(address(this));
-    }
-
-    /// @inheritdoc ISynthetixHandler
     function hasPendingLeverageUpdate(
         string calldata targetAsset_,
         address account_
