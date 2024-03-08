@@ -17,7 +17,7 @@ contract Airdrop is IAirdrop, TlxOwnable {
     /// @inheritdoc IAirdrop
     mapping(address => bool) public override hasClaimed;
     /// @inheritdoc IAirdrop
-    uint256 public override deadline;
+    uint256 public immutable override deadline;
     /// @inheritdoc IAirdrop
     uint256 public override totalClaimed;
 
