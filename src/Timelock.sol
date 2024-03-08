@@ -18,6 +18,8 @@ contract Timelock is ITimelock, Ownable {
     EnumerableSet.UintSet internal _proposalIds;
     mapping(uint256 => Proposal) internal _proposals;
 
+    constructor() Ownable(msg.sender) {}
+
     /// @inheritdoc ITimelock
     function createProposal(
         Call[] calldata calls_
