@@ -98,7 +98,6 @@ contract Referrals is IReferrals, TlxOwnable {
         uint256 rebatePercent_
     ) external override onlyOwner {
         if (rebatePercent_ == rebatePercent) revert NotChanged();
-        if (rebatePercent_ > 1e18) revert InvalidAmount();
         if (rebatePercent_ + earningsPercent > 1e18) revert InvalidAmount();
         rebatePercent = rebatePercent_;
         emit RebateSet(rebatePercent_);
