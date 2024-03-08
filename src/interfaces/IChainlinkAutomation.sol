@@ -12,6 +12,7 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
     );
 
     error NoRebalancableTokens();
+    error NotReadyForNextAttempt();
     error NotForwarder();
 
     /**
