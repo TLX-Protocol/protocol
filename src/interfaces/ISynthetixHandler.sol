@@ -186,4 +186,13 @@ interface ISynthetixHandler {
     function isAssetSupported(
         string calldata targetAsset
     ) external view returns (bool isSupported);
+
+    /**
+     * @notice Returns the maximum leverage allowed for the `targetAsset`.
+     * @param targetAsset The asset to check the maximum leverage allowed for.
+     * @return maxLeverage The maximum leverage allowed for the `targetAsset`.
+     */
+    function maxLeverage(
+        string calldata targetAsset
+    ) external view returns (uint256 maxLeverage);
 }
