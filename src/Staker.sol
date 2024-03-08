@@ -91,7 +91,7 @@ contract Staker is IStaker, RewardsStreaming {
         );
         totalPrepared += amount_;
 
-        emit PreparedUnstake(msg.sender);
+        emit PreparedUnstake(msg.sender, amount_, id);
     }
 
     /// @inheritdoc IStaker
