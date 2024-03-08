@@ -113,6 +113,7 @@ contract Bonding is IBonding, TlxOwnable {
         if (isLive) revert BondingAlreadyLive();
         isLive = true;
         _lastUpdate = block.timestamp;
+        emit Launched();
     }
 
     /// @inheritdoc IBonding

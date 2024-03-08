@@ -10,6 +10,7 @@ interface IBonding {
     );
     event Migrated(uint256 amount);
     event BaseForAllTlxSet(uint256 value);
+    event Launched();
 
     error MinTlxNotReached();
     error ExceedsAvailable();
