@@ -55,6 +55,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     ) public override returns (uint256) {
         if (baseAmountIn_ == 0) return 0;
         if (isPaused) revert Paused();
+        if (!isActive()) revert Inactive();
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );
@@ -321,12 +322,11 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
     function _exchangeRate(address market_) internal view returns (uint256) {
         uint256 totalSupply_ = totalSupply();
-
+        if (totalSupply_ == 0) return 1e18;
         uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
-            market_,
+            targetAsset,
             address(this)
         );
-        if (totalSupply_ == 0) return 1e18;
         return totalValue_.div(totalSupply_);
     }
 

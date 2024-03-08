@@ -56,7 +56,12 @@ contract Bonding is IBonding, TlxOwnable {
         if (!isLive) revert BondingNotLive();
 
         // Check that the leveraged token is valid
-        if (!_isLeveragedToken(leveragedToken_)) revert NotLeveragedToken();
+        if (!_isLeveragedToken(leveragedToken_)) {
+            revert Errors.NotLeveragedToken();
+        }
+        if (!ILeveragedToken(leveragedToken_).isActive()) {
+            revert InactiveToken();
+        }
 
         // Transfer the leveraged token from the user to the POL
         IAddressProvider addressProvider_ = _addressProvider;

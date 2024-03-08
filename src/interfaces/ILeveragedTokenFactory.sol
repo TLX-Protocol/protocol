@@ -8,6 +8,7 @@ interface ILeveragedTokenFactory {
     error MaxLeverage();
     error MaxOfTwoDecimals();
     error AssetNotSupported();
+    error NotInactive();
 
     /**
      * @notice Creates a new Long and Short Leveraged Token for the given target asset and leverage.
@@ -23,6 +24,16 @@ interface ILeveragedTokenFactory {
         uint256 targetLeverage,
         uint256 rebalanceThreshold
     ) external returns (address longToken, address shortToken);
+
+    /**
+     * @notice Redeploys a Leveraged Token when the old one has been liquidated and is inactive.
+     * @dev Reverts if the Leveraged Token doesn't exist or is not inactive.
+     * @param tokenAddress The address of the Leveraged Token that has been liquidated and is inactive.
+     * @return newToken The address of the new Leveraged Token.
+     */
+    function redeployInactiveToken(
+        address tokenAddress
+    ) external returns (address newToken);
 
     /**
      * @notice Returns all Leveraged Tokens.

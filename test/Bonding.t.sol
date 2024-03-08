@@ -13,6 +13,7 @@ import {Symbols} from "../src/libraries/Symbols.sol";
 import {Errors} from "../src/libraries/Errors.sol";
 
 import {IBonding} from "../src/interfaces/IBonding.sol";
+import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
 contract BondingTest is IntegrationTest {
     using ScaledNumber for uint256;
@@ -66,8 +67,16 @@ contract BondingTest is IntegrationTest {
     function testShouldRevertForNonLeveragedToken() public {
         bonding.launch();
 
-        vm.expectRevert(IBonding.NotLeveragedToken.selector);
+        vm.expectRevert(Errors.NotLeveragedToken.selector);
         bonding.bond(Tokens.UNI, 1e18, 0);
+
+        vm.mockCall(
+            address(leveragedToken),
+            abi.encodeWithSelector(ILeveragedToken.isActive.selector),
+            abi.encode(false)
+        );
+        vm.expectRevert(IBonding.InactiveToken.selector);
+        bonding.bond(leveragedToken, 1e18, 0);
     }
 
     function testShouldRevertForNotEnoughTlx() public {

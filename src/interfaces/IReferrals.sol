@@ -14,7 +14,6 @@ interface IReferrals {
     error CodeTaken();
     error SameCode();
     error AlreadyOpen();
-    error NotLeveragedToken();
     error NotChanged();
     error InvalidAmount();
 

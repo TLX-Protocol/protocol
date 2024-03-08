@@ -105,7 +105,8 @@ contract SynthetixHandler is ISynthetixHandler {
         address market_,
         address account_
     ) public view override returns (bool) {
-        return notionalValue(market_, account_) != 0;
+        return
+            IPerpsV2MarketConsolidated(market_).positions(account_).size != 0;
     }
 
     /// @inheritdoc ISynthetixHandler

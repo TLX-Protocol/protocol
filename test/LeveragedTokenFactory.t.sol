@@ -11,6 +11,8 @@ import {Config} from "../src/libraries/Config.sol";
 import {ILeveragedTokenFactory} from "../src/interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 
+import {TlxOwnable} from "../src/utils/TlxOwnable.sol";
+
 contract LeveragedTokenFactoryTest is IntegrationTest {
     function testDeployTokens() public {
         (
@@ -132,5 +134,54 @@ contract LeveragedTokenFactoryTest is IntegrationTest {
             1.23e18,
             Config.REBALANCE_THRESHOLD
         );
+    }
+
+    function testRedeployInactiveToken() public {
+        // Creating some leveraged tokens
+        (
+            address longTokenAddress_,
+            address shortTokenAddress_
+        ) = leveragedTokenFactory.createLeveragedTokens(
+                Symbols.UNI,
+                1.23e18,
+                Config.REBALANCE_THRESHOLD
+            );
+
+        // Testing can only be called by owner
+        vm.expectRevert(TlxOwnable.NotOwner.selector);
+        vm.prank(alice);
+        leveragedTokenFactory.redeployInactiveToken(address(0));
+
+        // Testing has to be a leveraged token
+        vm.expectRevert(Errors.NotLeveragedToken.selector);
+        leveragedTokenFactory.redeployInactiveToken(Tokens.USDC);
+
+        // Testing has to be inactive
+        vm.expectRevert(ILeveragedTokenFactory.NotInactive.selector);
+        leveragedTokenFactory.redeployInactiveToken(longTokenAddress_);
+
+        // Testing it works
+        vm.mockCall(
+            longTokenAddress_,
+            abi.encodeWithSelector(ILeveragedToken.isActive.selector),
+            abi.encode(false)
+        );
+        address newToken_ = leveragedTokenFactory.redeployInactiveToken(
+            longTokenAddress_
+        );
+
+        // Testing the pairs are set correctly
+        assertEq(leveragedTokenFactory.pair(newToken_), shortTokenAddress_);
+        assertEq(leveragedTokenFactory.pair(shortTokenAddress_), newToken_);
+
+        // Testing the old one is no longer a leveraged token
+        assertEq(
+            leveragedTokenFactory.isLeveragedToken(longTokenAddress_),
+            false
+        );
+
+        // Testing you can't do it twice
+        vm.expectRevert(Errors.NotLeveragedToken.selector);
+        leveragedTokenFactory.redeployInactiveToken(longTokenAddress_);
     }
 }
