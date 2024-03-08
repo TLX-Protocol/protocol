@@ -246,27 +246,28 @@ contract LeveragedTokenTest is IntegrationTest {
     }
 
     function testLeveragedTokenWithMaxLeverage() public {
+        uint256 maxLeverage_ = synthetixHandler.maxLeverage(Symbols.ETH) / 2;
         leveragedTokenFactory.createLeveragedTokens(
             Symbols.ETH,
-            Config.MAX_LEVERAGE,
+            maxLeverage_,
             Config.REBALANCE_THRESHOLD
         );
         leveragedToken = ILeveragedToken(
-            leveragedTokenFactory.token(Symbols.ETH, Config.MAX_LEVERAGE, true)
+            leveragedTokenFactory.token(Symbols.ETH, maxLeverage_, true)
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
         address market = synthetixHandler.market(Symbols.ETH);
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
-            Config.MAX_LEVERAGE,
+            maxLeverage_,
             0.1e18
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
-            Config.MAX_LEVERAGE,
+            maxLeverage_,
             0.1e18
         );
     }

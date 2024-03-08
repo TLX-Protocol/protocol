@@ -11,10 +11,10 @@ import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {LeveragedToken} from "./LeveragedToken.sol";
+import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 
 contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     IAddressProvider internal immutable _addressProvider;
-    uint256 internal immutable _maxLeverage;
 
     address[] internal _allTokens;
     address[] internal _longTokens;
@@ -30,12 +30,8 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
     /// @inheritdoc ILeveragedTokenFactory
     mapping(address => bool) public override isLeveragedToken;
 
-    constructor(
-        address addressProvider_,
-        uint256 maxLeverage_
-    ) TlxOwnable(addressProvider_) {
+    constructor(address addressProvider_) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
-        _maxLeverage = maxLeverage_;
     }
 
     /// @inheritdoc ILeveragedTokenFactory
@@ -55,10 +51,13 @@ contract LeveragedTokenFactory is ILeveragedTokenFactory, TlxOwnable {
         bool hasTwoDecimals_ = leveragePartOfWhole_ == truncatedToTwoDecimals_;
         if (!hasTwoDecimals_) revert MaxOfTwoDecimals();
         if (targetLeverage_ == 0) revert ZeroLeverage();
-        if (targetLeverage_ > _maxLeverage) revert MaxLeverage();
+        ISynthetixHandler synthetixHandler_ = _addressProvider
+            .synthetixHandler();
+        uint256 maxLeverage_ = synthetixHandler_.maxLeverage(targetAsset_) / 2;
+        if (targetLeverage_ > maxLeverage_) revert MaxLeverage();
         if (tokenExists(targetAsset_, targetLeverage_, true))
             revert Errors.AlreadyExists();
-        if (!_addressProvider.synthetixHandler().isAssetSupported(targetAsset_))
+        if (!synthetixHandler_.isAssetSupported(targetAsset_))
             revert AssetNotSupported();
 
         // Deploying tokens
