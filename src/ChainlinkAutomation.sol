@@ -76,6 +76,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         address leveragedToken_
     ) external override onlyOwner {
         if (_failedCounter[leveragedToken_] == 0) revert Errors.SameAsCurrent();
+        delete _nextAttempt[leveragedToken_];
         delete _failedCounter[leveragedToken_];
     }
 
