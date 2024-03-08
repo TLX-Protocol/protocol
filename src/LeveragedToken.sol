@@ -218,11 +218,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Sending fees to staker
         IStaker staker_ = addressProvider_.staker();
         uint256 amount_ = fee_ - referralAmount_;
-        // TODO: Test
-        if (amount_ != 0 && staker_.totalStaked() != 0) {
-            baseAsset_.approve(address(staker_), amount_);
-            staker_.donateRewards(amount_);
+        if (amount_ == 0) return;
+        if (staker_.totalStaked() == 0) {
+            baseAsset_.transfer(address(addressProvider_.treasury()), amount_);
+            return;
         }
+        baseAsset_.approve(address(staker_), amount_);
+        staker_.donateRewards(amount_);
     }
 
     function _chargeStreamingFee() internal {
