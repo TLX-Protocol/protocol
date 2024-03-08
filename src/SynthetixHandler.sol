@@ -35,7 +35,6 @@ contract SynthetixHandler is ISynthetixHandler {
         uint256 amount_
     ) public override {
         IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
-        _addressProvider.baseAsset().approve(address(market_), amount_);
         market_.transferMargin(int256(amount_));
     }
 
