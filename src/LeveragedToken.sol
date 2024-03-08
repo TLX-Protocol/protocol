@@ -324,7 +324,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         uint256 totalSupply_ = totalSupply();
         if (totalSupply_ == 0) return 1e18;
         uint256 totalValue_ = _addressProvider.synthetixHandler().totalValue(
-            targetAsset,
+            market_,
             address(this)
         );
         return totalValue_.div(totalSupply_);
