@@ -95,6 +95,7 @@ contract ZapSwap is IZapSwap, TlxOwnable {
             _supportedZapAssets.length - 1
         ];
         _supportedZapAssets.pop();
+        emit AssetSwapDataRemoved(zapAsset_);
     }
 
     /// @inheritdoc IZapSwap
