@@ -105,6 +105,7 @@ contract Bonding is IBonding, TlxOwnable {
         if (!isLive) revert BondingNotLive();
         _updateCache();
         _baseForAllTlx = baseForAllTlx_;
+        emit BaseForAllTlxSet(baseForAllTlx_);
     }
 
     /// @inheritdoc IBonding
