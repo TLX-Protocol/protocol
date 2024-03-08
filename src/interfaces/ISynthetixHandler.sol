@@ -10,77 +10,80 @@ interface ISynthetixHandler {
     error NoMargin();
 
     /**
-     * @notice Deposit `amount` of margin to Synthetix for the `targetAsset`.
+     * @notice Deposit `amount` of margin to Synthetix for the `market`.
      * @dev Should be called with delegatecall.
-     * @param targetAsset The asset to deposit margin for.
+     * @param market The eposit margin for.
      * @param amount The amount of margin to deposit.
      */
-    function depositMargin(
-        string calldata targetAsset,
-        uint256 amount
-    ) external;
+    function depositMargin(address market, uint256 amount) external;
 
     /**
-     * @notice Withdraw `amount` of margin from Synthetix for the `targetAsset`.
+     * @notice Withdraw `amount` of margin from Synthetix for the `market`.
      * @dev Should be called with delegatecall.
-     * @param targetAsset The asset to withdraw margin for.
+     * @param market The market to withdraw margin for.
      * @param amount The amount of margin to withdraw.
      */
-    function withdrawMargin(
-        string calldata targetAsset,
-        uint256 amount
-    ) external;
+    function withdrawMargin(address market, uint256 amount) external;
 
     /**
-     * @notice Submit a leverage update for the `targetAsset`.
+     * @notice Submit a leverage update for the `market`.
      * @dev Should be called with delegatecall.
-     * @param targetAsset The asset to submit a leverage update for.
+     * @param market The market to submit a leverage update for.
      * @param leverage The new leverage to target.
      * @param isLong Whether the position is long or short.
      */
     function submitLeverageUpdate(
-        string calldata targetAsset,
+        address market,
         uint256 leverage,
         bool isLong
     ) external;
 
     /**
-     * @notice Cancel a pending leverage update for the `targetAsset`.
+     * @notice Cancel a pending leverage update for the `market`.
      * @dev Should be called with delegatecall.
-     * @param targetAsset The asset to cancel a pending leverage update for.
+     * @param market The market to cancel a pending leverage update for.
      */
-    function cancelLeverageUpdate(string calldata targetAsset) external;
+    function cancelLeverageUpdate(address market) external;
+
+    /**
+     * @notice Returns the address for the market of the `targetAsset`.
+     * @param targetAsset The asset to return the market for.
+     * @return market The address for the market of the `targetAsset`.
+     */
+    function market(
+        string calldata targetAsset
+    ) external view returns (address market);
 
     /**
      * @notice Returns if the `account` has a pending leverage update.
-     * @param targetAsset The asset to check if the `account` has a pending leverage update for.
+     * @param market The market to check if the `account` has a pending leverage update for.
      * @param account The account to check if they have a pending leverage update.
      * @return hasPendingLeverageUpdate Whether the `account` has a pending leverage update.
      */
     function hasPendingLeverageUpdate(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (bool hasPendingLeverageUpdate);
 
     /**
-     * @notice Returns if the `account` has an open position for the `targetAsset`.
-     * @param targetAsset The asset to check if the `account` has an open position for.
-     * @param account The account to check if they have an open position for the `targetAsset`.
-     * @return hasOpenPosition Whether the `acccount` has an open position for the `targetAsset`.
+     * @notice Returns if the `account` has an open position for the `market`.
+     * @param market The market to check if the `account` has an open position for.
+     * @param account The account to check if they have an open position for the `market`.
+     * @return hasOpenPosition Whether the `acccount` has an open position for the `market`.
      */
     function hasOpenPosition(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (bool hasOpenPosition);
 
     /**
-     * @notice Returns the total value of the `account`'s position for the `targetAsset` in the Base Asset.
-     * @param targetAsset The asset to get the total value of the `account`'s position for.
-     * @param account The account to get the total value of the `account`'s position for the `targetAsset`.
-     * @return totalValue The total value of the `account`'s position for the `targetAsset` in the Base Asset.
+     * @notice Returns the total value of the `account`'s position for the `market` in the Base Asset.
+     * @param market The market to get the total value of the `account`'s position for.
+     * @param account The account to get the total value of the `account`'s position for the `market`.
+     * @return totalValue The total value of the `account`'s position for the `market` in the Base Asset.
      */
     function totalValue(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (uint256 totalValue);
 
@@ -88,91 +91,91 @@ interface ISynthetixHandler {
      * @notice Returns the deviation factor from our target leverage.
      * @dev Used for rebalances, if |1 - leverageDeviationFactor| exceeds our `rebalanceThreshold` then a rebalance is triggered.
      * When this factoris below 1, it means we are underleveraged, when it is above 1, it means we are overleveraged.
-     * @param targetAsset The asset to get the leverage of the `account`'s position for.
-     * @param account The account to get the leverage of the `account`'s position for the `targetAsset`.
+     * @param market The market to get the leverage of the `account`'s position for.
+     * @param account The account to get the leverage of the `account`'s position for the `market`.
      * @return leverageDeviationFactor The deviation factor from our target leverage.
      */
     function leverageDeviationFactor(
-        string calldata targetAsset,
+        address market,
         address account,
         uint256 targetLeverage
     ) external view returns (uint256 leverageDeviationFactor);
 
     /**
-     * @notice Returns the leverage of the `account`'s position for the `targetAsset`.
-     * @param targetAsset The asset to get the leverage of the `account`'s position for.
-     * @param account The account to get the leverage of the `account`'s position for the `targetAsset`.
-     * @return leverage The leverage of the `account`'s position for the `targetAsset`.
+     * @notice Returns the leverage of the `account`'s position for the `market`.
+     * @param market The market to get the leverage of the `account`'s position for.
+     * @param account The account to get the leverage of the `account`'s position for the `market`.
+     * @return leverage The leverage of the `account`'s position for the `market`.
      */
     function leverage(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (uint256 leverage);
 
     /**
-     * @notice Returns the notional value of the `account`'s position for the `targetAsset` in the Base Asset.
-     * @param targetAsset The asset to get the notional value of the `account`'s position for.
-     * @param account The account to get the notional value of the `account`'s position for the `targetAsset`.
-     * @return notionalValue The notional value of the `account`'s position for the `targetAsset` in the Base Asset.
+     * @notice Returns the notional value of the `account`'s position for the `market` in the Base Asset.
+     * @param market The market to get the notional value of the `account`'s position for.
+     * @param account The account to get the notional value of the `account`'s position for the `market`.
+     * @return notionalValue The notional value of the `account`'s position for the `market` in the Base Asset.
      */
     function notionalValue(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (uint256);
 
     /**
-     * @notice Returns if the `account`'s position for the `targetAsset` is long.
+     * @notice Returns if the `account`'s position for the `m` is long.
      * @dev Reverts if the `account` does not have an open position for the `targetAsset`.
-     * @param targetAsset The asset to check if the `account`'s position for is long.
+     * @param market The market to check if the `account`'s position for is long.
      * @param account The account to check if the `account`'s position for the `targetAsset` is long.
-     * @return isLong Whether the `account`'s position for the `targetAsset` is long.
+     * @return isLong Whether the `account`'s position for the `market` is long.
      */
     function isLong(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (bool isLong);
 
     /**
-     * @notice Returns the initial margin of the `account`'s position for the `targetAsset`.
+     * @notice Returns the initial margin of the `account`'s position for the `market`.
      * This does not take into account any profit or loss
-     * @param targetAsset The asset to get the remaining margin of the `account`'s position for.
-     * @param account The account to get the remaining margin of the `account`'s position for the `targetAsset`.
-     * @return initialMargin The initial margin of the `account`'s position for the `targetAsset`.
+     * @param market The market to get the remaining margin of the `account`'s position for.
+     * @param account The account to get the remaining margin of the `account`'s position for the `market`.
+     * @return initialMargin The initial margin of the `account`'s position for the `market`.
      */
     function initialMargin(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (uint256 initialMargin);
 
     /**
-     * @notice Returns the remaining margin of the `account`'s position for the `targetAsset`.
-     * @param targetAsset The asset to get the remaining margin of the `account`'s position for.
-     * @param account The account to get the remaining margin of the `account`'s position for the `targetAsset`.
-     * @return remainingMargin The remaining margin of the `account`'s position for the `targetAsset`.
+     * @notice Returns the remaining margin of the `account`'s position for the `market`.
+     * @param market The market to get the remaining margin of the `account`'s position for.
+     * @param account The account to get the remaining margin of the `account`'s position for the `market`.
+     * @return remainingMargin The remaining margin of the `account`'s position for the `market`.
      */
     function remainingMargin(
-        string calldata targetAsset,
+        address market,
         address account
     ) external view returns (uint256 remainingMargin);
 
     /**
-     * @notice Returns the fill price of the `targetAsset` for a trade of `sizeDelta` tokens.
-     * @param targetAsset The asset to get the fill price of.
+     * @notice Returns the fill price of the `market` for a trade of `sizeDelta` tokens.
+     * @param market The market to get the fill price of.
      * @param sizeDelta The amount of tokens to get the fill price for.
-     * @return fillPrice The fill price of the `targetAsset` for a trade of `sizeDelta` tokens.
+     * @return fillPrice The fill price of the `market` for a trade of `sizeDelta` tokens.
      */
     function fillPrice(
-        string calldata targetAsset,
+        address market,
         int256 sizeDelta
     ) external view returns (uint256 fillPrice);
 
     /**
-     * @notice Returns the price of the `targetAsset`.
-     * @param targetAsset The asset to get the price of.
-     * @return assetPrice The price of the `targetAsset`.
+     * @notice Returns the price of the `market`.
+     * @param market The market to return the price fo
+     * @return assetPrice The price of the `market`.
      */
     function assetPrice(
-        string calldata targetAsset
+        address market
     ) external view returns (uint256 assetPrice);
 
     /**
