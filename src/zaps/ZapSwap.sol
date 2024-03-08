@@ -180,10 +180,7 @@ contract ZapSwap is IZapSwap, TlxOwnable {
         );
 
         // Redeeming leveraged token for base asset
-        targetLeveragedToken.redeem(
-            leveragedTokenAmountIn_,
-            minZapAssetAmountOut_
-        );
+        targetLeveragedToken.redeem(leveragedTokenAmountIn_, 0);
 
         IERC20 baseAsset_ = _addressProvider.baseAsset();
         IERC20 zapAsset_ = IERC20(zapAssetAddress_);
