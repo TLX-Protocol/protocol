@@ -76,6 +76,7 @@ contract ZapSwap is IZapSwap, TlxOwnable {
 
         // Setting the swapPath for the zapAsset
         _swapDB[zapAsset_] = swapData_;
+        emit AssetSwapDataUpdated(zapAsset_, swapData_);
     }
 
     /// @inheritdoc IZapSwap

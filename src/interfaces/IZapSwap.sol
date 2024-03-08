@@ -28,6 +28,7 @@ interface IZapSwap {
         address assetOut,
         uint256 amountOut
     );
+    event AssetSwapDataUpdated(address indexed zapAsset, SwapData swapData);
 
     error UnsupportedAsset();
     error BridgeAssetNotSupported();
