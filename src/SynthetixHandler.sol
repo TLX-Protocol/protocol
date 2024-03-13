@@ -139,7 +139,10 @@ contract SynthetixHandler is ISynthetixHandler {
         );
         if (initialNotional == 0) return 0;
         uint256 currentNotional = notionalValue(market_, account_);
-        return currentNotional.absSub(initialNotional).div(initialNotional);
+        return
+            currentNotional.absSub(initialNotional).div(initialNotional).mul(
+                targetLeverage_
+            );
     }
 
     /// @inheritdoc ISynthetixHandler
