@@ -183,9 +183,11 @@ interface ISynthetixHandler {
     /**
      * @notice Returns the Maximum Market value for the `targetAsset`.
      * @param targetAsset The asset to get the Maximum Market value for.
+     * @param market The market to get the Maximum Market value for.
      * @return maxMarketValue The Maximum Market value for the `targetAsset`.
      */
     function maxMarketValue(
-        string calldata targetAsset
+        string calldata targetAsset,
+        address market
     ) external view returns (uint256 maxMarketValue);
 }

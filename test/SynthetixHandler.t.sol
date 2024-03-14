@@ -370,7 +370,8 @@ contract SynthetixHandlerTest is IntegrationTest {
     }
 
     function testMaxMarketValue() public {
-        assertGt(synthetixHandler.maxMarketValue(Symbols.ETH), 0);
+        address market_ = synthetixHandler.market(Symbols.ETH);
+        assertGt(synthetixHandler.maxMarketValue(Symbols.ETH, market_), 0);
     }
 
     function _getMarket(string memory symbol_) internal view returns (address) {
