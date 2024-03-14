@@ -15,6 +15,7 @@ interface IBonding {
     error MinTlxNotReached();
     error ExceedsAvailable();
     error BondingNotLive();
+    error AmountIsZero();
     error BondingAlreadyLive();
     error AlreadyMigrated();
     error InactiveToken();
