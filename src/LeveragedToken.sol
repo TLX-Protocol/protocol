@@ -59,6 +59,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );
+        uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount(market_);
+        if (baseAmountIn_ > maxBaseAssetAmount_) revert ExceedsLimit();
         _ensureNoPendingLeverageUpdate(market_);
 
         // Accounting
@@ -99,6 +101,8 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Accounting
         uint256 exchangeRate_ = _exchangeRate(market_);
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
+        uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount(market_);
+        if (baseWithdrawn_ > maxBaseAssetAmount_) revert ExceedsLimit();
         IAddressProvider addressProvider_ = _addressProvider;
         uint256 feePercent_ = addressProvider_
             .parameterProvider()
@@ -296,6 +300,21 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
                 isLong
             )
         );
+    }
+
+    function _maxBaseAssetAmount(
+        address market_
+    ) internal view returns (uint256) {
+        return
+            _addressProvider
+                .synthetixHandler()
+                .maxMarketValue(targetAsset, market_)
+                .mul(
+                    1e18 -
+                        _addressProvider
+                            .parameterProvider()
+                            .maxBaseAssetAmountBuffer()
+                );
     }
 
     function _canRebalance(address market_) internal view returns (bool) {

@@ -105,6 +105,10 @@ contract IntegrationTest is Test {
             ParameterKeys.REBALANCE_FEE,
             Config.REBALANCE_FEE
         );
+        parameterProvider.updateParameter(
+            ParameterKeys.MAX_BASE_ASSET_AMOUNT_BUFFER,
+            Config.MAX_BASE_ASSET_AMOUNT_BUFFER
+        );
         addressProvider.updateAddress(
             AddressKeys.PARAMETER_PROVIDER,
             address(parameterProvider)

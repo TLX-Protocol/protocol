@@ -21,6 +21,7 @@ interface ILeveragedToken is IERC20Metadata {
     error CannotRebalance();
     error LeverageUpdatePending();
     error Paused();
+    error ExceedsLimit();
     error Inactive();
 
     /**

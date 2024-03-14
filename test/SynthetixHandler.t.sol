@@ -369,6 +369,11 @@ contract SynthetixHandlerTest is IntegrationTest {
         assertFalse(synthetixHandler.isAssetSupported("BABYDOGE"));
     }
 
+    function testMaxMarketValue() public {
+        address market_ = synthetixHandler.market(Symbols.ETH);
+        assertGt(synthetixHandler.maxMarketValue(Symbols.ETH, market_), 0);
+    }
+
     function _getMarket(string memory symbol_) internal view returns (address) {
         return synthetixHandler.market(symbol_);
     }

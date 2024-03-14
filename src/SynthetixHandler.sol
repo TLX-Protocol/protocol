@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IFuturesMarketSettings} from "./interfaces/synthetix/IFuturesMarketSettings.sol";
+import {IPerpsV2MarketSettings} from "./interfaces/synthetix/IPerpsV2MarketSettings.sol";
 import {IPerpsV2MarketData} from "./interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "./interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBaseTypes.sol";
@@ -14,7 +14,7 @@ contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
-    IFuturesMarketSettings internal immutable _futuresMarketSettings;
+    IPerpsV2MarketSettings internal immutable _marketSettings;
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
@@ -22,11 +22,11 @@ contract SynthetixHandler is ISynthetixHandler {
     constructor(
         address addressProvider_,
         address perpsV2MarketData_,
-        address futuresMarketSettings_
+        address marketSettings_
     ) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
         _addressProvider = IAddressProvider(addressProvider_);
-        _futuresMarketSettings = IFuturesMarketSettings(futuresMarketSettings_);
+        _marketSettings = IPerpsV2MarketSettings(marketSettings_);
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -216,6 +216,15 @@ contract SynthetixHandler is ISynthetixHandler {
         return assetPrice_;
     }
 
+    /// @inheritdoc ISynthetixHandler
+    function maxMarketValue(
+        string calldata targetAsset_,
+        address market_
+    ) public view override returns (uint256) {
+        uint256 price_ = assetPrice(market_);
+        return _marketSettings.maxMarketValue(_key(targetAsset_)).mul(price_);
+    }
+
     function _pnl(
         address market_,
         address account_
@@ -227,7 +236,7 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     function _minKeeperFee() internal view returns (uint256) {
-        return _futuresMarketSettings.minKeeperFee();
+        return _marketSettings.minKeeperFee();
     }
 
     function _key(

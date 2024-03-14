@@ -300,6 +300,18 @@ contract LeveragedTokenTest is IntegrationTest {
         assertGt(base.balanceOf(address(staker)), 0);
     }
 
+    function testMaxBaseAssetAmount() public {
+        uint256 baseAmountIn = 100_000_000_000e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+        uint256 minLeveragedTokenAmountOut = 95e18;
+        vm.expectRevert(ILeveragedToken.ExceedsLimit.selector);
+        leveragedToken.mint(baseAmountIn, minLeveragedTokenAmountOut);
+    }
+
     function testPause() public {
         assertFalse(leveragedToken.isPaused());
         vm.prank(alice);
