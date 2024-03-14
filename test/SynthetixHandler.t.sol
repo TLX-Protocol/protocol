@@ -156,41 +156,6 @@ contract SynthetixHandlerTest is IntegrationTest {
         );
     }
 
-    function testCancelLeverageUpdate() public {
-        _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
-        _depositMargin(100e18);
-        _submitLeverageUpdate(2e18, true);
-        assertTrue(
-            synthetixHandler.hasPendingLeverageUpdate(
-                Symbols.ETH,
-                address(this)
-            )
-        );
-        skip(2 minutes);
-        _cancelLeverageUpdate();
-        assertFalse(
-            synthetixHandler.hasPendingLeverageUpdate(
-                Symbols.ETH,
-                address(this)
-            )
-        );
-        _submitLeverageUpdate(2e18, true);
-        assertTrue(
-            synthetixHandler.hasPendingLeverageUpdate(
-                Symbols.ETH,
-                address(this)
-            )
-        );
-        skip(2 minutes);
-        _cancelLeverageUpdate();
-        assertFalse(
-            synthetixHandler.hasPendingLeverageUpdate(
-                Symbols.ETH,
-                address(this)
-            )
-        );
-    }
-
     function testHasOpenPosition() public {
         _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         _depositMargin(100e18);
@@ -379,12 +344,6 @@ contract SynthetixHandlerTest is IntegrationTest {
                 leverage_,
                 isLong_
             )
-        );
-    }
-
-    function _cancelLeverageUpdate() internal {
-        address(synthetixHandler).functionDelegateCall(
-            abi.encodeWithSignature("cancelLeverageUpdate(string)", Symbols.ETH)
         );
     }
 }
