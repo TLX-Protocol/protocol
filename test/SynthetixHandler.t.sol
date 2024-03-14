@@ -129,7 +129,7 @@ contract SynthetixHandlerTest is IntegrationTest {
                 address(this),
                 2e18
             ),
-            1e18,
+            2e18,
             "after deposit margin"
         );
         _submitLeverageUpdate(2e18, true);
@@ -139,7 +139,7 @@ contract SynthetixHandlerTest is IntegrationTest {
                 address(this),
                 2e18
             ),
-            1e18,
+            2e18,
             0,
             "leverage factor before execution"
         );
