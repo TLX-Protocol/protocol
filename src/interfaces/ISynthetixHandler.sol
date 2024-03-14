@@ -171,7 +171,7 @@ interface ISynthetixHandler {
 
     /**
      * @notice Returns the price of the `market`.
-     * @param market The market to return the price fo
+     * @param market The market to return the price for.
      * @return assetPrice The price of the `market`.
      */
     function assetPrice(
