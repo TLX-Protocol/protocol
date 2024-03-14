@@ -17,7 +17,7 @@ contract SynthetixHandler is ISynthetixHandler {
     IFuturesMarketSettings internal immutable _futuresMarketSettings;
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
 
     constructor(
         address addressProvider_,
