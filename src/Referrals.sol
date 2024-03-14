@@ -30,6 +30,8 @@ contract Referrals is IReferrals, TlxOwnable {
         uint256 rebatePercent_,
         uint256 earningsPercent_
     ) TlxOwnable(addressProvider_) {
+        if (rebatePercent + earningsPercent > 1e18) revert InvalidAmount();
+
         _addressProvider = IAddressProvider(addressProvider_);
         rebatePercent = rebatePercent_;
         earningsPercent = earningsPercent_;
