@@ -12,7 +12,7 @@ interface ISynthetixHandler {
     /**
      * @notice Deposit `amount` of margin to Synthetix for the `market`.
      * @dev Should be called with delegatecall.
-     * @param market The eposit margin for.
+     * @param market The market to deposit margin for.
      * @param amount The amount of margin to deposit.
      */
     function depositMargin(address market, uint256 amount) external;
