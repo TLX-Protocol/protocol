@@ -10,6 +10,7 @@ import {Errors} from "./libraries/Errors.sol";
 import {IChainlinkAutomation} from "./interfaces/IChainlinkAutomation.sol";
 import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 
 contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
     uint256 internal immutable _maxRebalances;
@@ -43,8 +44,16 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         uint256 rebalancableTokensCount_ = rebalancableTokens_.length;
         if (rebalancableTokensCount_ == 0) revert NoRebalancableTokens();
 
+        ILeveragedTokenFactory leveragedTokenFactory_ = _addressProvider
+            .leveragedTokenFactory();
         for (uint256 i_; i_ < rebalancableTokensCount_; i_++) {
             address token_ = rebalancableTokens_[i_];
+            if (!leveragedTokenFactory_.isLeveragedToken(token_)) {
+                revert Errors.NotLeveragedToken();
+            }
+            if (_nextAttempt[token_] > block.timestamp) {
+                revert NotReadyForNextAttempt();
+            }
             try ILeveragedToken(token_).rebalance() {
                 delete _failedCounter[token_];
                 delete _nextAttempt[token_];
@@ -76,7 +85,9 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         address leveragedToken_
     ) external override onlyOwner {
         if (_failedCounter[leveragedToken_] == 0) revert Errors.SameAsCurrent();
+        delete _nextAttempt[leveragedToken_];
         delete _failedCounter[leveragedToken_];
+        emit FailedCounterReset(leveragedToken_);
     }
 
     /// @inheritdoc AutomationCompatibleInterface
@@ -98,6 +109,7 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         for (uint256 i_; i_ < tokens_.length; i_++) {
             address token_ = tokens_[i_];
             if (!ILeveragedToken(token_).canRebalance()) continue;
+            if (!ILeveragedToken(token_).isActive()) continue;
             if (_nextAttempt[token_] > block.timestamp) continue;
             rebalancableTokens_[rebalancableTokensCount_] = token_;
             rebalancableTokensCount_++;

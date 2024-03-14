@@ -12,7 +12,7 @@ interface ISynthetixHandler {
     /**
      * @notice Deposit `amount` of margin to Synthetix for the `market`.
      * @dev Should be called with delegatecall.
-     * @param market The eposit margin for.
+     * @param market The market to deposit margin for.
      * @param amount The amount of margin to deposit.
      */
     function depositMargin(address market, uint256 amount) external;
@@ -37,13 +37,6 @@ interface ISynthetixHandler {
         uint256 leverage,
         bool isLong
     ) external;
-
-    /**
-     * @notice Cancel a pending leverage update for the `market`.
-     * @dev Should be called with delegatecall.
-     * @param market The market to cancel a pending leverage update for.
-     */
-    function cancelLeverageUpdate(address market) external;
 
     /**
      * @notice Returns the address for the market of the `targetAsset`.
@@ -171,7 +164,7 @@ interface ISynthetixHandler {
 
     /**
      * @notice Returns the price of the `market`.
-     * @param market The market to return the price fo
+     * @param market The market to return the price for.
      * @return assetPrice The price of the `market`.
      */
     function assetPrice(

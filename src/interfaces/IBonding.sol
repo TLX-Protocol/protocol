@@ -9,6 +9,8 @@ interface IBonding {
         uint256 tlxTokensReceived
     );
     event Migrated(uint256 amount);
+    event BaseForAllTlxSet(uint256 value);
+    event Launched();
 
     error MinTlxNotReached();
     error ExceedsAvailable();

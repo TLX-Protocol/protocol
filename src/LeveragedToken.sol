@@ -155,6 +155,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     function setIsPaused(bool isPaused_) public override onlyOwner {
         if (isPaused == isPaused_) revert Errors.SameAsCurrent();
         isPaused = isPaused_;
+        emit PausedSet(isPaused_);
     }
 
     /// @inheritdoc ILeveragedToken
@@ -213,11 +214,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         // Sending fees to staker
         IStaker staker_ = addressProvider_.staker();
         uint256 amount_ = fee_ - referralAmount_;
-        // TODO: Test
-        if (amount_ != 0 && staker_.totalStaked() != 0) {
-            baseAsset_.approve(address(staker_), amount_);
-            staker_.donateRewards(amount_);
+        if (amount_ == 0) return;
+        if (staker_.totalStaked() == staker_.totalPrepared()) {
+            baseAsset_.transfer(address(addressProvider_.treasury()), amount_);
+            return;
         }
+        baseAsset_.approve(address(staker_), amount_);
+        staker_.donateRewards(amount_);
     }
 
     function _getStreamingFee(address market_) internal returns (uint256) {
@@ -245,7 +248,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
         // Return fees
         IStaker staker_ = _addressProvider.staker();
-        if (staker_.totalStaked() == 0) return 0;
+        if (staker_.totalStaked() == staker_.totalPrepared()) return 0;
         return fee_;
     }
 

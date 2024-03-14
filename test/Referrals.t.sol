@@ -67,11 +67,11 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, bytes32(0));
     }
 
-    function testUpdateReferral() public {
+    function testSetReferral() public {
         referrals.register(alice, CODE);
 
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
 
         assertEq(referrals.codeRebate(CODE), 0.5e18);
         assertEq(referrals.userRebate(alice), 0);
@@ -83,21 +83,21 @@ contract ReferralsTest is IntegrationTest {
         assertEq(referrals.referral(bob), CODE);
     }
 
-    function testUpdateReferralRevertsForSameCode() public {
+    function testSetReferralRevertsForAlreadyRegistered() public {
         referrals.register(alice, CODE);
 
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
 
-        vm.expectRevert(IReferrals.SameCode.selector);
+        vm.expectRevert(IReferrals.AlreadyRegistered.selector);
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
     }
 
-    function testUpdateReferralRevertsForInvalidCode() public {
+    function testSetReferralRevertsForInvalidCode() public {
         vm.expectRevert(IReferrals.InvalidCode.selector);
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
     }
 
     function testSetRebatePercent() public {
@@ -138,7 +138,7 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, CODE);
 
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
 
         _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         IERC20(Config.BASE_ASSET).approve(address(referrals), 100e18);
@@ -156,7 +156,7 @@ contract ReferralsTest is IntegrationTest {
         referrals.register(alice, CODE);
 
         vm.prank(bob);
-        referrals.updateReferral(CODE);
+        referrals.setReferral(CODE);
 
         _mintTokensFor(Config.BASE_ASSET, address(this), 100e18);
         IERC20(Config.BASE_ASSET).approve(address(referrals), 100e18);

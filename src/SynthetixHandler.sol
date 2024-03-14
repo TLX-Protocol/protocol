@@ -17,7 +17,7 @@ contract SynthetixHandler is ISynthetixHandler {
     IFuturesMarketSettings internal immutable _futuresMarketSettings;
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
 
     constructor(
         address addressProvider_,
@@ -40,7 +40,6 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function depositMargin(address market_, uint256 amount_) public override {
-        _addressProvider.baseAsset().approve(market_, amount_);
         IPerpsV2MarketConsolidated(market_).transferMargin(int256(amount_));
     }
 
@@ -83,13 +82,6 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
-    function cancelLeverageUpdate(address market_) public override {
-        IPerpsV2MarketConsolidated(market_).cancelOffchainDelayedOrder(
-            address(this)
-        );
-    }
-
-    /// @inheritdoc ISynthetixHandler
     function hasPendingLeverageUpdate(
         address market_,
         address account_
@@ -114,10 +106,7 @@ contract SynthetixHandler is ISynthetixHandler {
         address market_,
         address account_
     ) public view override returns (uint256) {
-        uint256 remainingMargin_ = remainingMargin(market_, account_);
-        if (!hasOpenPosition(market_, account_)) return remainingMargin_;
-        int256 pnl_ = _pnl(market_, account_);
-        return uint256(int256(remainingMargin_) + pnl_);
+        return remainingMargin(market_, account_);
     }
 
     /// @inheritdoc ISynthetixHandler

@@ -101,8 +101,8 @@ contract ZapSwapTest is IntegrationTest {
         assertEq(usdtSwapPath.baseAssetSwapStable, true);
         assertEq(usdtSwapPath.zapAssetFactory, veloDefaultFactory);
         assertEq(usdtSwapPath.baseAssetFactory, veloDefaultFactory);
-        assertEq(usdtSwapPath.swapZapAssetOnUni, false);
-        assertEq(usdtSwapPath.uniPoolFee, 0);
+        assertEq(usdtSwapPath.swapZapAssetOnUni, true);
+        assertEq(usdtSwapPath.uniPoolFee, 100);
     }
 
     function testUpdateSwapPath() public {
@@ -289,7 +289,7 @@ contract ZapSwapTest is IntegrationTest {
     }
 
     function testMintRevertIndirectZapSwap() public {
-        mintRevert(Tokens.USDT, 1000e18, 1000e18);
+        mintRevert(Tokens.USDT, 1000e6, 1000e18);
     }
 
     function mintRevert(
@@ -313,7 +313,7 @@ contract ZapSwapTest is IntegrationTest {
         zapSwap.mint(zapAssetIn, address(leveragedToken), amountIn * 2, 0);
 
         // Mint with higher minAmountOut
-        vm.expectRevert();
+        vm.expectRevert(Errors.InsufficientAmount.selector);
         zapSwap.mint(
             zapAssetIn,
             address(leveragedToken),
