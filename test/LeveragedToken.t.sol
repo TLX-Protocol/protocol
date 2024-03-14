@@ -64,7 +64,7 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         assertApproxEqRel(
             synthetixHandler.remainingMargin(
-                Symbols.ETH,
+                synthetixHandler.market(Symbols.ETH),
                 address(leveragedToken)
             ),
             100e18,
@@ -174,8 +174,9 @@ contract LeveragedTokenTest is IntegrationTest {
     function testRebalance() public {
         _mintTokens();
         _executeOrder(address(leveragedToken));
+        address market = synthetixHandler.market(Symbols.ETH);
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            synthetixHandler.leverage(market, address(leveragedToken)),
             2e18,
             0.03e18
         );
@@ -184,7 +185,7 @@ contract LeveragedTokenTest is IntegrationTest {
         uint256 notional_ = 400e18;
         uint256 margin_ = 300e18;
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            synthetixHandler.leverage(market, address(leveragedToken)),
             notional_.div(margin_),
             0.03e18
         );
@@ -193,7 +194,7 @@ contract LeveragedTokenTest is IntegrationTest {
         skip(30 seconds);
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            synthetixHandler.leverage(market, address(leveragedToken)),
             2e18,
             0.03e18
         );
@@ -227,7 +228,7 @@ contract LeveragedTokenTest is IntegrationTest {
             address(staker)
         );
         uint256 notional_ = synthetixHandler.notionalValue(
-            Symbols.ETH,
+            synthetixHandler.market(Symbols.ETH),
             address(leveragedToken)
         );
         uint256 streamingFee_ = parameterProvider.streamingFee();
@@ -255,15 +256,16 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
+        address market = synthetixHandler.market(Symbols.ETH);
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            synthetixHandler.leverage(market, address(leveragedToken)),
             Config.MAX_LEVERAGE,
             0.1e18
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
-            synthetixHandler.leverage(Symbols.ETH, address(leveragedToken)),
+            synthetixHandler.leverage(market, address(leveragedToken)),
             Config.MAX_LEVERAGE,
             0.1e18
         );

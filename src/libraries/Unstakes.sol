@@ -51,23 +51,6 @@ library Unstakes {
         delete self.withdrawals[id];
     }
 
-    function tryGet(
-        UserUnstakes storage self,
-        uint256 id
-    ) internal view returns (UserUnstake memory, bool) {
-        UserUnstake memory withdrawal = self.withdrawals[id];
-        return (withdrawal, withdrawal.amount > 0);
-    }
-
-    function get(
-        UserUnstakes storage self,
-        uint256 id
-    ) internal view returns (UserUnstake memory) {
-        (UserUnstake memory withdrawal_, bool exists_) = tryGet(self, id);
-        if (!exists_) revert Errors.DoesNotExist();
-        return withdrawal_;
-    }
-
     function list(
         UserUnstakes storage self
     ) internal view returns (UserUnstakeData[] memory withdrawals) {

@@ -17,7 +17,7 @@ contract Airdrop is IAirdrop, TlxOwnable {
     /// @inheritdoc IAirdrop
     mapping(address => bool) public override hasClaimed;
     /// @inheritdoc IAirdrop
-    uint256 public override deadline;
+    uint256 public immutable override deadline;
     /// @inheritdoc IAirdrop
     uint256 public override totalClaimed;
 
@@ -68,14 +68,14 @@ contract Airdrop is IAirdrop, TlxOwnable {
     }
 
     /// @inheritdoc IAirdrop
-    function mintUnclaimed() external override onlyOwner {
+    function recoverUnclaimed() external override onlyOwner {
         if (block.timestamp <= deadline) revert ClaimStillOngoing();
         IAddressProvider addressProvider_ = _addressProvider;
         address treasury_ = addressProvider_.treasury();
         uint256 unclaimed_ = _airdropAmount - totalClaimed;
         if (unclaimed_ == 0) revert EverythingClaimed();
         addressProvider_.tlx().transfer(treasury_, unclaimed_);
-        emit UnclaimedMinted(unclaimed_);
+        emit UnclaimedRecovered(unclaimed_);
     }
 
     function _isValid(
