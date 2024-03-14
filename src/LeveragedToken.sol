@@ -214,7 +214,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         IStaker staker_ = addressProvider_.staker();
         uint256 amount_ = fee_ - referralAmount_;
         if (amount_ == 0) return;
-        if (staker_.totalStaked() == 0) {
+        if (staker_.totalStaked() == staker_.totalPrepared()) {
             baseAsset_.transfer(address(addressProvider_.treasury()), amount_);
             return;
         }
@@ -247,7 +247,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
 
         // Return fees
         IStaker staker_ = _addressProvider.staker();
-        if (staker_.totalStaked() == 0) return 0;
+        if (staker_.totalStaked() == staker_.totalPrepared()) return 0;
         return fee_;
     }
 
