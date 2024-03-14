@@ -6,7 +6,6 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {ScaledNumber} from "./libraries/ScaledNumber.sol";
-import {Errors} from "./libraries/Errors.sol";
 
 import {IRewardsStreaming} from "./interfaces/IRewardsStreaming.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
