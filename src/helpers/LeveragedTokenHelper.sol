@@ -50,14 +50,15 @@ contract LeveragedTokenHelper {
                 leveragedTokenAddresses_[i]
             );
             string memory targetAsset_ = leveragedToken_.targetAsset();
+            address market_ = synthetixHandler_.market(targetAsset_);
             uint256 remainingMargin_ = synthetixHandler_.remainingMargin(
-                targetAsset_,
+                market_,
                 address(leveragedToken_)
             );
             uint256 leverage_;
             if (remainingMargin_ != 0) {
                 leverage_ = synthetixHandler_.leverage(
-                    targetAsset_,
+                    market_,
                     address(leveragedToken_)
                 );
             }
@@ -75,12 +76,12 @@ contract LeveragedTokenHelper {
                 canRebalance: leveragedToken_.canRebalance(),
                 hasPendingLeverageUpdate: synthetixHandler_
                     .hasPendingLeverageUpdate(
-                        targetAsset_,
+                        market_,
                         address(leveragedToken_)
                     ),
                 remainingMargin: remainingMargin_,
                 leverage: leverage_,
-                assetPrice: synthetixHandler_.assetPrice(targetAsset_)
+                assetPrice: synthetixHandler_.assetPrice(market_)
             });
         }
         return leveragedTokenData_;

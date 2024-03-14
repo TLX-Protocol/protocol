@@ -60,7 +60,7 @@ contract ZapSwapTest is IntegrationTest {
         super.setUp();
 
         baseAsset = addressProvider.baseAsset();
-        ethPrice = synthetixHandler.assetPrice("ETH");
+        ethPrice = synthetixHandler.assetPrice(synthetixHandler.market("ETH"));
         veloDefaultFactory = Contracts.VELODROME_DEFAULT_FACTORY;
 
         // Create new zapSwap
@@ -689,7 +689,6 @@ contract ZapSwapTest is IntegrationTest {
         for (uint256 i; i < zapAssets.length; i++) {
             zapSwap_.setAssetSwapData(zapAssets[i], swapRoutes[i]);
         }
-
     }
 
     function mintLeveragedTokenWithZapAsset(
