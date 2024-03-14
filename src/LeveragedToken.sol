@@ -64,7 +64,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         _ensureNoPendingLeverageUpdate(market_);
 
         // Accounting
-        (uint256 slippage_, bool isLoss_) = _computeSlippage(
+        (uint256 slippage_, bool isLoss_) = _computePriceImpact(
             market_,
             baseAmountIn_,
             true
@@ -76,9 +76,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
                 exchangeRate_
             );
         } else {
-            leveragedTokenAmount_ = (baseAmountIn_ + slippage_).div(
-                exchangeRate_
-            );
+            leveragedTokenAmount_ = baseAmountIn_.div(exchangeRate_);
         }
 
         // Verifying sufficient amount
@@ -117,7 +115,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         uint256 baseWithdrawn_ = leveragedTokenAmount_.mul(exchangeRate_);
         uint256 maxBaseAssetAmount_ = _maxBaseAssetAmount(market_);
         if (baseWithdrawn_ > maxBaseAssetAmount_) revert ExceedsLimit();
-        (uint256 slippage_, bool isLoss_) = _computeSlippage(
+        (uint256 slippage_, bool isLoss_) = _computePriceImpact(
             market_,
             baseWithdrawn_,
             false
@@ -191,14 +189,14 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     }
 
     /// @inheritdoc ILeveragedToken
-    function computeSlippage(
+    function computePriceImpact(
         uint256 baseAmount_,
         bool isDeposit_
     ) public view override returns (uint256, bool) {
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );
-        return _computeSlippage(market_, baseAmount_, isDeposit_);
+        return _computePriceImpact(market_, baseAmount_, isDeposit_);
     }
 
     /// @inheritdoc ILeveragedToken
@@ -383,13 +381,13 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
         return totalValue_.div(totalSupply_);
     }
 
-    function _computeSlippage(
+    function _computePriceImpact(
         address market_,
         uint256 baseAmount_,
         bool isDeposit_
     ) internal view returns (uint256, bool) {
         return
-            _addressProvider.synthetixHandler().computeSlippage(
+            _addressProvider.synthetixHandler().computePriceImpact(
                 market_,
                 targetLeverage,
                 baseAmount_,

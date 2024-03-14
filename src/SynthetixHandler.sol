@@ -82,7 +82,7 @@ contract SynthetixHandler is ISynthetixHandler {
         );
     }
 
-    function computeSlippage(
+    function computePriceImpact(
         address market_,
         uint256 leverage_,
         uint256 baseAmount_,

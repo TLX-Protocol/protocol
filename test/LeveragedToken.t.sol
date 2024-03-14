@@ -64,7 +64,7 @@ contract LeveragedTokenTest is IntegrationTest {
             baseAmountIn
         );
 
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             baseAmountIn,
             true
         );
@@ -134,7 +134,7 @@ contract LeveragedTokenTest is IntegrationTest {
             baseAmountIn
         );
 
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             baseAmountIn,
             true
         );
@@ -331,7 +331,7 @@ contract LeveragedTokenTest is IntegrationTest {
         _mintTokensFor(Config.BASE_ASSET, address(this), amount);
         IERC20 base = IERC20(Config.BASE_ASSET);
         base.approve(address(leveragedToken), amount);
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             amount,
             true
         );
@@ -372,13 +372,13 @@ contract LeveragedTokenTest is IntegrationTest {
     function testSlippageOnMintToken() public {
         uint256 baseAmountIn = 100e18;
 
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             baseAmountIn,
             true
         );
 
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
-            .computeSlippage(baseAmountIn, true);
+            .computePriceImpact(baseAmountIn, true);
 
         assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
         assertGe(slippage, 0);
@@ -388,13 +388,13 @@ contract LeveragedTokenTest is IntegrationTest {
     function testSlippageOnRedeemToken() public {
         uint256 baseAmountIn = 100e18;
 
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             baseAmountIn,
             false
         );
 
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
-            .computeSlippage(baseAmountIn, false);
+            .computePriceImpact(baseAmountIn, false);
 
         assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
         assertGe(slippage, 0);
@@ -404,13 +404,13 @@ contract LeveragedTokenTest is IntegrationTest {
     function testSlippageIncreasesWithSize() public {
         uint256 baseAmountIn = 100e18;
 
-        (uint256 slippage, bool isLoss) = leveragedToken.computeSlippage(
+        (uint256 slippage, bool isLoss) = leveragedToken.computePriceImpact(
             baseAmountIn,
             true
         );
 
         (uint256 largeSlippage, bool largeIsLoss) = leveragedToken
-            .computeSlippage(baseAmountIn * 10, true);
+            .computePriceImpact(baseAmountIn * 10, true);
 
         assertTrue(isLoss == largeIsLoss);
         assertGe(largeSlippage, slippage);
