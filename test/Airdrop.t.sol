@@ -73,20 +73,20 @@ contract AirdropTest is IntegrationTest {
         airdrop.updateMerkleRoot(MERKLE_ROOT);
     }
 
-    function testMintUnclaimedFailsForNonOwner() public {
+    function testRecoverUnclaimedFailsForNonOwner() public {
         vm.startPrank(alice);
         vm.expectRevert();
-        airdrop.mintUnclaimed();
+        airdrop.recoverUnclaimed();
     }
 
-    function testMintUnclaimedFailsWhenStillOngoing() public {
+    function testRecoverUnclaimedFailsWhenStillOngoing() public {
         vm.expectRevert(IAirdrop.ClaimStillOngoing.selector);
-        airdrop.mintUnclaimed();
+        airdrop.recoverUnclaimed();
     }
 
-    function testMintUnclaimed() public {
+    function testRecoverUnclaimed() public {
         skip(200 days);
-        airdrop.mintUnclaimed();
+        airdrop.recoverUnclaimed();
         assertEq(
             tlx.balanceOf(treasury),
             Config.DIRECT_AIRDROP_AMOUNT,

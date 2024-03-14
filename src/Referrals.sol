@@ -30,6 +30,8 @@ contract Referrals is IReferrals, TlxOwnable {
         uint256 rebatePercent_,
         uint256 earningsPercent_
     ) TlxOwnable(addressProvider_) {
+        if (rebatePercent + earningsPercent > 1e18) revert InvalidAmount();
+
         _addressProvider = IAddressProvider(addressProvider_);
         rebatePercent = rebatePercent_;
         earningsPercent = earningsPercent_;
@@ -86,11 +88,11 @@ contract Referrals is IReferrals, TlxOwnable {
     }
 
     /// @inheritdoc IReferrals
-    function updateReferral(bytes32 code_) external override {
-        if (_referrals[msg.sender] == code_) revert SameCode();
+    function setReferral(bytes32 code_) external override {
         if (_referrers[code_] == address(0)) revert InvalidCode();
+        if (_referrals[msg.sender] != bytes32(0)) revert AlreadyRegistered();
         _referrals[msg.sender] = code_;
-        emit UpdatedReferral(msg.sender, code_);
+        emit SetReferral(msg.sender, code_);
     }
 
     /// @inheritdoc IReferrals
@@ -98,7 +100,6 @@ contract Referrals is IReferrals, TlxOwnable {
         uint256 rebatePercent_
     ) external override onlyOwner {
         if (rebatePercent_ == rebatePercent) revert NotChanged();
-        if (rebatePercent_ > 1e18) revert InvalidAmount();
         if (rebatePercent_ + earningsPercent > 1e18) revert InvalidAmount();
         rebatePercent = rebatePercent_;
         emit RebateSet(rebatePercent_);

@@ -39,13 +39,6 @@ interface ISynthetixHandler {
     ) external;
 
     /**
-     * @notice Cancel a pending leverage update for the `market`.
-     * @dev Should be called with delegatecall.
-     * @param market The market to cancel a pending leverage update for.
-     */
-    function cancelLeverageUpdate(address market) external;
-
-    /**
      * @notice Returns the address for the market of the `targetAsset`.
      * @param targetAsset The asset to return the market for.
      * @return market The address for the market of the `targetAsset`.
