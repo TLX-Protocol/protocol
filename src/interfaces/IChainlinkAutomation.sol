@@ -13,6 +13,7 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
     event FailedCounterReset(address indexed leveragedToken);
 
     error NoRebalancableTokens();
+    error NotReadyForNextAttempt();
     error NotForwarder();
 
     /**
