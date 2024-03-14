@@ -192,7 +192,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     function computePriceImpact(
         uint256 baseAmount_,
         bool isDeposit_
-    ) public view override returns (uint256, bool) {
+    ) external view override returns (uint256, bool) {
         address market_ = _addressProvider.synthetixHandler().market(
             targetAsset
         );

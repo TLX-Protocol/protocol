@@ -39,10 +39,10 @@ interface ISynthetixHandler {
     ) external;
 
     /**
-     * @notice Computes expected slippage for a position adjustment at current prices.
-     * @param market The market for which to compute slippage for.
+     * @notice Computes expected price impact for a position adjustment at current prices.
+     * @param market The market for which to compute price impact for.
      * @param leverage The leverage to target.
-     * @param baseAmount The margin amount to compute slippage for.
+     * @param baseAmount The margin amount to compute price impact for.
      * @param isLong Whether the position is long or short.
      * @param isDeposit Whether the adjustment is a deposit.
      * @return slippage The expected slippage for the position adjustment.
