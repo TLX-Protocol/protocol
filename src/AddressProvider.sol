@@ -54,14 +54,14 @@ contract AddressProvider is IAddressProvider, TlxOwnable {
 
     /// @inheritdoc IAddressProvider
     function addRebalancer(address account_) external override onlyOwner {
-        _rebalancer.add(account_);
-        emit RebalancerAdded(account_);
+        bool added_ = _rebalancer.add(account_);
+        if (added_) emit RebalancerAdded(account_);
     }
 
     /// @inheritdoc IAddressProvider
     function removeRebalancer(address account_) external override onlyOwner {
-        _rebalancer.remove(account_);
-        emit RebalancerRemoved(account_);
+        bool removed_ = _rebalancer.remove(account_);
+        if (removed_) emit RebalancerRemoved(account_);
     }
 
     /// @inheritdoc IAddressProvider

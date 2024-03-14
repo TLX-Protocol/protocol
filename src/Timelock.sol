@@ -18,6 +18,8 @@ contract Timelock is ITimelock, Ownable {
     EnumerableSet.UintSet internal _proposalIds;
     mapping(uint256 => Proposal) internal _proposals;
 
+    constructor() Ownable(msg.sender) {}
+
     /// @inheritdoc ITimelock
     function createProposal(
         Call[] calldata calls_
@@ -142,7 +144,7 @@ contract Timelock is ITimelock, Ownable {
         // Setting the delay for the setDelay function be the delay of the function it's setting
         if (selector_ == this.setDelay.selector) {
             bytes memory dataMemory_ = data_;
-            // Skips the data for setDelay to get the selector fro which the delay is being set
+            // Skips the data for setDelay to get the selector for which the delay is being set
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 selector_ := mload(add(dataMemory_, 36))

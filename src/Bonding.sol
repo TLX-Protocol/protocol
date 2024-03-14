@@ -75,7 +75,7 @@ contract Bonding is IBonding, TlxOwnable {
         _updateCache();
 
         // Calculate the amount of TLX tokens to send to the user
-        uint256 availableTlx_ = _availableTlxCache;
+        uint256 availableTlx_ = _availableTlxCache - totalTlxBonded;
         uint256 priceInBaseAsset_ = _priceInBaseAsset(leveragedToken_);
         uint256 baseAmount_ = leveragedTokenAmount_.mul(priceInBaseAsset_);
         uint256 tlxAmount_ = baseAmount_.mul(_exchangeRate(availableTlx_));
@@ -106,6 +106,7 @@ contract Bonding is IBonding, TlxOwnable {
         if (baseForAllTlx_ == 0) revert Errors.InsufficientAmount();
         _updateCache();
         _baseForAllTlx = baseForAllTlx_;
+        emit BaseForAllTlxSet(baseForAllTlx_);
     }
 
     /// @inheritdoc IBonding
@@ -113,6 +114,7 @@ contract Bonding is IBonding, TlxOwnable {
         if (isLive) revert BondingAlreadyLive();
         isLive = true;
         _lastUpdate = block.timestamp;
+        emit Launched();
     }
 
     /// @inheritdoc IBonding

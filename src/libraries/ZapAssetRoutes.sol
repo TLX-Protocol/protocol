@@ -43,8 +43,8 @@ library ZapAssetRoutes {
             baseAssetSwapStable: true,
             zapAssetFactory: veloDefaultFactory_,
             baseAssetFactory: veloDefaultFactory_,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
+            swapZapAssetOnUni: true,
+            uniPoolFee: 100
         });
 
         // DAI
@@ -57,8 +57,8 @@ library ZapAssetRoutes {
             baseAssetSwapStable: true,
             zapAssetFactory: veloDefaultFactory_,
             baseAssetFactory: veloDefaultFactory_,
-            swapZapAssetOnUni: false,
-            uniPoolFee: 0
+            swapZapAssetOnUni: true,
+            uniPoolFee: 100
         });
 
         // USDC
