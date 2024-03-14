@@ -49,6 +49,17 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     }
 
     /// @inheritdoc ILeveragedToken
+    function computePriceImpact(
+        uint256 baseAmount_,
+        bool isDeposit_
+    ) external view override returns (uint256, bool) {
+        address market_ = _addressProvider.synthetixHandler().market(
+            targetAsset
+        );
+        return _computePriceImpact(market_, baseAmount_, isDeposit_);
+    }
+
+    /// @inheritdoc ILeveragedToken
     function mint(
         uint256 baseAmountIn_,
         uint256 minLeveragedTokenAmountOut_
@@ -186,17 +197,6 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
             targetAsset
         );
         return _exchangeRate(market_);
-    }
-
-    /// @inheritdoc ILeveragedToken
-    function computePriceImpact(
-        uint256 baseAmount_,
-        bool isDeposit_
-    ) external view override returns (uint256, bool) {
-        address market_ = _addressProvider.synthetixHandler().market(
-            targetAsset
-        );
-        return _computePriceImpact(market_, baseAmount_, isDeposit_);
     }
 
     /// @inheritdoc ILeveragedToken
