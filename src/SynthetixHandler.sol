@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
-import {IFuturesMarketSettings} from "./interfaces/synthetix/IFuturesMarketSettings.sol";
+import {IPerpsV2MarketSettings} from "./interfaces/synthetix/IPerpsV2MarketSettings.sol";
 import {IPerpsV2MarketData} from "./interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "./interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 import {IPerpsV2MarketBaseTypes} from "./interfaces/synthetix/IPerpsV2MarketBaseTypes.sol";
@@ -14,7 +14,7 @@ contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
-    IFuturesMarketSettings internal immutable _futuresMarketSettings;
+    IPerpsV2MarketSettings internal immutable _futuresMarketSettings;
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
@@ -26,7 +26,7 @@ contract SynthetixHandler is ISynthetixHandler {
     ) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
         _addressProvider = IAddressProvider(addressProvider_);
-        _futuresMarketSettings = IFuturesMarketSettings(futuresMarketSettings_);
+        _futuresMarketSettings = IPerpsV2MarketSettings(futuresMarketSettings_);
     }
 
     /// @inheritdoc ISynthetixHandler
