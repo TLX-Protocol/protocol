@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 interface IAirdrop {
     event MerkleRootUpdated(bytes32 merkleRoot);
     event Claimed(address indexed account, uint256 amount);
-    event UnclaimedMinted(uint256 amount);
+    event UnclaimedRecovered(uint256 amount);
 
     error ClaimPeriodOver();
     error InvalidMerkleProof();
@@ -27,9 +27,9 @@ interface IAirdrop {
     function updateMerkleRoot(bytes32 merkleRoot_) external;
 
     /**
-     * @notice Mint unclaimed tokens to the treasury.
+     * @notice Recover unclaimed tokens to the treasury.
      */
-    function mintUnclaimed() external;
+    function recoverUnclaimed() external;
 
     /**
      * @notice Returns the merkle root for the airdrop.

@@ -17,7 +17,7 @@ contract SynthetixHandler is ISynthetixHandler {
     IPerpsV2MarketSettings internal immutable _marketSettings;
     IAddressProvider internal immutable _addressProvider;
 
-    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.002e18; // 0.2%
+    uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
 
     constructor(
         address addressProvider_,
@@ -30,40 +30,40 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
-    function depositMargin(
-        string calldata targetAsset_,
-        uint256 amount_
-    ) public override {
-        IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
-        _addressProvider.baseAsset().approve(address(market_), amount_);
-        market_.transferMargin(int256(amount_));
+    function market(
+        string calldata targetAsset_
+    ) external view returns (address) {
+        IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
+            .marketDetailsForKey(_key(targetAsset_));
+        return marketData_.market;
     }
 
     /// @inheritdoc ISynthetixHandler
-    function withdrawMargin(
-        string calldata targetAsset_,
-        uint256 amount_
-    ) public override {
-        _market(targetAsset_).transferMargin(-int256(amount_));
+    function depositMargin(address market_, uint256 amount_) public override {
+        IPerpsV2MarketConsolidated(market_).transferMargin(int256(amount_));
+    }
+
+    /// @inheritdoc ISynthetixHandler
+    function withdrawMargin(address market_, uint256 amount_) public override {
+        IPerpsV2MarketConsolidated(market_).transferMargin(-int256(amount_));
     }
 
     /// @inheritdoc ISynthetixHandler
     function submitLeverageUpdate(
-        string calldata targetAsset_,
+        address market_,
         uint256 leverage_,
         bool isLong_
     ) public override {
-        uint256 marginAmount_ = remainingMargin(targetAsset_, address(this));
+        uint256 marginAmount_ = remainingMargin(market_, address(this));
         if (marginAmount_ == 0) revert NoMargin();
         marginAmount_ -= _minKeeperFee(); // Subtract keeper fee
-        uint256 assetPrice_ = assetPrice(targetAsset_);
-        uint256 notionalValue_ = notionalValue(targetAsset_, address(this));
+        uint256 assetPrice_ = assetPrice(market_);
+        uint256 notionalValue_ = notionalValue(market_, address(this));
         notionalValue_ = notionalValue_.div(assetPrice_); // Convert to target units
         uint256 targetNotional_ = marginAmount_.mul(leverage_).div(assetPrice_);
         int256 sizeDelta_ = int256(targetNotional_) - int256(notionalValue_);
         if (!isLong_) sizeDelta_ = -sizeDelta_; // Invert if shorting
-        IPerpsV2MarketConsolidated market_ = _market(targetAsset_);
-        uint256 price_ = fillPrice(targetAsset_, sizeDelta_);
+        uint256 price_ = fillPrice(market_, sizeDelta_);
 
         if (isLong_) {
             price_ = price_.mul(1e18 + _SLIPPAGE_TOLERANCE);
@@ -75,83 +75,81 @@ contract SynthetixHandler is ISynthetixHandler {
         // So the leverage we end up at will be slightly higher than our target
         // In practice, this is typically in the order of 0.2%, which is an order of magnitude smaller than our
         // rebalance threshold, so it is not an issue
-        market_.submitOffchainDelayedOrder(sizeDelta_, price_);
-    }
-
-    /// @inheritdoc ISynthetixHandler
-    function cancelLeverageUpdate(
-        string calldata targetAsset_
-    ) public override {
-        _market(targetAsset_).cancelOffchainDelayedOrder(address(this));
+        IPerpsV2MarketConsolidated(market_).submitOffchainDelayedOrder(
+            sizeDelta_,
+            price_
+        );
     }
 
     /// @inheritdoc ISynthetixHandler
     function hasPendingLeverageUpdate(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (bool) {
-        return _market(targetAsset_).delayedOrders(account_).sizeDelta != 0;
+        return
+            IPerpsV2MarketConsolidated(market_)
+                .delayedOrders(account_)
+                .sizeDelta != 0;
     }
 
     /// @inheritdoc ISynthetixHandler
     function hasOpenPosition(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (bool) {
-        return _market(targetAsset_).positions(account_).size != 0;
+        return
+            IPerpsV2MarketConsolidated(market_).positions(account_).size != 0;
     }
 
     /// @inheritdoc ISynthetixHandler
     function totalValue(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (uint256) {
-        uint256 remainingMargin_ = remainingMargin(targetAsset_, account_);
-        if (!hasOpenPosition(targetAsset_, account_)) return remainingMargin_;
-        int256 pnl_ = _pnl(targetAsset_, account_);
-        return uint256(int256(remainingMargin_) + pnl_);
+        return remainingMargin(market_, account_);
     }
 
     /// @inheritdoc ISynthetixHandler
     function initialMargin(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view returns (uint256) {
-        return _market(targetAsset_).positions(account_).margin;
+        return IPerpsV2MarketConsolidated(market_).positions(account_).margin;
     }
 
     /// @inheritdoc ISynthetixHandler
     function leverageDeviationFactor(
-        string calldata targetAsset_,
+        address market_,
         address account_,
         uint256 targetLeverage_
     ) public view returns (uint256) {
-        uint256 initialNotional = initialMargin(targetAsset_, account_).mul(
+        uint256 initialNotional = initialMargin(market_, account_).mul(
             targetLeverage_
         );
         if (initialNotional == 0) return 0;
-        uint256 currentNotional = notionalValue(targetAsset_, account_);
+        uint256 currentNotional = notionalValue(market_, account_);
         return currentNotional.absSub(initialNotional).div(initialNotional);
     }
 
     /// @inheritdoc ISynthetixHandler
     function leverage(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (uint256) {
-        uint256 notionalValue_ = notionalValue(targetAsset_, account_);
-        uint256 marginRemaining_ = remainingMargin(targetAsset_, account_);
+        uint256 notionalValue_ = notionalValue(market_, account_);
+        uint256 marginRemaining_ = remainingMargin(market_, account_);
         if (marginRemaining_ == 0) revert NoMargin();
         return notionalValue_.div(marginRemaining_);
     }
 
     /// @inheritdoc ISynthetixHandler
     function notionalValue(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (uint256) {
-        (int256 notionalValue_, bool invalid_) = _market(targetAsset_)
-            .notionalValue(account_);
+        (int256 notionalValue_, bool invalid_) = IPerpsV2MarketConsolidated(
+            market_
+        ).notionalValue(account_);
         if (invalid_) return 0;
         if (notionalValue_ < 0) return uint256(-notionalValue_);
         return uint256(notionalValue_);
@@ -159,11 +157,12 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function isLong(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (bool) {
-        (int256 notionalValue_, bool invalid_) = _market(targetAsset_)
-            .notionalValue(account_);
+        (int256 notionalValue_, bool invalid_) = IPerpsV2MarketConsolidated(
+            market_
+        ).notionalValue(account_);
         if (invalid_) revert ErrorGettingIsLong();
         if (notionalValue_ == 0) revert ErrorGettingIsLong();
         return notionalValue_ > 0;
@@ -171,23 +170,24 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function remainingMargin(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) public view override returns (uint256) {
-        (uint256 marginRemaining_, bool invalid_) = _market(targetAsset_)
-            .remainingMargin(account_);
+        (uint256 marginRemaining_, bool invalid_) = IPerpsV2MarketConsolidated(
+            market_
+        ).remainingMargin(account_);
         if (invalid_) return 0;
         return marginRemaining_;
     }
 
     /// @inheritdoc ISynthetixHandler
     function fillPrice(
-        string calldata targetAsset_,
+        address market_,
         int256 sizeDelta_
     ) public view override returns (uint256) {
-        (uint256 fillPrice_, bool invalid_) = _market(targetAsset_).fillPrice(
-            sizeDelta_
-        );
+        (uint256 fillPrice_, bool invalid_) = IPerpsV2MarketConsolidated(
+            market_
+        ).fillPrice(sizeDelta_);
         if (invalid_) revert ErrorGettingFillPrice();
         return fillPrice_;
     }
@@ -207,10 +207,11 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function assetPrice(
-        string calldata targetAsset_
+        address market_
     ) public view override returns (uint256) {
-        (uint256 assetPrice_, bool invalid_) = _market(targetAsset_)
-            .assetPrice();
+        (uint256 assetPrice_, bool invalid_) = IPerpsV2MarketConsolidated(
+            market_
+        ).assetPrice();
         if (invalid_) revert ErrorGettingAssetPrice();
         return assetPrice_;
     }
@@ -224,22 +225,13 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     function _pnl(
-        string calldata targetAsset_,
+        address market_,
         address account_
     ) internal view returns (int256) {
-        (int256 pnl_, bool invalid_) = _market(targetAsset_).profitLoss(
-            account_
-        );
+        (int256 pnl_, bool invalid_) = IPerpsV2MarketConsolidated(market_)
+            .profitLoss(account_);
         if (invalid_) revert ErrorGettingPnl();
         return pnl_;
-    }
-
-    function _market(
-        string calldata targetAsset_
-    ) internal view returns (IPerpsV2MarketConsolidated) {
-        IPerpsV2MarketData.MarketData memory marketData_ = _perpsV2MarketData
-            .marketDetailsForKey(_key(targetAsset_));
-        return IPerpsV2MarketConsolidated(marketData_.market);
     }
 
     function _minKeeperFee() internal view returns (uint256) {

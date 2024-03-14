@@ -97,6 +97,7 @@ contract GenesisLocker is IGenesisLocker, RewardsStreaming {
 
         delete _balances[msg.sender];
         delete unlockTime[msg.sender];
+        totalStaked -= amount_;
 
         _addressProvider.staker().stakeFor(amount_, receiver_);
 

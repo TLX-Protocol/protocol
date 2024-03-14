@@ -31,10 +31,7 @@ contract TlxToken is ITlxToken, ERC20, Initializable, TlxOwnable {
 
             for (uint256 j_; j_ < data_.actions.length; j_++) {
                 InitialMint.Action memory action_ = data_.actions[j_];
-                action_.target.functionCall(
-                    action_.data,
-                    "TlxToken: action call failed"
-                );
+                action_.target.functionCall(action_.data);
             }
         }
     }
