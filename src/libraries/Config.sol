@@ -40,8 +40,9 @@ library Config {
     uint256 public constant PERIOD_DURATION = 20 days;
     uint256 public constant BASE_FOR_ALL_TLX = 15_000e18; // Very roughly means it is 'worth' executing once every 3 days
     uint256 public constant VESTING_DURATION = 365 days; // 1 year
-    uint256 public constant REBALANCE_FEE = 5e18; // 5 sUSD
+    uint256 public constant REBALANCE_FEE = 0.5e18; // 0.5 sUSD
     uint256 public constant REBALANCE_BASE_NEXT_ATTEMPT_DELAY = 1 minutes; // 1 minute (doubles each attempt)
+    uint256 public constant MAX_BASE_ASSET_AMOUNT_BUFFER = 0.2e18; // 20%
     uint256 public constant REDEMPTION_FEE = 0.005e18; // 0.5%
     uint256 public constant REBATE_PERCENT = 0.5e18; // 50%
     uint256 public constant EARNINGS_PERCENT = 0.5e18; // 50%

@@ -23,18 +23,18 @@ contract Referrals is IReferrals, TlxOwnable {
     /// @inheritdoc IReferrals
     uint256 public override rebatePercent;
     /// @inheritdoc IReferrals
-    uint256 public override earningsPercent;
+    uint256 public override referralPercent;
 
     constructor(
         address addressProvider_,
         uint256 rebatePercent_,
-        uint256 earningsPercent_
+        uint256 referralPercent_
     ) TlxOwnable(addressProvider_) {
-        if (rebatePercent + earningsPercent > 1e18) revert InvalidAmount();
+        if (rebatePercent_ + referralPercent_ > 1e18) revert InvalidAmount();
 
         _addressProvider = IAddressProvider(addressProvider_);
         rebatePercent = rebatePercent_;
-        earningsPercent = earningsPercent_;
+        referralPercent = referralPercent_;
     }
 
     /// @inheritdoc IReferrals
@@ -49,18 +49,19 @@ contract Referrals is IReferrals, TlxOwnable {
         address referrer_ = _referrers[code_];
         if (referrer_ == address(0)) return 0;
 
-        uint256 earningsAmount_ = fees_.mul(earningsPercent);
+        uint256 referralAmount_ = fees_.mul(referralPercent);
         uint256 rebateAmount_ = fees_.mul(rebatePercent);
-        if (earningsAmount_ == 0 && rebateAmount_ == 0) return 0;
-        uint256 totalAmount_ = earningsAmount_ + rebateAmount_;
+        if (referralAmount_ == 0 && rebateAmount_ == 0) return 0;
+        uint256 totalAmount_ = referralAmount_ + rebateAmount_;
         _addressProvider.baseAsset().transferFrom(
             msg.sender,
             address(this),
             totalAmount_
         );
-        _earnings[referrer_] += earningsAmount_;
+        _earnings[referrer_] += referralAmount_;
         _earnings[user_] += rebateAmount_;
-        emit EarningsTaken(user_, fees_);
+        emit ReferralEarned(referrer_, referralAmount_);
+        emit RebateEarned(user_, rebateAmount_);
         return totalAmount_;
     }
 
@@ -100,19 +101,19 @@ contract Referrals is IReferrals, TlxOwnable {
         uint256 rebatePercent_
     ) external override onlyOwner {
         if (rebatePercent_ == rebatePercent) revert NotChanged();
-        if (rebatePercent_ + earningsPercent > 1e18) revert InvalidAmount();
+        if (rebatePercent_ + referralPercent > 1e18) revert InvalidAmount();
         rebatePercent = rebatePercent_;
         emit RebateSet(rebatePercent_);
     }
 
     /// @inheritdoc IReferrals
-    function setEarningsPercent(
-        uint256 earningsPercent_
+    function setReferralPercent(
+        uint256 referralPercent_
     ) external override onlyOwner {
-        if (earningsPercent_ == earningsPercent) revert NotChanged();
-        if (earningsPercent_ + rebatePercent > 1e18) revert InvalidAmount();
-        earningsPercent = earningsPercent_;
-        emit EarningsSet(earningsPercent_);
+        if (referralPercent_ == referralPercent) revert NotChanged();
+        if (referralPercent_ + rebatePercent > 1e18) revert InvalidAmount();
+        referralPercent = referralPercent_;
+        emit EarningsSet(referralPercent_);
     }
 
     /// @inheritdoc IReferrals

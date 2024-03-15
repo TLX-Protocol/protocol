@@ -63,7 +63,12 @@ contract LeveragedTokenHelperTest is IntegrationTest {
         assertEq(leveragedTokens[0].addr, address(longToken), "long, addr");
         assertEq(leveragedTokens[0].name, "ETH 2x Long", "long, name");
         assertEq(leveragedTokens[0].symbol, "ETH2L", "long, symbol");
-        assertEq(leveragedTokens[0].totalSupply, 100e18, "long, totalSupply");
+        assertApproxEqRel(
+            leveragedTokens[0].totalSupply,
+            100e18,
+            0.03e18,
+            "long, totalSupply"
+        );
         assertEq(
             leveragedTokens[0].targetAsset,
             Symbols.ETH,

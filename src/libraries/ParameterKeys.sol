@@ -5,4 +5,6 @@ library ParameterKeys {
     bytes32 public constant REDEMPTION_FEE = "redemptionFee";
     bytes32 public constant STREAMING_FEE = "streamingFee";
     bytes32 public constant REBALANCE_FEE = "rebalanceFee";
+    bytes32 public constant MAX_BASE_ASSET_AMOUNT_BUFFER =
+        "maxBaseAssetAmountBuffer";
 }

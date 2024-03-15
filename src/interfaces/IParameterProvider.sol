@@ -56,6 +56,15 @@ interface IParameterProvider {
     function rebalanceFee() external view returns (uint256 rebalanceFee);
 
     /**
+     * @notice Returns the percent buffer applied on the `maxBaseAssetAmount`.
+     * @return maxBaseAssetAmountBuffer The percent buffer applied on the `maxBaseAssetAmount`.
+     */
+    function maxBaseAssetAmountBuffer()
+        external
+        view
+        returns (uint256 maxBaseAssetAmountBuffer);
+
+    /**
      * @notice Returns all parameters.
      * @return parameters All parameters.
      */

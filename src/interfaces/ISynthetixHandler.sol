@@ -181,6 +181,17 @@ interface ISynthetixHandler {
     ) external view returns (bool isSupported);
 
     /**
+     * @notice Returns the Maximum Market value for the `targetAsset`.
+     * @param targetAsset The asset to get the Maximum Market value for.
+     * @param market The market to get the Maximum Market value for.
+     * @return maxMarketValue The Maximum Market value for the `targetAsset`.
+     */
+    function maxMarketValue(
+        string calldata targetAsset,
+        address market
+    ) external view returns (uint256 maxMarketValue);
+
+    /**
      * @notice Returns the maximum leverage allowed for the `targetAsset`.
      * @param targetAsset The asset to check the maximum leverage allowed for.
      * @return maxLeverage The maximum leverage allowed for the `targetAsset`.

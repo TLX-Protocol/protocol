@@ -12,9 +12,10 @@ import {ScaledNumber} from "./libraries/ScaledNumber.sol";
 
 contract SynthetixHandler is ISynthetixHandler {
     using ScaledNumber for uint256;
+    using ScaledNumber for int256;
 
     IPerpsV2MarketData internal immutable _perpsV2MarketData;
-    IPerpsV2MarketSettings internal immutable _futuresMarketSettings;
+    IPerpsV2MarketSettings internal immutable _marketSettings;
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
@@ -22,11 +23,11 @@ contract SynthetixHandler is ISynthetixHandler {
     constructor(
         address addressProvider_,
         address perpsV2MarketData_,
-        address futuresMarketSettings_
+        address marketSettings_
     ) {
         _perpsV2MarketData = IPerpsV2MarketData(perpsV2MarketData_);
         _addressProvider = IAddressProvider(addressProvider_);
-        _futuresMarketSettings = IPerpsV2MarketSettings(futuresMarketSettings_);
+        _marketSettings = IPerpsV2MarketSettings(marketSettings_);
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -81,6 +82,30 @@ contract SynthetixHandler is ISynthetixHandler {
         );
     }
 
+    function computePriceImpact(
+        address market_,
+        uint256 leverage_,
+        uint256 baseAmount_,
+        bool isLong_,
+        bool isDeposit_
+    ) public view override returns (uint256, bool) {
+        uint256 assetPrice_ = assetPrice(market_);
+        uint256 absTargetSizeDelta_ = baseAmount_.mul(leverage_).div(
+            assetPrice_
+        );
+        int256 targetSizeDelta_ = int256(absTargetSizeDelta_);
+        if (!isLong_) targetSizeDelta_ = -targetSizeDelta_; // Invert if shorting
+        if (!isDeposit_) targetSizeDelta_ = -targetSizeDelta_; // Invert if redeeming
+        uint256 fillPrice_ = fillPrice(market_, targetSizeDelta_);
+
+        bool isLoss = (isLong_ && fillPrice_ > assetPrice_) ||
+            (!isLong_ && fillPrice_ < assetPrice_);
+        uint256 slippage = absTargetSizeDelta_.mul(
+            assetPrice_.absSub(fillPrice_)
+        );
+        return (slippage, isLoss);
+    }
+
     /// @inheritdoc ISynthetixHandler
     function hasPendingLeverageUpdate(
         address market_,
@@ -128,7 +153,10 @@ contract SynthetixHandler is ISynthetixHandler {
         );
         if (initialNotional == 0) return 0;
         uint256 currentNotional = notionalValue(market_, account_);
-        return currentNotional.absSub(initialNotional).div(initialNotional);
+        return
+            currentNotional.absSub(initialNotional).div(initialNotional).mul(
+                targetLeverage_
+            );
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -220,7 +248,16 @@ contract SynthetixHandler is ISynthetixHandler {
     function maxLeverage(
         string calldata targetAsset_
     ) public view override returns (uint256) {
-        return _futuresMarketSettings.maxLeverage(_key(targetAsset_));
+        return _marketSettings.maxLeverage(_key(targetAsset_));
+    }
+
+    /// @inheritdoc ISynthetixHandler
+    function maxMarketValue(
+        string calldata targetAsset_,
+        address market_
+    ) public view override returns (uint256) {
+        uint256 price_ = assetPrice(market_);
+        return _marketSettings.maxMarketValue(_key(targetAsset_)).mul(price_);
     }
 
     function _pnl(
@@ -234,7 +271,7 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     function _minKeeperFee() internal view returns (uint256) {
-        return _futuresMarketSettings.minKeeperFee();
+        return _marketSettings.minKeeperFee();
     }
 
     function _key(

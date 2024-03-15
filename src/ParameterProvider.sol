@@ -90,6 +90,11 @@ contract ParameterProvider is IParameterProvider, TlxOwnable {
     }
 
     /// @inheritdoc IParameterProvider
+    function maxBaseAssetAmountBuffer() external view returns (uint256) {
+        return _getParameter(ParameterKeys.MAX_BASE_ASSET_AMOUNT_BUFFER);
+    }
+
+    /// @inheritdoc IParameterProvider
     function parameters() external view override returns (Parameter[] memory) {
         uint256 length_ = _parameters.length();
         Parameter[] memory params_ = new Parameter[](length_);

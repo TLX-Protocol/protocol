@@ -129,7 +129,7 @@ contract SynthetixHandlerTest is IntegrationTest {
                 address(this),
                 2e18
             ),
-            1e18,
+            2e18,
             "after deposit margin"
         );
         _submitLeverageUpdate(2e18, true);
@@ -139,7 +139,7 @@ contract SynthetixHandlerTest is IntegrationTest {
                 address(this),
                 2e18
             ),
-            1e18,
+            2e18,
             0,
             "leverage factor before execution"
         );
@@ -367,6 +367,11 @@ contract SynthetixHandlerTest is IntegrationTest {
     function testIsAssetSupported() public {
         assertTrue(synthetixHandler.isAssetSupported(Symbols.ETH));
         assertFalse(synthetixHandler.isAssetSupported("BABYDOGE"));
+    }
+
+    function testMaxMarketValue() public {
+        address market_ = synthetixHandler.market(Symbols.ETH);
+        assertGt(synthetixHandler.maxMarketValue(Symbols.ETH, market_), 0);
     }
 
     function _getMarket(string memory symbol_) internal view returns (address) {

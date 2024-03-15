@@ -6,7 +6,8 @@ interface IReferrals {
     event SetReferral(address indexed user, bytes32 code);
     event RebateSet(uint256 rebate);
     event EarningsSet(uint256 earnings);
-    event EarningsTaken(address indexed user, uint256 amount);
+    event ReferralEarned(address indexed user, uint256 amount);
+    event RebateEarned(address indexed user, uint256 amount);
     event EarningsClaimed(address indexed user, uint256 amount);
 
     error AlreadyRegistered();
@@ -54,11 +55,11 @@ interface IReferrals {
     function setRebatePercent(uint256 rebatePercent) external;
 
     /**
-     * @notice Sets the earnings percent.
+     * @notice Sets the referral percent.
      * @dev Can only be called by the owner.
-     * @param earningsPercent The earnings percent to set.
+     * @param referralPercent The referral percent to set.
      */
-    function setEarningsPercent(uint256 earningsPercent) external;
+    function setReferralPercent(uint256 referralPercent) external;
 
     /**
      * @notice Returns the reabate for the given code.
@@ -110,9 +111,9 @@ interface IReferrals {
     function rebatePercent() external view returns (uint256 rebatePercent);
 
     /**
-     * @notice Returns the earnings percent.
+     * @notice Returns the referral percent.
      * @dev As a percent of fees, e.g 10% as 0.1e18.
-     * @return earningsPercent The earnings percent.
+     * @return referralPercent The referral percent.
      */
-    function earningsPercent() external view returns (uint256 earningsPercent);
+    function referralPercent() external view returns (uint256 referralPercent);
 }

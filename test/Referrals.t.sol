@@ -117,21 +117,21 @@ contract ReferralsTest is IntegrationTest {
         referrals.setRebatePercent(0.9e18);
     }
 
-    function testSetEarningsPercent() public {
-        referrals.setEarningsPercent(0.3e18);
-        assertEq(referrals.earningsPercent(), 0.3e18);
+    function testSetReferralPercent() public {
+        referrals.setReferralPercent(0.3e18);
+        assertEq(referrals.referralPercent(), 0.3e18);
     }
 
-    function testSetEarningsPercentRevertsWhenNotChanged() public {
+    function testSetReferralPercentRevertsWhenNotChanged() public {
         vm.expectRevert(IReferrals.NotChanged.selector);
-        referrals.setEarningsPercent(0.5e18);
+        referrals.setReferralPercent(0.5e18);
     }
 
     function testSetEarningsRevertsForInvalidAmount() public {
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setEarningsPercent(1.1e18);
+        referrals.setReferralPercent(1.1e18);
         vm.expectRevert(IReferrals.InvalidAmount.selector);
-        referrals.setEarningsPercent(0.9e18);
+        referrals.setReferralPercent(0.9e18);
     }
 
     function testTakeEarnings() public {

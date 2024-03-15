@@ -10,7 +10,7 @@ interface IStaker is IRewardsStreaming {
         address indexed accountTo,
         uint256 amount
     );
-    event PreparedUnstake(address indexed account);
+    event PreparedUnstake(address indexed account, uint256 amount, uint256 id);
     event Unstaked(
         address indexed accountFrom,
         address indexed accountTo,
