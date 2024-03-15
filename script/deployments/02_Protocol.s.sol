@@ -40,8 +40,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
 
         // Leveraged Token Factory Deployment
         LeveragedTokenFactory leveragedTokenFactory = new LeveragedTokenFactory(
-            address(addressProvider),
-            Config.MAX_LEVERAGE
+            address(addressProvider)
         );
         _deployedAddress(
             "LeveragedTokenFactory",

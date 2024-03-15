@@ -245,6 +245,13 @@ contract SynthetixHandler is ISynthetixHandler {
     }
 
     /// @inheritdoc ISynthetixHandler
+    function maxLeverage(
+        string calldata targetAsset_
+    ) public view override returns (uint256) {
+        return _marketSettings.maxLeverage(_key(targetAsset_));
+    }
+
+    /// @inheritdoc ISynthetixHandler
     function maxMarketValue(
         string calldata targetAsset_,
         address market_
