@@ -39,6 +39,24 @@ interface ISynthetixHandler {
     ) external;
 
     /**
+     * @notice Computes expected price impact for a position adjustment at current prices.
+     * @param market The market for which to compute price impact for.
+     * @param leverage The leverage to target.
+     * @param baseAmount The margin amount to compute price impact for.
+     * @param isLong Whether the position is long or short.
+     * @param isDeposit Whether the adjustment is a deposit.
+     * @return slippage The expected slippage for the position adjustment.
+     * @return isLoss Whether the expected slippage is a loss.
+     */
+    function computePriceImpact(
+        address market,
+        uint256 leverage,
+        uint256 baseAmount,
+        bool isLong,
+        bool isDeposit
+    ) external view returns (uint256 slippage, bool isLoss);
+
+    /**
      * @notice Returns the address for the market of the `targetAsset`.
      * @param targetAsset The asset to return the market for.
      * @return market The address for the market of the `targetAsset`.
