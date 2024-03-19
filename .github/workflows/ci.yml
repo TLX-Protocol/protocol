@@ -107,7 +107,7 @@ jobs:
         run: forge script script/deployments/04_EnableFees.s.sol --fork-url http://localhost:8545 --broadcast
       - name: Test Enable Fees
         run: forge test -vv --match-path script/deployments/04_EnableFees.s.sol --fork-url http://localhost:8545
-      - name: Deploy Timelock
-        run: forge script script/deployments/05_Timelock.s.sol --fork-url http://localhost:8545 --broadcast
-      - name: Test Timelock
-        run: forge test -vv --match-path script/deployments/05_Timelock.s.sol --fork-url http://localhost:8545
+      - name: Deploy ProxyOwner
+        run: forge script script/deployments/05_ProxyOwner.s.sol --fork-url http://localhost:8545 --broadcast
+      - name: Test ProxyOwner
+        run: forge test -vv --match-path script/deployments/05_ProxyOwner.s.sol --fork-url http://localhost:8545
