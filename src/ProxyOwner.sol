@@ -7,9 +7,9 @@ import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/Enum
 
 import {Errors} from "./libraries/Errors.sol";
 
-import {ITimelock} from "./interfaces/ITimelock.sol";
+import {IProxyOwner} from "./interfaces/IProxyOwner.sol";
 
-contract Timelock is ITimelock, Ownable {
+contract ProxyOwner is IProxyOwner, Ownable {
     using Address for address;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -20,7 +20,7 @@ contract Timelock is ITimelock, Ownable {
 
     constructor() Ownable(msg.sender) {}
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function createProposal(
         Call[] calldata calls_
     ) external override onlyOwner returns (uint256) {
@@ -37,7 +37,7 @@ contract Timelock is ITimelock, Ownable {
         return id_;
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function cancelProposal(uint256 id_) external onlyOwner {
         Proposal memory proposal_ = _proposals[id_];
         if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
@@ -45,14 +45,14 @@ contract Timelock is ITimelock, Ownable {
         emit ProposalCancelled(id_);
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function setDelay(bytes4 selector_, uint256 delay_) external {
         if (msg.sender != address(this)) revert Errors.NotAuthorized();
         _delays[selector_] = delay_;
         emit DelaySet(selector_, delay_);
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function executeProposal(uint256 id_) external override onlyOwner {
         Proposal memory proposal_ = _proposals[id_];
         if (proposal_.ready == 0) revert ProposalDoesNotExist(id_);
@@ -67,7 +67,7 @@ contract Timelock is ITimelock, Ownable {
         emit ProposalExecuted(id_);
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function allProposals() external view returns (Proposal[] memory p) {
         uint256[] memory proposalIds_ = _proposalIds.values();
         Proposal[] memory proposals_ = new Proposal[](proposalIds_.length);
@@ -77,7 +77,7 @@ contract Timelock is ITimelock, Ownable {
         return proposals_;
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function readyProposals()
         external
         view
@@ -87,7 +87,7 @@ contract Timelock is ITimelock, Ownable {
         return _filterProposals(true);
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function pendingProposals()
         external
         view
@@ -97,7 +97,7 @@ contract Timelock is ITimelock, Ownable {
         return _filterProposals(false);
     }
 
-    /// @inheritdoc ITimelock
+    /// @inheritdoc IProxyOwner
     function delay(bytes4 selector) external view override returns (uint256) {
         return _delays[selector];
     }

@@ -8,14 +8,14 @@ import {IParameterProvider} from "../interfaces/IParameterProvider.sol";
 import {Config} from "./Config.sol";
 import {Symbols} from "./Symbols.sol";
 
-library TimelockDelays {
-    struct TimelockDelay {
+library ProxyOwnerDelays {
+    struct ProxyOwnerDelay {
         bytes4 selector;
         uint256 delay;
     }
 
-    function delays() internal pure returns (TimelockDelay[] memory) {
-        TimelockDelay[] memory delays_ = new TimelockDelay[](0);
+    function delays() internal pure returns (ProxyOwnerDelay[] memory) {
+        ProxyOwnerDelay[] memory delays_ = new ProxyOwnerDelay[](0);
 
         return delays_;
     }

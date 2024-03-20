@@ -19,7 +19,7 @@ library Config {
         0xf6A741259da6ee0d1A863bd847b12A6c2943Ea57; // Receiver of rebalance fees
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
     address public constant TEAM_MULTISIG =
-        0xeD7E46Dfe30589a7fa219F049282F5Fa9ca7D47F; // Set as the owner of the Timelock contract
+        0xeD7E46Dfe30589a7fa219F049282F5Fa9ca7D47F; // Set as the owner of the ProxyOwner contract
 
     // Strings
     string public constant TOKEN_NAME = "TLX DAO Token"; // TLX DAO Token

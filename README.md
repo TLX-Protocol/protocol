@@ -82,9 +82,9 @@ Bonding is one of the main ways `TLX` tokens are distributed to users. The `Bond
 
 The staker is where users can stake their `TLX`. Staked `TLX` is staked indefinitely, but at any time a user can call `prepareUnstake` to prepare an unstake. After the delay period, users can call `unstake` to receive their `TLX` tokens back. If they change their mind during an unstake and would like to restake, they can do so with the `restake` function. When staking `TLX`, users receive a share of fees that accrue in the Staker, they can claim these at any time with the `claim` function. Users do not earn fees while they have an unstake prepared. Claiming will be disabled by default, but can be enabled through governance. Staked `TLX` has a `balanceOf` function, similar to an ERC20, which returns how many `TLX` tokens they have staked, this will be used on Snapshot for governance.
 
-### Timelock
+### ProxyOwner
 
-The `Timelock` contract will be set as the owner for all other contracts. It is responsible for adding a delay to function calls so that users have time to review the changes. It has functions for creating a new proposed change, cancelling a proposed change, and executing a proposed change. It also has several views for seeing the current state. The delays can be set for different function calls so there is granular control over these.
+The `ProxyOwner` contract will be set as the owner for all other contracts. It is responsible for adding a delay to function calls so that users have time to review the changes. It has functions for creating a new proposed change, cancelling a proposed change, and executing a proposed change. It also has several views for seeing the current state. The delays can be set for different function calls so there is granular control over these.
 
 ## Helpers
 
@@ -92,4 +92,4 @@ The helpers in directory `src/helpers` are not considered part of the core proto
 
 ### ZapSwap
 
-The `ZapSwap` contract enables the minting and redeeming of leveraged tokens with assets other than the base asset. Swapping a zap asset can be routed through `Uniswap V3` or `Velodrome V2`. The base asset is always swapped on `Velodrome V2`. The `SwapData` of a particular asset which determines its swap route can be set, updated and disabled by the contract owner. 
+The `ZapSwap` contract enables the minting and redeeming of leveraged tokens with assets other than the base asset. Swapping a zap asset can be routed through `Uniswap V3` or `Velodrome V2`. The base asset is always swapped on `Velodrome V2`. The `SwapData` of a particular asset which determines its swap route can be set, updated and disabled by the contract owner.
