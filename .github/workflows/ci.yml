@@ -91,6 +91,8 @@ jobs:
         run: anvil --fork-url ${{ secrets.OPTIMISM_RPC }} &
       - name: Wait for Anvil to start running
         run: sleep 10
+      - name: Deploy Liquidation Points Claimer
+        run: forge script script/deployments/00_LiquidationPoints.s.sol --fork-url http://localhost:8545 --broadcast
       - name: Deploy Tokenomics
         run: forge script script/deployments/01_Tokenomics.s.sol --fork-url http://localhost:8545 --broadcast
       - name: Test Tokenomics
