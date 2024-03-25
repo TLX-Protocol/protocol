@@ -14,7 +14,7 @@ library Config {
         0x6E28337E25717553E7f7F3e89Ad19F6cd01f3b2c;
     address public constant GOVERNANCE_MULTISIG =
         0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90;
-    address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens ar sent to
+    address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens are sent to
     address public constant REBALANCE_FEE_RECEIVER =
         0xf6A741259da6ee0d1A863bd847b12A6c2943Ea57; // Receiver of rebalance fees
     address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
