@@ -83,8 +83,8 @@ library Vestings {
         IVesting.VestingAmount[] memory vestings_
     ) internal pure {
         uint256 totalAmount_;
-        for (uint256 i; i < vestings_.length; i++) {
-            totalAmount_ += vestings_[i].amount;
+        for (uint256 i_; i_ < vestings_.length; i_++) {
+            totalAmount_ += vestings_[i_].amount;
         }
 
         if (totalAmount_ != Config.VESTING_AMOUNT) revert InvalidAmounts();

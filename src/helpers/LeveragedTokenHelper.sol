@@ -45,9 +45,9 @@ contract LeveragedTokenHelper {
         ISynthetixHandler synthetixHandler_ = ISynthetixHandler(
             _addressProvider.synthetixHandler()
         );
-        for (uint256 i; i < leveragedTokenAddresses_.length; i++) {
+        for (uint256 i_; i_ < leveragedTokenAddresses_.length; i_++) {
             ILeveragedToken leveragedToken_ = ILeveragedToken(
-                leveragedTokenAddresses_[i]
+                leveragedTokenAddresses_[i_]
             );
             string memory targetAsset_ = leveragedToken_.targetAsset();
             address market_ = synthetixHandler_.market(targetAsset_);
@@ -62,7 +62,7 @@ contract LeveragedTokenHelper {
                     address(leveragedToken_)
                 );
             }
-            leveragedTokenData_[i] = LeveragedTokenData({
+            leveragedTokenData_[i_] = LeveragedTokenData({
                 addr: address(leveragedToken_),
                 name: leveragedToken_.name(),
                 symbol: leveragedToken_.symbol(),

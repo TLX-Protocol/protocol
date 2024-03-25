@@ -25,8 +25,8 @@ contract TlxToken is ITlxToken, ERC20, Initializable, TlxOwnable {
     function mintInitialSupply(
         InitialMint.Data[] memory mintData_
     ) external initializer onlyOwner {
-        for (uint256 i; i < mintData_.length; i++) {
-            InitialMint.Data memory data_ = mintData_[i];
+        for (uint256 i_; i_ < mintData_.length; i_++) {
+            InitialMint.Data memory data_ = mintData_[i_];
             _mint(data_.receiver, data_.amount);
 
             for (uint256 j_; j_ < data_.actions.length; j_++) {
