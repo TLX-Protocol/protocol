@@ -66,7 +66,7 @@ contract SynthetixHandler is ISynthetixHandler {
         if (!isLong_) sizeDelta_ = -sizeDelta_; // Invert if shorting
         uint256 price_ = fillPrice(market_, sizeDelta_);
 
-        if (isLong_) {
+        if (sizeDelta_ > 0) {
             price_ = price_.mul(1e18 + _SLIPPAGE_TOLERANCE);
         } else {
             price_ = price_.div(1e18 + _SLIPPAGE_TOLERANCE);
