@@ -94,7 +94,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
                 leveragedTokenFactory.createLeveragedTokens(
                     leveragedTokenData[i].targetAsset,
                     leverageOptions_[j],
-                    leveragedTokenData[i].rebalanceThreshold
+                    leveragedTokenData[i].rebalanceThreshold[j]
                 );
             }
         }
@@ -141,6 +141,7 @@ contract ProtocolDeployment is DeploymentScript, Test {
             address(leveragedToken),
             baseAssetAmmount
         );
+        assertEq(leveragedToken.rebalanceThreshold(), 0.03e18);
         assertEq(leveragedToken.totalSupply(), 0);
         leveragedToken.mint(baseAssetAmmount, 0);
         assertGt(leveragedToken.totalSupply(), 0);
