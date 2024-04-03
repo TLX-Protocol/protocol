@@ -26,41 +26,41 @@ library Unstakes {
     }
 
     function queue(
-        UserUnstakes storage self,
-        uint256 amount,
-        uint256 unstakeTime
+        UserUnstakes storage self_,
+        uint256 amount_,
+        uint256 unstakeTime_
     ) internal returns (uint256) {
-        uint256 id = self.nextId;
-        self.withdrawals[id] = UserUnstake({
-            amount: uint192(amount),
-            unstakeTime: uint64(unstakeTime)
+        uint256 id = self_.nextId;
+        self_.withdrawals[id] = UserUnstake({
+            amount: uint192(amount_),
+            unstakeTime: uint64(unstakeTime_)
         });
-        self.ids.add(id);
-        self.nextId++;
-        self.totalQueued += uint192(amount);
+        self_.ids.add(id);
+        self_.nextId++;
+        self_.totalQueued += uint192(amount_);
         return id;
     }
 
     function remove(
-        UserUnstakes storage self,
-        uint256 id
+        UserUnstakes storage self_,
+        uint256 id_
     ) internal returns (UserUnstake memory withdrawal) {
-        if (!self.ids.remove(id)) revert Errors.DoesNotExist();
-        withdrawal = self.withdrawals[id];
-        self.totalQueued -= withdrawal.amount;
-        delete self.withdrawals[id];
+        if (!self_.ids.remove(id_)) revert Errors.DoesNotExist();
+        withdrawal = self_.withdrawals[id_];
+        self_.totalQueued -= withdrawal.amount;
+        delete self_.withdrawals[id_];
     }
 
     function list(
-        UserUnstakes storage self
+        UserUnstakes storage self_
     ) internal view returns (UserUnstakeData[] memory withdrawals) {
-        uint256 length = self.ids.length();
-        withdrawals = new UserUnstakeData[](length);
-        for (uint256 i; i < length; i++) {
-            uint256 id = self.ids.at(i);
-            UserUnstake memory withdrawal = self.withdrawals[id];
-            withdrawals[i] = UserUnstakeData({
-                id: id,
+        uint256 length_ = self_.ids.length();
+        withdrawals = new UserUnstakeData[](length_);
+        for (uint256 i_; i_ < length_; i_++) {
+            uint256 id_ = self_.ids.at(i_);
+            UserUnstake memory withdrawal = self_.withdrawals[id_];
+            withdrawals[i_] = UserUnstakeData({
+                id: id_,
                 amount: withdrawal.amount,
                 unstakeTime: withdrawal.unstakeTime
             });
