@@ -8,9 +8,7 @@ import {Initializable} from "openzeppelin-contracts/contracts/proxy/utils/Initia
 import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
 import {ITlxToken} from "./interfaces/ITlxToken.sol";
-import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 
-import {Errors} from "./libraries/Errors.sol";
 import {InitialMint} from "./libraries/InitialMint.sol";
 
 contract TlxToken is ITlxToken, ERC20, Initializable, TlxOwnable {
