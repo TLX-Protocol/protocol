@@ -29,7 +29,7 @@ library LeveragedTokens {
         uint256[] memory btcThresholds_ = new uint256[](3);
         btcThresholds_[0] = 0.03e18;
         btcThresholds_[1] = 0.05e18;
-        btcThresholds_[2] = 0.1e18;
+        btcThresholds_[2] = 0.10e18;
 
         uint256[] memory solThresholds_ = new uint256[](3);
         solThresholds_[0] = 0.05e18;
