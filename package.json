@@ -22,6 +22,7 @@
   "homepage": "https://github.com/TLX-Protocol/protocol-dev#readme",
   "devDependencies": {
     "@openzeppelin/merkle-tree": "^1.0.6",
+    "ethers": "^6.11.1",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",
     "solhint": "^3.4.1"
