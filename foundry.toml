@@ -5,6 +5,8 @@ libs = ["lib"]
 via_ir = true
 ffi = true
 solc = "0.8.24"
+optimizer = true
+optimizer-runs = 200
 fs_permissions = [{ access = "read-write", path = "./" }]
 
 [profile.dev]
