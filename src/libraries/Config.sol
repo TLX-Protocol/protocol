@@ -12,7 +12,7 @@ library Config {
         0x9d27E96B3564e51422C1f0592f42b3934f2bd056; // AMM distributor (multisig)
     address public constant DAO_TREASURY =
         0x6E28337E25717553E7f7F3e89Ad19F6cd01f3b2c;
-    address public constant GOVERNANCE_MULTISIG =
+    address public constant COMPANY_MULTISIG =
         0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90;
     address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens are sent to
     address public constant REBALANCE_FEE_RECEIVER =

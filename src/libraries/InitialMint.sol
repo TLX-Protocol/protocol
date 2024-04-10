@@ -75,7 +75,7 @@ library InitialMint {
             actions: new Action[](0)
         });
         mintData_[5] = Data({
-            receiver: Config.GOVERNANCE_MULTISIG,
+            receiver: Config.COMPANY_MULTISIG,
             amount: Config.AMM_SEED_AMOUNT,
             actions: new Action[](0)
         });
