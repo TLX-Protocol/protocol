@@ -30,7 +30,7 @@ library InitialMint {
     function getData(
         IAddressProvider addressProvider_
     ) internal view returns (Data[] memory) {
-        Data[] memory mintData_ = new Data[](5);
+        Data[] memory mintData_ = new Data[](6);
 
         Action[] memory genesisLockerActions = new Action[](2);
         genesisLockerActions[0] = Action({
@@ -72,6 +72,11 @@ library InitialMint {
         mintData_[4] = Data({
             receiver: addressProvider_.addressOf(AddressKeys.BONDING),
             amount: Config.BONDING_AMOUNT,
+            actions: new Action[](0)
+        });
+        mintData_[5] = Data({
+            receiver: Config.COMPANY_MULTISIG,
+            amount: Config.AMM_SEED_AMOUNT,
             actions: new Action[](0)
         });
 

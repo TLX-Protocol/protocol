@@ -12,7 +12,7 @@ library Config {
         0x9d27E96B3564e51422C1f0592f42b3934f2bd056; // AMM distributor (multisig)
     address public constant DAO_TREASURY =
         0x6E28337E25717553E7f7F3e89Ad19F6cd01f3b2c;
-    address public constant GOVERNANCE_MULTISIG =
+    address public constant COMPANY_MULTISIG =
         0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90;
     address public constant POL = 0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Where the bonding tokens are sent to
     address public constant REBALANCE_FEE_RECEIVER =
@@ -31,7 +31,10 @@ library Config {
     uint256 public constant DIRECT_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 6) / 100; // 6% (goes to airdrop contract directly)
     uint256 public constant STREAMED_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 4) / 100; // 4% (goes to Geneis Locker contract)
     uint256 public constant BONDING_AMOUNT = (TOTAL_SUPPLY * 42) / 100; // 42%
-    uint256 public constant VESTING_AMOUNT = (TOTAL_SUPPLY * 38) / 100; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
+    uint256 public constant AMM_SEED_AMOUNT =
+        (TOTAL_SUPPLY * 0.3333333333e18) / 100e18; // 0.33% used to seed AMM
+    uint256 public constant VESTING_AMOUNT =
+        (TOTAL_SUPPLY * 38) / 100 - AMM_SEED_AMOUNT; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
     uint256 public constant GENESIS_LOCKER_LOCK_TIME = 26 weeks; // 26 weeks
     uint256 public constant STAKER_UNSTAKE_DELAY = 5 days; // 5 days
