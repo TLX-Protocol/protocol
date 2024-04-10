@@ -31,7 +31,10 @@ library Config {
     uint256 public constant DIRECT_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 6) / 100; // 6% (goes to airdrop contract directly)
     uint256 public constant STREAMED_AIRDROP_AMOUNT = (TOTAL_SUPPLY * 4) / 100; // 4% (goes to Geneis Locker contract)
     uint256 public constant BONDING_AMOUNT = (TOTAL_SUPPLY * 42) / 100; // 42%
-    uint256 public constant VESTING_AMOUNT = (TOTAL_SUPPLY * 38) / 100; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
+    uint256 public constant AMM_SEED_AMOUNT =
+        (TOTAL_SUPPLY * 0.3333333333e18) / 100e18; // 0.33% used to seed AMM
+    uint256 public constant VESTING_AMOUNT =
+        (TOTAL_SUPPLY * 38) / 100 - AMM_SEED_AMOUNT; // 38% (20% Team + 8% Investors + 7% Company Reserves + 3% DAO)
     uint256 public constant AIRDROP_CLAIM_PERIOD = 180 days; // 6 months
     uint256 public constant GENESIS_LOCKER_LOCK_TIME = 26 weeks; // 26 weeks
     uint256 public constant STAKER_UNSTAKE_DELAY = 5 days; // 5 days
