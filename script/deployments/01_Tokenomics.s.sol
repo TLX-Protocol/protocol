@@ -92,12 +92,11 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         // Airdrop Deployment
         Airdrop airdrop = new Airdrop(
             address(addressProvider),
-            bytes32(0),
+            Config.MERKLE_ROOT,
             block.timestamp + Config.AIRDROP_CLAIM_PERIOD,
             Config.DIRECT_AIRDROP_AMOUNT
         );
         _deployedAddress("Airdrop", address(airdrop));
-        airdrop.updateMerkleRoot(Config.MERKLE_ROOT);
         addressProvider.updateAddress(AddressKeys.AIRDROP, address(airdrop));
 
         // Staker Deployment
