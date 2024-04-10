@@ -127,6 +127,6 @@ library Vestings {
         }
 
         if (totalAmount_ != Config.VESTING_AMOUNT)
-          revert InvalidAmounts(totalAmount_, Config.VESTING_AMOUNT);
+            revert InvalidAmounts(totalAmount_, Config.VESTING_AMOUNT);
     }
 }
