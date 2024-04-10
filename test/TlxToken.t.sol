@@ -22,7 +22,8 @@ contract TlxTokenTest is IntegrationTest {
                 Config.STREAMED_AIRDROP_AMOUNT +
                 Config.AMM_AMOUNT +
                 Config.BONDING_AMOUNT +
-                Config.VESTING_AMOUNT
+                Config.VESTING_AMOUNT +
+                Config.AMM_SEED_AMOUNT
         );
         assertEq(tlx.balanceOf(address(this)), 0);
         assertEq(tlx.balanceOf(address(airdrop)), Config.DIRECT_AIRDROP_AMOUNT);
@@ -32,5 +33,9 @@ contract TlxTokenTest is IntegrationTest {
         );
         assertEq(tlx.balanceOf(address(bonding)), Config.BONDING_AMOUNT);
         assertEq(tlx.balanceOf(address(vesting)), Config.VESTING_AMOUNT);
+        assertEq(
+            tlx.balanceOf(Config.COMPANY_MULTISIG),
+            Config.AMM_SEED_AMOUNT
+        );
     }
 }

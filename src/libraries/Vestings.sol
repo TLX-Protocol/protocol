@@ -5,7 +5,7 @@ import {IVesting} from "../interfaces/IVesting.sol";
 import {Config} from "../libraries/Config.sol";
 
 library Vestings {
-    error InvalidAmounts();
+    error InvalidAmounts(uint256 expected, uint256 actual);
 
     function vestings()
         internal
@@ -105,7 +105,7 @@ library Vestings {
         });
         vestings_[22] = IVesting.VestingAmount({
             account: 0x9B59228F2ae19f9C7B50e4d4755F1C85cad78C90,
-            amount: 6187500000033340000000000
+            amount: 6187500000033337000000000
         });
         vestings_[23] = IVesting.VestingAmount({
             account: 0x6E28337E25717553E7f7F3e89Ad19F6cd01f3b2c,
@@ -126,6 +126,7 @@ library Vestings {
             totalAmount_ += vestings_[i_].amount;
         }
 
-        if (totalAmount_ != Config.VESTING_AMOUNT) revert InvalidAmounts();
+        if (totalAmount_ != Config.VESTING_AMOUNT)
+          revert InvalidAmounts(totalAmount_, Config.VESTING_AMOUNT);
     }
 }

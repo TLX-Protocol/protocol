@@ -27,4 +27,4 @@ const tree = StandardMerkleTree.of(merkleTreeData, ["address", "uint256"]);
 console.log("root", tree.root);
 
 // get some proof for testing
- console.log(merkleTreeData[123], tree.getProof(123));
+// console.log(merkleTreeData[123], tree.getProof(123));

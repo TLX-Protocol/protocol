@@ -15,7 +15,7 @@ import {IVesting} from "../interfaces/IVesting.sol";
 import {Config} from "../libraries/Config.sol";
 
 library Vestings {
-    error InvalidAmounts();
+    error InvalidAmounts(uint256 expected, uint256 actual);
 
     function vestings()
         internal
@@ -48,7 +48,8 @@ ${vestings
             totalAmount_ += vestings_[i_].amount;
         }
 
-        if (totalAmount_ != Config.VESTING_AMOUNT) revert InvalidAmounts();
+        if (totalAmount_ != Config.VESTING_AMOUNT)
+          revert InvalidAmounts(totalAmount_, Config.VESTING_AMOUNT);
     }
 }
 `;
