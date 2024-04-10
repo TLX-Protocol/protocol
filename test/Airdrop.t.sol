@@ -9,8 +9,9 @@ import {AddressKeys} from "../src/libraries/AddressKeys.sol";
 import {IAirdrop} from "../src/interfaces/IAirdrop.sol";
 
 contract AirdropTest is IntegrationTest {
-    address public constant CLAIMER = 0x1ba6B82641C77aB1Fc7Bc734C5C3628199A8967D;
-    uint256 public constant CLAIMER_AMOUNT = 3158e18;
+    address public constant CLAIMER =
+        0x1Ccf968217dCD3FaD42029115Dab5d329d9F32ce;
+    uint256 public constant CLAIMER_AMOUNT = 2830e18;
 
     function setUp() public override {
         super.setUp();
@@ -87,15 +88,35 @@ contract AirdropTest is IntegrationTest {
 
     function _getProof() internal pure returns (bytes32[] memory proof) {
         proof = new bytes32[](10);
-        proof[0] = 0x5a9520dc43800425ce0aa6bf1e96aa01d2a2912b913ff3aa795cfd6b3ba5eaea;
-        proof[1] = 0x8424ff9f7120fe2b5a1fa99886a05bd82a7213d79ac674b589bff5d6ce0e0c64;
-        proof[2] = 0x922bd2311af9ebfa34e7d0a4a5c14089c9c7153b9d554c09f75d16f39a94706a;
-        proof[3] = 0x68d293a9f1400e8865792e4b37f37b64fd8d99a3bb2d949ecc36b9c2d805eceb;
-        proof[4] = 0xd3a52c552d5bb2aab873e08cc8ea6b2f62a109e5fb2e0991b0b7315162b60bff;
-        proof[5] = 0x7fc32cb663eaefbeb4dbf3f2a59d8adcc2bebdbb1d8009b910cf39d231b1bfdb;
-        proof[6] = 0x667e9944dae4145416c81edd7a1499fffc7a48d001e46a445432bac9126c9635;
-        proof[7] = 0xba8bc0481816d02c5aa235a2f89f81b051204217dd11cbe988eccfa098f6aba8;
-        proof[8] = 0x0d6abf0024ead8712492665b45c64aeb0b2d5629720d82cc678613639698e205;
-        proof[9] = 0x6c5acfab3f8db9cf4e6c333991ceb6170a0536f30961eec9786fdd652f17d03f;
+        proof[
+            0
+        ] = 0x682ae8df89d55f815f623ee1171fd1c3eb016ac245076d9b828d4dac9476ddae;
+        proof[
+            1
+        ] = 0x94b6b4133af42fcdfec3a79d5a1cddc97eaf781401117de0e3b8fb2f60652254;
+        proof[
+            2
+        ] = 0xf601ba5e944f99f94d04528f080825d22a70550cd31f56c0877bdd51a80359c6;
+        proof[
+            3
+        ] = 0xaa95459eecc956a82ef909045ba480ab8d10e59c87973cc88878e64971ef9d1d;
+        proof[
+            4
+        ] = 0xbccce1375747268e9be58f73a30acd5216adf6bb0243629c71b71fcf4f4c6536;
+        proof[
+            5
+        ] = 0x98868fa621a12b4ba6f0359d46f47416b23ba6e47357ec63260cd3652150e123;
+        proof[
+            6
+        ] = 0x4d0f01ab1c5524bec131efa0dc372a0b6431d666e58878b6ff822125c37ed5ca;
+        proof[
+            7
+        ] = 0xebdd3d6fdd1e75fc9391c2312d1e13a9293ed35e4d686a1c5bed14461348ce9e;
+        proof[
+            8
+        ] = 0x4f9756ff6c824b4cb31acebad1ed74e804a7ed51af19e15eecce81fd909fabde;
+        proof[
+            9
+        ] = 0x94f37fecbfd6e3470f26b24453778c7e12e078b58e09bf1907e1c8a24e6fa720;
     }
 }
