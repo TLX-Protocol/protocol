@@ -53,6 +53,6 @@ library Config {
     // Bytes
     bytes32 public constant MERKLE_ROOT =
         bytes32(
-            0x468a9099f57f82cbafabb8f3f00efa98e5f6d0edd1a937b2aaec7293e6b9156f
-        ); // For the airdrop
+            0xb23968e8df025c8a41b83615647bc43bf2044d651daa5f2ab08571316a227a90
+        ); // For the airdrop, generated from data/snapshot.json using script/compute-merkle-root.js
 }

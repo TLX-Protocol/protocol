@@ -83,7 +83,9 @@ contract Airdrop is IAirdrop, TlxOwnable {
         uint256 amount_,
         bytes32[] calldata merkleProof_
     ) internal view returns (bool) {
-        bytes32 node_ = keccak256(abi.encodePacked(account_, amount_));
+        bytes32 node_ = keccak256(
+            bytes.concat(keccak256(abi.encode(account_, amount_)))
+        );
         return MerkleProof.verify(merkleProof_, merkleRoot, node_);
     }
 }
