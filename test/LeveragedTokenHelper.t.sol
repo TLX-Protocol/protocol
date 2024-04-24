@@ -35,7 +35,9 @@ contract LeveragedTokenHelperTest is IntegrationTest {
             Config.REBALANCE_THRESHOLD
         );
         LeveragedTokenHelper.LeveragedTokenData[]
-            memory leveragedTokens = leveragedTokenHelper.leveragedTokenData();
+            memory leveragedTokens = leveragedTokenHelper.leveragedTokenData(
+                address(this)
+            );
         assertEq(leveragedTokens[0].leverage, 0);
     }
 
@@ -61,7 +63,7 @@ contract LeveragedTokenHelperTest is IntegrationTest {
 
         assertEq(leveragedTokens.length, 2, "long, length");
         assertEq(leveragedTokens[0].addr, address(longToken), "long, addr");
-        assertEq(leveragedTokens[0].name, "ETH 2x Long", "long, name");
+        assertEq(leveragedTokens[0].userBalance, 0, "long, userBalance");
         assertEq(leveragedTokens[0].symbol, "ETH2L", "long, symbol");
         assertApproxEqRel(
             leveragedTokens[0].totalSupply,
@@ -107,7 +109,7 @@ contract LeveragedTokenHelperTest is IntegrationTest {
         assertLt(leveragedTokens[0].assetPrice, 10000e18, "long, assetPrice");
 
         assertEq(leveragedTokens[1].addr, address(shortToken), "short, addr");
-        assertEq(leveragedTokens[1].name, "ETH 2x Short", "short, name");
+        assertEq(leveragedTokens[1].userBalance, 0, "short, userBalance");
         assertEq(leveragedTokens[1].symbol, "ETH2S", "short, symbol");
         assertEq(leveragedTokens[1].totalSupply, 0, "short, totalSupply");
         assertEq(

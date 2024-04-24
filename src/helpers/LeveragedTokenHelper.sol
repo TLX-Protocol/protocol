@@ -8,7 +8,6 @@ import {ISynthetixHandler} from "../interfaces/ISynthetixHandler.sol";
 contract LeveragedTokenHelper {
     struct LeveragedTokenData {
         address addr;
-        string name;
         string symbol;
         uint256 totalSupply;
         string targetAsset;
@@ -22,6 +21,7 @@ contract LeveragedTokenHelper {
         uint256 remainingMargin;
         uint256 leverage;
         uint256 assetPrice;
+        uint256 userBalance;
     }
 
     IAddressProvider internal immutable _addressProvider;
@@ -35,6 +35,12 @@ contract LeveragedTokenHelper {
         view
         returns (LeveragedTokenData[] memory)
     {
+        return leveragedTokenData(address(0));
+    }
+
+    function leveragedTokenData(
+        address user_
+    ) public view returns (LeveragedTokenData[] memory) {
         address[] memory leveragedTokenAddresses_ = _addressProvider
             .leveragedTokenFactory()
             .allTokens();
@@ -64,7 +70,6 @@ contract LeveragedTokenHelper {
             }
             leveragedTokenData_[i_] = LeveragedTokenData({
                 addr: address(leveragedToken_),
-                name: leveragedToken_.name(),
                 symbol: leveragedToken_.symbol(),
                 totalSupply: leveragedToken_.totalSupply(),
                 targetAsset: targetAsset_,
@@ -81,7 +86,8 @@ contract LeveragedTokenHelper {
                     ),
                 remainingMargin: remainingMargin_,
                 leverage: leverage_,
-                assetPrice: synthetixHandler_.assetPrice(market_)
+                assetPrice: synthetixHandler_.assetPrice(market_),
+                userBalance: leveragedToken_.balanceOf(user_)
             });
         }
         return leveragedTokenData_;
