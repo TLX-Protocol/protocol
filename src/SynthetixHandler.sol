@@ -19,6 +19,7 @@ contract SynthetixHandler is ISynthetixHandler {
     IAddressProvider internal immutable _addressProvider;
 
     uint256 internal constant _SLIPPAGE_TOLERANCE = 0.02e18; // 2%
+    bytes32 internal constant _TRACKING_CODE = bytes32("TLX");
 
     constructor(
         address addressProvider_,
@@ -76,10 +77,12 @@ contract SynthetixHandler is ISynthetixHandler {
         // So the leverage we end up at will be slightly higher than our target
         // In practice, this is typically in the order of 0.2%, which is an order of magnitude smaller than our
         // rebalance threshold, so it is not an issue
-        IPerpsV2MarketConsolidated(market_).submitOffchainDelayedOrder(
-            sizeDelta_,
-            price_
-        );
+        IPerpsV2MarketConsolidated(market_)
+            .submitOffchainDelayedOrderWithTracking(
+                sizeDelta_,
+                price_,
+                _TRACKING_CODE
+            );
     }
 
     function computePriceImpact(
