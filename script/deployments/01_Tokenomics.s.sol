@@ -87,7 +87,6 @@ contract TokenomicsDeployment is DeploymentScript, Test {
         );
         _deployedAddress("Bonding", address(bonding));
         addressProvider.updateAddress(AddressKeys.BONDING, address(bonding));
-        addressProvider.updateAddress(AddressKeys.POL, Config.POL);
 
         // Airdrop Deployment
         Airdrop airdrop = new Airdrop(

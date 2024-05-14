@@ -38,6 +38,8 @@ contract ProtocolDeployment is DeploymentScript, Test {
         );
         IBonding bonding = IBonding(_getDeployedAddress("Bonding"));
 
+        addressProvider.updateAddress(AddressKeys.POL, Config.POL);
+
         // Leveraged Token Factory Deployment
         LeveragedTokenFactory leveragedTokenFactory = new LeveragedTokenFactory(
             address(addressProvider)
