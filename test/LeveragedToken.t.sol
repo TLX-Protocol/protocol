@@ -18,6 +18,8 @@ import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
 contract LeveragedTokenTest is IntegrationTest {
     using ScaledNumber for uint256;
 
+    bytes32 public constant CODE = bytes32(bytes("test"));
+
     ILeveragedToken public leveragedToken;
     ILeveragedToken public shortLeveragedToken;
 
@@ -438,6 +440,33 @@ contract LeveragedTokenTest is IntegrationTest {
         leveragedToken.setIsPaused(true);
         leveragedToken.setIsPaused(false);
         leveragedToken.mint(baseAmountIn, 0);
+    }
+
+    function testReferralRebates() public {
+        referrals.register(alice, CODE);
+        vm.prank(bob);
+        referrals.setReferral(CODE);
+        assertEq(referrals.userRebate(bob), 0.5e18);
+        uint256 baseAmountIn = 100e18;
+        _mintTokensFor(Config.BASE_ASSET, bob, baseAmountIn);
+        vm.prank(bob);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+        vm.prank(bob);
+        leveragedToken.mint(baseAmountIn, 0);
+        _executeOrder(address(leveragedToken));
+        uint256 referralsBefore = IERC20(Config.BASE_ASSET).balanceOf(
+            address(referrals)
+        );
+        assertEq(referralsBefore, 0);
+        vm.prank(bob);
+        leveragedToken.redeem(10e18, 0);
+        uint256 referralsAfter = IERC20(Config.BASE_ASSET).balanceOf(
+            address(referrals)
+        );
+        assertGt(referralsAfter, 0);
     }
 
     function _mintTokens() public {
