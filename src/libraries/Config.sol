@@ -17,7 +17,7 @@ library Config {
     address public constant POL = 0x1A3731266f2BB955fd8DDDc8730f8ac3949566F4;
     address public constant REBALANCE_FEE_RECEIVER =
         0xf6A741259da6ee0d1A863bd847b12A6c2943Ea57; // Receiver of rebalance fees
-    address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = address(7); // The forwarder address for Chainlink automation
+    address public constant CHAINLINK_AUTOMATION_FORWARDER_ADDRESS = 0xc85D3d4130430A2549dEe4F8158A7221CA15f3f9; // The forwarder address for Chainlink automation
     address public constant TEAM_MULTISIG =
         0x4185075BF51A76DB3f6501FBDA5a6B9e77f7bbFd; // Set as the owner of the ProxyOwner contract
 
