@@ -42,7 +42,6 @@ contract Bonding is IBonding, TlxOwnable {
         _tlxPerSecond = initialTlxPerSecond_;
         _periodDecayMultiplier = periodDecayMultiplier_;
         _periodDuration = periodDuration_;
-        _lastDecayTimestamp = block.timestamp;
         _baseForAllTlx = baseForAllTlx_;
     }
 
@@ -114,6 +113,7 @@ contract Bonding is IBonding, TlxOwnable {
         if (isLive) revert BondingAlreadyLive();
         isLive = true;
         _lastUpdate = block.timestamp;
+        _lastDecayTimestamp = block.timestamp;
         emit Launched();
     }
 
