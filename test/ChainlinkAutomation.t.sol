@@ -23,12 +23,13 @@ contract ChainlinkAutomationTest is IntegrationTest {
             Config.MAX_REBALANCES,
             Config.REBALANCE_BASE_NEXT_ATTEMPT_DELAY
         );
+        chainlinkAutomation.addForwarderAddress(bob);
         addressProvider.addRebalancer(address(chainlinkAutomation));
     }
 
     function testInit() public {
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep("");
+            .checkUpkeep(abi.encode("ETH"));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -40,7 +41,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
             Config.REBALANCE_THRESHOLD
         );
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep("");
+            .checkUpkeep(abi.encode("ETH"));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -62,7 +63,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
         );
         leveragedToken.mint(baseAmountIn, 0);
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep("");
+            .checkUpkeep(abi.encode("ETH"));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -92,9 +93,15 @@ contract ChainlinkAutomationTest is IntegrationTest {
         _modifyPrice(Symbols.ETH, 2e18);
         assertTrue(leveragedToken.canRebalance());
 
-        // Validate
+        // Check unrelated assets
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep("");
+            .checkUpkeep(abi.encode("BTC"));
+        assertEq(upkeepNeeded, false);
+
+        // Validate
+        (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep(
+            abi.encode("ETH")
+        );
         address[] memory rebalancableTokens_ = abi.decode(
             performData,
             (address[])
@@ -103,12 +110,16 @@ contract ChainlinkAutomationTest is IntegrationTest {
         assertEq(rebalancableTokens_.length, 1);
 
         // Execute
-        vm.prank(chainlinkAutomation.forwarderAddress());
+        address[] memory forwarderAddresses = chainlinkAutomation
+            .forwarderAddresses();
+        vm.prank(forwarderAddresses[0]);
         chainlinkAutomation.performUpkeep(performData);
         _executeOrder(address(leveragedToken));
 
         // Validate
-        (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep("");
+        (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep(
+            abi.encode("ETH")
+        );
         assertEq(upkeepNeeded, false);
     }
 
@@ -122,7 +133,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
     function testRevertsWithNoRebalanceTokens() public {
         address[] memory rebalancableTokens = new address[](0);
         bytes memory performData = abi.encode(rebalancableTokens);
-        chainlinkAutomation.setForwarderAddress(address(this));
+        chainlinkAutomation.addForwarderAddress(address(this));
         vm.expectRevert(IChainlinkAutomation.NoRebalancableTokens.selector);
         chainlinkAutomation.performUpkeep(performData);
     }

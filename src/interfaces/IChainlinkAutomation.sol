@@ -17,11 +17,24 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
     error NotForwarder();
 
     /**
-     * @notice Sets the forwarder address which is who can call the performUpkeep function.
+     * @notice Sets the maximum number of rebalances that can be performed in a single upkeep.
+     * @param _maxRebalances The new maximum number of rebalances.
+     */
+    function setMaxRebalances(uint256 _maxRebalances) external;
+
+    /**
+     * @notice Adds a forwarder address that can call the performUpkeep function.
      * @dev Only callable by the contract owner.
      * @param forwarderAddress The new address of the Chainlink forwarder.
      */
-    function setForwarderAddress(address forwarderAddress) external;
+    function addForwarderAddress(address forwarderAddress) external;
+
+    /**
+     * @notice Removes a forwarder address that can call the performUpkeep function.
+     * @dev Only callable by the contract owner.
+     * @param forwarderAddress The address of the Chainlink forwarder to remove.
+     */
+    function removeForwarderAddress(address forwarderAddress) external;
 
     /**
      * @notice Resets the failed counter for the given leveraged token.
@@ -31,11 +44,16 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
     function resetFailedCounter(address leveragedToken) external;
 
     /**
-     * @notice Returns the address of the Chainlink forwarder.
-     * @return forwarderAddress The address of the Chainlink forwarder.
+     * @notice Returns the addresses of the Chainlink forwarders.
+     * @return forwarderAddresses The addresses of the Chainlink forwarders.
      */
-    function forwarderAddress()
+    function forwarderAddresses()
         external
         view
-        returns (address forwarderAddress);
+        returns (address[] memory forwarderAddresses);
+
+    /**
+     * @notice Returns the maximum number of rebalances that can be performed in a single upkeep.
+     */
+    function maxRebalances() external view returns (uint256);
 }
