@@ -75,9 +75,9 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
 
     /// @inheritdoc IChainlinkAutomation
     function setMaxRebalances(
-        uint256 _maxRebalances
+        uint256 maxRebalances_
     ) external override onlyOwner {
-        maxRebalances = _maxRebalances;
+        maxRebalances = maxRebalances_;
     }
 
     /// @inheritdoc IChainlinkAutomation
@@ -120,18 +120,18 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
 
     /// @inheritdoc AutomationCompatibleInterface
     function checkUpkeep(
-        bytes calldata data
+        bytes calldata data_
     )
         external
         view
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
-        string memory targetAsset = abi.decode(data, (string));
+        string memory targetAsset_ = abi.decode(data_, (string));
 
         address[] memory tokens_ = _addressProvider
             .leveragedTokenFactory()
-            .allTokens(targetAsset);
+            .allTokens(targetAsset_);
 
         uint256 maxRebalances_ = maxRebalances;
         address[] memory rebalancableTokens_ = new address[](maxRebalances_);

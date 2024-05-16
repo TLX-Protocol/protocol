@@ -18,9 +18,9 @@ interface IChainlinkAutomation is AutomationCompatibleInterface {
 
     /**
      * @notice Sets the maximum number of rebalances that can be performed in a single upkeep.
-     * @param _maxRebalances The new maximum number of rebalances.
+     * @param maxRebalances The new maximum number of rebalances.
      */
-    function setMaxRebalances(uint256 _maxRebalances) external;
+    function setMaxRebalances(uint256 maxRebalances) external;
 
     /**
      * @notice Adds a forwarder address that can call the performUpkeep function.

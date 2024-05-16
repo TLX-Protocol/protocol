@@ -60,7 +60,9 @@ contract ZapSwapTest is IntegrationTest {
         super.setUp();
 
         baseAsset = addressProvider.baseAsset();
-        ethPrice = synthetixHandler.assetPrice(synthetixHandler.market("ETH"));
+        ethPrice = synthetixHandler.assetPrice(
+            synthetixHandler.market(Symbols.ETH)
+        );
         veloDefaultFactory = Contracts.VELODROME_DEFAULT_FACTORY;
 
         // Create new zapSwap

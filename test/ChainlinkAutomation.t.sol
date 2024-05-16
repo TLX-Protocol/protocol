@@ -29,7 +29,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
 
     function testInit() public {
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep(abi.encode("ETH"));
+            .checkUpkeep(abi.encode(Symbols.ETH));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -41,7 +41,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
             Config.REBALANCE_THRESHOLD
         );
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep(abi.encode("ETH"));
+            .checkUpkeep(abi.encode(Symbols.ETH));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -63,7 +63,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
         );
         leveragedToken.mint(baseAmountIn, 0);
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep(abi.encode("ETH"));
+            .checkUpkeep(abi.encode(Symbols.ETH));
         assertEq(upkeepNeeded, false);
         assertEq(performData.length, 0);
     }
@@ -95,12 +95,12 @@ contract ChainlinkAutomationTest is IntegrationTest {
 
         // Check unrelated assets
         (bool upkeepNeeded, bytes memory performData) = chainlinkAutomation
-            .checkUpkeep(abi.encode("BTC"));
+            .checkUpkeep(abi.encode(Symbols.BTC));
         assertEq(upkeepNeeded, false);
 
         // Validate
         (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep(
-            abi.encode("ETH")
+            abi.encode(Symbols.ETH)
         );
         address[] memory rebalancableTokens_ = abi.decode(
             performData,
@@ -118,7 +118,7 @@ contract ChainlinkAutomationTest is IntegrationTest {
 
         // Validate
         (upkeepNeeded, performData) = chainlinkAutomation.checkUpkeep(
-            abi.encode("ETH")
+            abi.encode(Symbols.ETH)
         );
         assertEq(upkeepNeeded, false);
     }
