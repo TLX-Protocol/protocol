@@ -6,6 +6,7 @@ import {Test} from "forge-std/Test.sol";
 import {DeploymentScript} from "./shared/DeploymentScript.s.sol";
 
 import {Config} from "../../src/libraries/Config.sol";
+import {ChainlinkForwarders} from "../../src/libraries/ChainlinkForwarders.sol";
 
 import {IChainlinkAutomation} from "../../src/interfaces/IChainlinkAutomation.sol";
 
@@ -23,19 +24,20 @@ contract SetupChainlinkAutomationDeployment is DeploymentScript, Test {
             _getDeployedAddress("ChainlinkAutomation")
         );
 
-        // Enable claiming for staker
-        chainlinkAutomation.setForwarderAddress(
-            Config.CHAINLINK_AUTOMATION_FORWARDER_ADDRESS
-        );
+        address[] memory forwarders = ChainlinkForwarders.forwarders();
+        for (uint i = 0; i < forwarders.length; i++) {
+            chainlinkAutomation.addForwarderAddress(forwarders[i]);
+        }
     }
 
     function testEnableFeesDeployment() public {
         IChainlinkAutomation chainlinkAutomation = IChainlinkAutomation(
             _getDeployedAddress("ChainlinkAutomation")
         );
+        address[] memory addresses = chainlinkAutomation.forwarderAddresses();
         assertEq(
-            chainlinkAutomation.forwarderAddress(),
-            Config.CHAINLINK_AUTOMATION_FORWARDER_ADDRESS,
+            addresses,
+            ChainlinkForwarders.forwarders(),
             "ChainlinkAutomation Forwarder Address"
         );
     }

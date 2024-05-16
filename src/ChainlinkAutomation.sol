@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {AutomationCompatibleInterface} from "chainlink/src/v0.8/automation/AutomationCompatible.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {TlxOwnable} from "./utils/TlxOwnable.sol";
 
@@ -13,12 +14,14 @@ import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
 import {ILeveragedTokenFactory} from "./interfaces/ILeveragedTokenFactory.sol";
 
 contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
-    uint256 internal immutable _maxRebalances;
+    using EnumerableSet for EnumerableSet.AddressSet;
+
+    uint256 public override maxRebalances;
+
     IAddressProvider internal immutable _addressProvider;
     uint256 internal immutable _baseNextAttemptDelay;
 
-    /// @inheritdoc IChainlinkAutomation
-    address public override forwarderAddress;
+    EnumerableSet.AddressSet internal _forwarderAddresses;
     mapping(address => uint256) internal _failedCounter;
     mapping(address => uint256) internal _nextAttempt;
 
@@ -28,13 +31,13 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         uint256 baseNextAttemptDelay_
     ) TlxOwnable(addressProvider_) {
         _addressProvider = IAddressProvider(addressProvider_);
-        _maxRebalances = maxReblances_;
+        maxRebalances = maxReblances_;
         _baseNextAttemptDelay = baseNextAttemptDelay_;
     }
 
     /// @inheritdoc AutomationCompatibleInterface
     function performUpkeep(bytes calldata performData_) external override {
-        if (msg.sender != forwarderAddress) revert NotForwarder();
+        if (!_forwarderAddresses.contains(msg.sender)) revert NotForwarder();
 
         address[] memory rebalancableTokens_ = abi.decode(
             performData_,
@@ -71,13 +74,28 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
     }
 
     /// @inheritdoc IChainlinkAutomation
-    function setForwarderAddress(
+    function setMaxRebalances(
+        uint256 maxRebalances_
+    ) external override onlyOwner {
+        maxRebalances = maxRebalances_;
+    }
+
+    /// @inheritdoc IChainlinkAutomation
+    function addForwarderAddress(
         address forwarderAddress_
     ) external override onlyOwner {
-        if (forwarderAddress_ == forwarderAddress) {
-            revert Errors.SameAsCurrent();
+        if (!_forwarderAddresses.add(forwarderAddress_)) {
+            revert Errors.AlreadyExists();
         }
-        forwarderAddress = forwarderAddress_;
+    }
+
+    /// @inheritdoc IChainlinkAutomation
+    function removeForwarderAddress(
+        address forwarderAddress_
+    ) external override onlyOwner {
+        if (!_forwarderAddresses.remove(forwarderAddress_)) {
+            revert Errors.DoesNotExist();
+        }
     }
 
     /// @inheritdoc IChainlinkAutomation
@@ -90,20 +108,32 @@ contract ChainlinkAutomation is IChainlinkAutomation, TlxOwnable {
         emit FailedCounterReset(leveragedToken_);
     }
 
+    /// @inheritdoc IChainlinkAutomation
+    function forwarderAddresses()
+        external
+        view
+        override
+        returns (address[] memory)
+    {
+        return _forwarderAddresses.values();
+    }
+
     /// @inheritdoc AutomationCompatibleInterface
     function checkUpkeep(
-        bytes calldata
+        bytes calldata data_
     )
         external
         view
         override
         returns (bool upkeepNeeded, bytes memory performData)
     {
+        string memory targetAsset_ = abi.decode(data_, (string));
+
         address[] memory tokens_ = _addressProvider
             .leveragedTokenFactory()
-            .allTokens();
+            .allTokens(targetAsset_);
 
-        uint256 maxRebalances_ = _maxRebalances;
+        uint256 maxRebalances_ = maxRebalances;
         address[] memory rebalancableTokens_ = new address[](maxRebalances_);
         uint256 rebalancableTokensCount_;
         for (uint256 i_; i_ < tokens_.length; i_++) {
