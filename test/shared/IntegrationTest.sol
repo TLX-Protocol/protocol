@@ -94,9 +94,6 @@ contract IntegrationTest is Test {
         assetPythIds[
             Symbols.OP
         ] = "0x385f64d993f7b77d8182ed5003d97c60aa3361f3cecfe711544d2d59165e9bdf";
-        assetPythIds[
-            Symbols.ETHBTC
-        ] = "0xc96458d393fe9deb7a7d63a0ac41e2898a67a7750dbd166673279e06c868df0a";
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
