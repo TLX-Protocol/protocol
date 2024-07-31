@@ -4,7 +4,9 @@ pragma solidity ^0.8.13;
 import {IntegrationTest} from "../shared/IntegrationTest.sol";
 
 import {ILeveragedToken} from "../../src/interfaces/ILeveragedToken.sol";
+import {IReferrals} from "../../src/interfaces/IReferrals.sol";
 import {IZapSwap} from "../../src/interfaces/IZapSwap.sol";
+import {AggregatorV2V3Interface} from "../../src/interfaces/chainlink/AggregatorV2V3Interface.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import {Tokens} from "../../src/libraries/Tokens.sol";
@@ -44,6 +46,8 @@ contract WrappedZapSwap is ZapSwap {
 contract ZapSwapTest is IntegrationTest {
     using ScaledNumber for uint256;
 
+    uint256 public susdPrice;
+
     // ZapSwap contract as deployed
     ZapSwap public zapSwap;
 
@@ -58,13 +62,17 @@ contract ZapSwapTest is IntegrationTest {
 
     function setUp() public override {
         super.setUp();
-
         baseAsset = addressProvider.baseAsset();
         ethPrice = synthetixHandler.assetPrice(
             synthetixHandler.market(Symbols.ETH)
         );
         veloDefaultFactory = Contracts.VELODROME_DEFAULT_FACTORY;
 
+        AggregatorV2V3Interface susdFeed = AggregatorV2V3Interface(
+            0x7f99817d87baD03ea21E05112Ca799d715730efe
+        );
+        (, int256 price, , , ) = susdFeed.latestRoundData();
+        susdPrice = uint256(price) * 10 ** 10;
         // Create new zapSwap
         zapSwap = new ZapSwap(
             address(addressProvider),
@@ -91,6 +99,10 @@ contract ZapSwapTest is IntegrationTest {
                 Config.REBALANCE_THRESHOLD
             );
         leveragedToken = ILeveragedToken(longTokenAddress_);
+
+        _mintTokensFor(address(tlx), address(this), 100e18);
+        tlx.approve(address(staker), 100e18);
+        staker.stake(100e18);
     }
 
     function testSwapPaths() public {
@@ -98,7 +110,7 @@ contract ZapSwapTest is IntegrationTest {
         IZapSwap.SwapData memory usdtSwapPath = zapSwap.swapData(Tokens.USDT);
         assertEq(usdtSwapPath.supported, true);
         assertEq(usdtSwapPath.direct, false);
-        assertEq(usdtSwapPath.bridgeAsset, Tokens.USDCE);
+        assertEq(usdtSwapPath.bridgeAsset, Tokens.USDC);
         assertEq(usdtSwapPath.zapAssetSwapStable, true);
         assertEq(usdtSwapPath.baseAssetSwapStable, true);
         assertEq(usdtSwapPath.zapAssetFactory, veloDefaultFactory);
@@ -156,7 +168,7 @@ contract ZapSwapTest is IntegrationTest {
         zapSwap.setAssetSwapData(address(9), dummySD);
 
         // Test setting uniSwap path with unsupported bridge assets
-        IZapSwap.SwapData memory unsupprtedBridgeSD = IZapSwap.SwapData({
+        IZapSwap.SwapData memory unsupportedBridgeSD = IZapSwap.SwapData({
             supported: true,
             direct: false,
             bridgeAsset: Tokens.CRV,
@@ -168,11 +180,11 @@ contract ZapSwapTest is IntegrationTest {
             uniPoolFee: 0
         });
         vm.expectRevert();
-        zapSwap.setAssetSwapData(address(9), unsupprtedBridgeSD);
-        IZapSwap.SwapData memory unsupprtedBridgeSDTwo = IZapSwap.SwapData({
+        zapSwap.setAssetSwapData(address(9), unsupportedBridgeSD);
+        IZapSwap.SwapData memory unsupportedBridgeSDTwo = IZapSwap.SwapData({
             supported: true,
             direct: false,
-            bridgeAsset: Tokens.USDC,
+            bridgeAsset: Tokens.USDT,
             zapAssetSwapStable: false,
             baseAssetSwapStable: false,
             zapAssetFactory: veloDefaultFactory,
@@ -181,15 +193,15 @@ contract ZapSwapTest is IntegrationTest {
             uniPoolFee: 0
         });
         vm.expectRevert();
-        zapSwap.setAssetSwapData(Tokens.USDC, unsupprtedBridgeSDTwo);
+        zapSwap.setAssetSwapData(Tokens.USDC, unsupportedBridgeSDTwo);
     }
 
     function testSupportedAssets() public {
         address[] memory supportedAssets = zapSwap.supportedZapAssets();
-        assertEq(supportedAssets[0], Tokens.USDCE);
-        assertEq(supportedAssets[1], Tokens.USDT);
-        assertEq(supportedAssets[2], Tokens.DAI);
-        assertEq(supportedAssets[3], Tokens.USDC);
+        assertEq(supportedAssets[0], Tokens.USDC);
+        assertEq(supportedAssets[1], Tokens.USDCE);
+        assertEq(supportedAssets[2], Tokens.USDT);
+        assertEq(supportedAssets[3], Tokens.DAI);
         assertEq(supportedAssets[4], Tokens.WETH);
         assertEq(zapSwap.supportedZapAssets().length, 5);
     }
@@ -209,7 +221,7 @@ contract ZapSwapTest is IntegrationTest {
                 Tokens.USDT
             )
         );
-        zapSwap.removeAssetSwapData(Tokens.USDCE);
+        zapSwap.removeAssetSwapData(Tokens.USDC);
 
         // Verify removing an unsupported asset reverts correctly
         vm.expectRevert(IZapSwap.UnsupportedAsset.selector);
@@ -236,23 +248,23 @@ contract ZapSwapTest is IntegrationTest {
     }
 
     function testSimpleMintWithUSDCe() public {
-        simpleMint(Tokens.USDCE, 1000e6, 1000e18);
+        simpleMint(Tokens.USDCE, 1000e6, uint256(1000e18).div(susdPrice));
     }
 
     function testSimpleMintWithUSDT() public {
-        simpleMint(Tokens.USDT, 1000e6, 1000e18);
+        simpleMint(Tokens.USDT, 1000e6, uint256(1000e18).div(susdPrice));
     }
 
     function testSimpleMintWithDAI() public {
-        simpleMint(Tokens.DAI, 1000e18, 1000e18);
+        simpleMint(Tokens.DAI, 1000e18, uint256(1000e18).div(susdPrice));
     }
 
     function testSimpleMintWithUSDC() public {
-        simpleMint(Tokens.USDC, 1000e6, 1000e18);
+        simpleMint(Tokens.USDC, 1000e6, uint256(1000e18).div(susdPrice));
     }
 
     function testSimpleMintWithWETH() public {
-        simpleMint(Tokens.WETH, 1e18, ethPrice);
+        simpleMint(Tokens.WETH, 1e18, ethPrice.div(susdPrice));
     }
 
     function simpleMint(
@@ -348,7 +360,7 @@ contract ZapSwapTest is IntegrationTest {
         address zapAssetOut,
         uint256 baseAssetAmountIn,
         uint256 zapAssetAmountOut
-    ) public {
+    ) public returns (uint256) {
         // Mint leveraged tokens with baseAsset and without using the zap
         // IERC20 baseAsset = IERC20(addressProvider.baseAsset());
         _mintTokensFor(address(baseAsset), address(this), baseAssetAmountIn);
@@ -377,11 +389,16 @@ contract ZapSwapTest is IntegrationTest {
         uint256 leveragedTokenAmountToRedeem = leveragedToken.balanceOf(
             address(this)
         ) / 2;
-        uint256 halfZapAssetAmountOut = zapAssetAmountOut.div(2e18);
-        uint256 minZapAssetAmountOut = zapAssetAmountOut.div(200e18).mul(97e18);
+        uint256 halfZapAssetAmountOut = zapAssetAmountOut.div(2e18).mul(
+            susdPrice
+        );
+        uint256 minZapAssetAmountOut = zapAssetAmountOut
+            .div(200e18)
+            .mul(97e18)
+            .mul(susdPrice);
         leveragedToken.approve(address(zapSwap), leveragedTokenAmountToRedeem);
         uint256 zapAssetBalanceBeforeRedeem = zapAsset.balanceOf(address(this));
-        zapSwap.redeem(
+        uint256 redeemed = zapSwap.redeem(
             zapAssetOut,
             address(leveragedToken),
             leveragedTokenAmountToRedeem,
@@ -404,6 +421,7 @@ contract ZapSwapTest is IntegrationTest {
             0.03e18,
             "Did not receive enough zapAsset from leveraged token redemption."
         );
+        return redeemed;
     }
 
     function testRedeemRevertDirectZapSwap() public {
@@ -543,7 +561,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.USDCE,
             address(baseAsset),
             10000e6,
-            10000e18,
+            uint256(10000e18).div(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDCE),
             true
         );
@@ -554,7 +572,7 @@ contract ZapSwapTest is IntegrationTest {
             address(baseAsset),
             Tokens.USDCE,
             10000e18,
-            10000e6,
+            uint256(10000e6).mul(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDCE),
             false
         );
@@ -565,7 +583,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.USDT,
             address(baseAsset),
             10000e6,
-            10000e18,
+            uint256(10000e18).div(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDT),
             true
         );
@@ -576,7 +594,7 @@ contract ZapSwapTest is IntegrationTest {
             address(baseAsset),
             Tokens.USDT,
             10000e18,
-            10000e6,
+            uint256(10000e6).mul(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDT),
             false
         );
@@ -587,7 +605,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.DAI,
             address(baseAsset),
             10000e18,
-            10000e18,
+            uint256(10000e18).div(susdPrice),
             wrappedZapSwap.swapData(Tokens.DAI),
             true
         );
@@ -598,7 +616,7 @@ contract ZapSwapTest is IntegrationTest {
             address(baseAsset),
             Tokens.DAI,
             10000e18,
-            10000e18,
+            uint256(10000e18).mul(susdPrice),
             wrappedZapSwap.swapData(Tokens.DAI),
             false
         );
@@ -609,7 +627,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.USDC,
             address(baseAsset),
             10000e6,
-            10000e18,
+            uint256(10000e18).div(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDC),
             true
         );
@@ -620,7 +638,7 @@ contract ZapSwapTest is IntegrationTest {
             address(baseAsset),
             Tokens.USDC,
             10000e18,
-            10000e6,
+            uint256(10000e6).mul(susdPrice),
             wrappedZapSwap.swapData(Tokens.USDC),
             false
         );
@@ -631,7 +649,7 @@ contract ZapSwapTest is IntegrationTest {
             Tokens.WETH,
             address(baseAsset),
             1e18,
-            ethPrice,
+            ethPrice.div(susdPrice),
             wrappedZapSwap.swapData(Tokens.WETH),
             true
         );
@@ -642,7 +660,7 @@ contract ZapSwapTest is IntegrationTest {
             address(baseAsset),
             Tokens.WETH,
             ethPrice,
-            1e18,
+            susdPrice,
             wrappedZapSwap.swapData(Tokens.WETH),
             false
         );
@@ -684,7 +702,168 @@ contract ZapSwapTest is IntegrationTest {
         );
     }
 
+    function testRedirectsFeesToStaker() public {
+        _setZapReferral();
+        assertEq(baseAsset.balanceOf(address(staker)), 0);
+
+        uint256 amountRedeemed_ = simpleRedeem(Tokens.DAI, 1000e18, 1000e18);
+        uint256 targetLeverage_ = leveragedToken.targetLeverage();
+        uint256 feePercent_ = addressProvider
+            .parameterProvider()
+            .redemptionFee();
+        uint256 fees_ = amountRedeemed_
+            .mul(targetLeverage_)
+            .mul(feePercent_)
+            .div(1e18 - targetLeverage_.mul(feePercent_));
+        assertApproxEqRel(baseAsset.balanceOf(address(staker)), fees_, 0.01e18);
+    }
+
+    function testRedirectsFeesToReferrals() public {
+        _setZapReferral();
+        assertEq(baseAsset.balanceOf(address(staker)), 0);
+
+        address referrer = makeAddr("referrer");
+        address gov = addressProvider.owner();
+        IReferrals referrals_ = addressProvider.referrals();
+        vm.prank(gov);
+        referrals_.register(referrer, "REF");
+        referrals_.setReferral("REF");
+
+        uint256 amountRedeemed_ = simpleRedeem(Tokens.DAI, 1000e18, 1000e18);
+        uint256 targetLeverage_ = leveragedToken.targetLeverage();
+        uint256 feePercent_ = addressProvider
+            .parameterProvider()
+            .redemptionFee();
+        uint256 fees_ = amountRedeemed_
+            .mul(targetLeverage_)
+            .mul(feePercent_)
+            .div(1e18 - targetLeverage_.mul(feePercent_));
+
+        uint256 rebatePercent_ = referrals_.rebatePercent();
+        uint256 referralPercent_ = referrals_.referralPercent();
+
+        assertApproxEqAbs(
+            baseAsset.balanceOf(address(staker)),
+            fees_.mul(1e18 - rebatePercent_ - referralPercent_),
+            5
+        ); // only non-zero in case of rounding error, so typically 1 (actually 1, not 1e18)
+
+        assertApproxEqRel(
+            baseAsset.balanceOf(address(referrals_)),
+            fees_.mul(rebatePercent_ + referralPercent_),
+            0.01e18
+        );
+        assertApproxEqRel(
+            referrals_.earned(referrer),
+            fees_.mul(referralPercent_),
+            0.01e18
+        );
+        assertApproxEqRel(
+            referrals_.earned(address(this)),
+            fees_.mul(rebatePercent_),
+            0.01e18
+        );
+    }
+
+    function testRedirectsFeesToReferralsWithPartialFees() public {
+        _runRedirectsFeesToReferralsWithPartialFees(0.35e18, 0.25e18);
+    }
+
+    function testRedirectsFeesToReferralsWithPartialFeesFuzz(
+        uint256 referralPercent_,
+        uint256 rebatePercent_
+    ) public {
+        referralPercent_ %= 1e18;
+        if (referralPercent_ > 0 && referralPercent_ < 0.01e18) {
+            referralPercent_ = 0.01e18;
+        }
+        rebatePercent_ %= 1e18;
+        if (rebatePercent_ > 0 && rebatePercent_ < 0.01e18) {
+            rebatePercent_ = 0.01e18;
+        }
+        if (referralPercent_ + rebatePercent_ > 1e18) {
+            rebatePercent_ = 1e18 - referralPercent_;
+        }
+
+        _runRedirectsFeesToReferralsWithPartialFees(
+            referralPercent_,
+            rebatePercent_
+        );
+    }
+
+    function _runRedirectsFeesToReferralsWithPartialFees(
+        uint256 referralPercent_,
+        uint256 rebatePercent_
+    ) internal {
+        _setZapReferral();
+        assertEq(baseAsset.balanceOf(address(staker)), 0);
+
+        address referrer = makeAddr("referrer");
+        IReferrals referrals_ = addressProvider.referrals();
+        referrals_.register(referrer, "REF");
+        referrals_.setReferral("REF");
+
+        referrals_.setReferralPercent(0);
+        if (rebatePercent_ != referrals_.rebatePercent()) {
+            referrals_.setRebatePercent(rebatePercent_);
+        }
+        if (referralPercent_ > 0) {
+            referrals_.setReferralPercent(referralPercent_);
+        }
+
+        uint256 amountRedeemed_ = simpleRedeem(Tokens.DAI, 1000e18, 1000e18);
+        uint256 targetLeverage_ = leveragedToken.targetLeverage();
+        uint256 feePercent_ = addressProvider
+            .parameterProvider()
+            .redemptionFee();
+        uint256 fees_ = amountRedeemed_
+            .mul(targetLeverage_)
+            .mul(feePercent_)
+            .div(1e18 - targetLeverage_.mul(feePercent_));
+
+        assertApproxEqAbs(
+            baseAsset.balanceOf(address(staker)),
+            fees_.mul(1e18 - rebatePercent_ - referralPercent_),
+            0.1e18,
+            "staker balance"
+        );
+
+        assertApproxEqAbs(
+            baseAsset.balanceOf(address(referrals_)),
+            fees_.mul(rebatePercent_ + referralPercent_),
+            0.1e18,
+            "referrals balance"
+        );
+        assertApproxEqAbs(
+            referrals_.earned(referrer),
+            fees_.mul(referralPercent_),
+            0.1e18,
+            "referrer balance"
+        );
+        assertApproxEqAbs(
+            referrals_.earned(address(this)),
+            fees_.mul(rebatePercent_),
+            0.1e18,
+            "referee balance"
+        );
+    }
+
     // Helper functions
+
+    function _setZapReferral() public {
+        IReferrals referrals_ = addressProvider.referrals();
+
+        vm.expectRevert(IReferrals.InvalidCode.selector);
+        wrappedZapSwap.setReferral();
+
+        address gov = addressProvider.owner();
+        vm.prank(gov);
+        referrals_.register(address(zapSwap), "ZAP");
+
+        zapSwap.setReferral();
+
+        assertEq(referrals_.referral(address(zapSwap)), "ZAP");
+    }
 
     function setSwapDataForAllZapAssets(ZapSwap zapSwap_) public {
         // Set swap routes from ZapAssetRoutes library
