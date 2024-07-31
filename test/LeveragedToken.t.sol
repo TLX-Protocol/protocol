@@ -31,7 +31,7 @@ contract LeveragedTokenTest is IntegrationTest {
             address longTokenAddress_,
             address shortTokenAddress_
         ) = leveragedTokenFactory.createLeveragedTokens(
-                Symbols.ETHBTC,
+                Symbols.ETH,
                 2e18,
                 Config.REBALANCE_THRESHOLD
             );
@@ -40,17 +40,17 @@ contract LeveragedTokenTest is IntegrationTest {
     }
 
     function testInit() public {
-        assertEq(leveragedToken.name(), "ETHBTC 2x Long");
-        assertEq(leveragedToken.symbol(), "ETHBTC2L");
+        assertEq(leveragedToken.name(), "ETH 2x Long");
+        assertEq(leveragedToken.symbol(), "ETH2L");
         assertEq(leveragedToken.decimals(), 18);
-        assertEq(leveragedToken.targetAsset(), Symbols.ETHBTC);
+        assertEq(leveragedToken.targetAsset(), Symbols.ETH);
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());
 
-        assertEq(shortLeveragedToken.name(), "ETHBTC 2x Short");
-        assertEq(shortLeveragedToken.symbol(), "ETHBTC2S");
+        assertEq(shortLeveragedToken.name(), "ETH 2x Short");
+        assertEq(shortLeveragedToken.symbol(), "ETH2S");
         assertEq(shortLeveragedToken.decimals(), 18);
-        assertEq(shortLeveragedToken.targetAsset(), Symbols.ETHBTC);
+        assertEq(shortLeveragedToken.targetAsset(), Symbols.ETH);
         assertEq(shortLeveragedToken.targetLeverage(), 2e18);
         assertFalse(shortLeveragedToken.isLong());
     }
@@ -89,7 +89,7 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         assertApproxEqRel(
             synthetixHandler.remainingMargin(
-                synthetixHandler.market(Symbols.ETHBTC),
+                synthetixHandler.market(Symbols.ETH),
                 address(leveragedToken)
             ),
             100e18,
@@ -216,14 +216,14 @@ contract LeveragedTokenTest is IntegrationTest {
     function testRebalance() public {
         _mintTokens();
         _executeOrder(address(leveragedToken));
-        address market = synthetixHandler.market(Symbols.ETHBTC);
+        address market = synthetixHandler.market(Symbols.ETH);
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
             2e18,
             0.03e18
         );
         assertFalse(leveragedToken.canRebalance());
-        _modifyPrice(Symbols.ETHBTC, 2e18);
+        _modifyPrice(Symbols.ETH, 2e18);
         uint256 notional_ = 400e18;
         uint256 margin_ = 300e18;
         assertApproxEqRel(
@@ -270,7 +270,7 @@ contract LeveragedTokenTest is IntegrationTest {
             address(staker)
         );
         uint256 notional_ = synthetixHandler.notionalValue(
-            synthetixHandler.market(Symbols.ETHBTC),
+            synthetixHandler.market(Symbols.ETH),
             address(leveragedToken)
         );
         uint256 streamingFee_ = parameterProvider.streamingFee();
@@ -288,18 +288,18 @@ contract LeveragedTokenTest is IntegrationTest {
     }
 
     function testLeveragedTokenWithMaxLeverage() public {
-        uint256 maxLeverage_ = synthetixHandler.maxLeverage(Symbols.ETHBTC) / 2;
+        uint256 maxLeverage_ = synthetixHandler.maxLeverage(Symbols.ETH) / 2;
         leveragedTokenFactory.createLeveragedTokens(
-            Symbols.ETHBTC,
+            Symbols.ETH,
             maxLeverage_,
             Config.REBALANCE_THRESHOLD
         );
         leveragedToken = ILeveragedToken(
-            leveragedTokenFactory.token(Symbols.ETHBTC, maxLeverage_, true)
+            leveragedTokenFactory.token(Symbols.ETH, maxLeverage_, true)
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
-        address market = synthetixHandler.market(Symbols.ETHBTC);
+        address market = synthetixHandler.market(Symbols.ETH);
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
             maxLeverage_,
