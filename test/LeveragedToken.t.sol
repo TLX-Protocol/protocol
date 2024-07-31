@@ -14,6 +14,8 @@ import {Errors} from "../src/libraries/Errors.sol";
 import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
+import {ISynthetixHandler} from "../src/interfaces/ISynthetixHandler.sol";
+import {IPerpsV2MarketConsolidated} from "../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 
 contract LeveragedTokenTest is IntegrationTest {
     using ScaledNumber for uint256;
@@ -29,7 +31,7 @@ contract LeveragedTokenTest is IntegrationTest {
             address longTokenAddress_,
             address shortTokenAddress_
         ) = leveragedTokenFactory.createLeveragedTokens(
-                Symbols.ETH,
+                Symbols.ETHBTC,
                 2e18,
                 Config.REBALANCE_THRESHOLD
             );
@@ -38,17 +40,17 @@ contract LeveragedTokenTest is IntegrationTest {
     }
 
     function testInit() public {
-        assertEq(leveragedToken.name(), "ETH 2x Long");
-        assertEq(leveragedToken.symbol(), "ETH2L");
+        assertEq(leveragedToken.name(), "ETHBTC 2x Long");
+        assertEq(leveragedToken.symbol(), "ETHBTC2L");
         assertEq(leveragedToken.decimals(), 18);
-        assertEq(leveragedToken.targetAsset(), Symbols.ETH);
+        assertEq(leveragedToken.targetAsset(), Symbols.ETHBTC);
         assertEq(leveragedToken.targetLeverage(), 2e18);
         assertTrue(leveragedToken.isLong());
 
-        assertEq(shortLeveragedToken.name(), "ETH 2x Short");
-        assertEq(shortLeveragedToken.symbol(), "ETH2S");
+        assertEq(shortLeveragedToken.name(), "ETHBTC 2x Short");
+        assertEq(shortLeveragedToken.symbol(), "ETHBTC2S");
         assertEq(shortLeveragedToken.decimals(), 18);
-        assertEq(shortLeveragedToken.targetAsset(), Symbols.ETH);
+        assertEq(shortLeveragedToken.targetAsset(), Symbols.ETHBTC);
         assertEq(shortLeveragedToken.targetLeverage(), 2e18);
         assertFalse(shortLeveragedToken.isLong());
     }
@@ -78,7 +80,6 @@ contract LeveragedTokenTest is IntegrationTest {
 
         uint256 targetValue = 100e18;
         if (isLoss) targetValue = targetValue - slippage;
-        else targetValue = targetValue + slippage;
         assertEq(leveragedTokenAmountOut, targetValue);
         assertEq(leveragedToken.totalSupply(), targetValue);
         assertEq(leveragedToken.balanceOf(address(this)), targetValue);
@@ -88,7 +89,7 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         assertApproxEqRel(
             synthetixHandler.remainingMargin(
-                synthetixHandler.market(Symbols.ETH),
+                synthetixHandler.market(Symbols.ETHBTC),
                 address(leveragedToken)
             ),
             100e18,
@@ -149,11 +150,7 @@ contract LeveragedTokenTest is IntegrationTest {
                 leveragedToken.balanceOf(address(this)),
                 baseAmountIn - slippage
             );
-        else
-            assertEq(
-                leveragedToken.balanceOf(address(this)),
-                baseAmountIn + slippage
-            );
+        else assertEq(leveragedToken.balanceOf(address(this)), baseAmountIn);
 
         // Redeeming Leveraged Tokens
         uint256 leveragedTokenAmountIn = 1e18;
@@ -219,14 +216,14 @@ contract LeveragedTokenTest is IntegrationTest {
     function testRebalance() public {
         _mintTokens();
         _executeOrder(address(leveragedToken));
-        address market = synthetixHandler.market(Symbols.ETH);
+        address market = synthetixHandler.market(Symbols.ETHBTC);
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
             2e18,
             0.03e18
         );
         assertFalse(leveragedToken.canRebalance());
-        _modifyPrice(Symbols.ETH, 2e18);
+        _modifyPrice(Symbols.ETHBTC, 2e18);
         uint256 notional_ = 400e18;
         uint256 margin_ = 300e18;
         assertApproxEqRel(
@@ -236,7 +233,7 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         assertTrue(leveragedToken.canRebalance());
         leveragedToken.rebalance();
-        skip(30 seconds);
+        skip(10 seconds);
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
@@ -273,7 +270,7 @@ contract LeveragedTokenTest is IntegrationTest {
             address(staker)
         );
         uint256 notional_ = synthetixHandler.notionalValue(
-            synthetixHandler.market(Symbols.ETH),
+            synthetixHandler.market(Symbols.ETHBTC),
             address(leveragedToken)
         );
         uint256 streamingFee_ = parameterProvider.streamingFee();
@@ -291,18 +288,18 @@ contract LeveragedTokenTest is IntegrationTest {
     }
 
     function testLeveragedTokenWithMaxLeverage() public {
-        uint256 maxLeverage_ = synthetixHandler.maxLeverage(Symbols.ETH) / 2;
+        uint256 maxLeverage_ = synthetixHandler.maxLeverage(Symbols.ETHBTC) / 2;
         leveragedTokenFactory.createLeveragedTokens(
-            Symbols.ETH,
+            Symbols.ETHBTC,
             maxLeverage_,
             Config.REBALANCE_THRESHOLD
         );
         leveragedToken = ILeveragedToken(
-            leveragedTokenFactory.token(Symbols.ETH, maxLeverage_, true)
+            leveragedTokenFactory.token(Symbols.ETHBTC, maxLeverage_, true)
         );
         _mintTokens();
         _executeOrder(address(leveragedToken));
-        address market = synthetixHandler.market(Symbols.ETH);
+        address market = synthetixHandler.market(Symbols.ETHBTC);
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
             maxLeverage_,
@@ -346,11 +343,7 @@ contract LeveragedTokenTest is IntegrationTest {
                 leveragedToken.balanceOf(address(this)),
                 amount - slippage
             );
-        else
-            assertEq(
-                leveragedToken.balanceOf(address(this)),
-                amount + slippage
-            );
+        else assertEq(leveragedToken.balanceOf(address(this)), amount);
 
         // Redeeming Leveraged Tokens
         assertEq(base.balanceOf(address(staker)), 0);
@@ -383,7 +376,8 @@ contract LeveragedTokenTest is IntegrationTest {
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
             .computePriceImpact(baseAmountIn, true);
 
-        assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
+        // both could be a loss if positive price impact is less than fee
+        assertTrue(isLoss || shortIsLoss, "neither short nor long are losses");
         assertGe(slippage, 0);
         assertGe(shortSlippage, 0);
     }
@@ -399,7 +393,7 @@ contract LeveragedTokenTest is IntegrationTest {
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
             .computePriceImpact(baseAmountIn, false);
 
-        assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
+        assertTrue(isLoss || shortIsLoss, "neither short nor long are losses");
         assertGe(slippage, 0);
         assertGe(shortSlippage, 0);
     }
@@ -467,6 +461,29 @@ contract LeveragedTokenTest is IntegrationTest {
             address(referrals)
         );
         assertGt(referralsAfter, 0);
+    }
+
+    function testMintLargeAmount() public {
+        uint256 baseAmountIn = 10_096_656e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+
+        leveragedToken.mint(baseAmountIn, 0);
+    }
+
+    function testValidateMintAmount() public {
+        uint256 baseAmountIn = 60_096_656e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+
+        vm.expectRevert();
+        leveragedToken.mint(baseAmountIn, 0);
     }
 
     function _mintTokens() public {
