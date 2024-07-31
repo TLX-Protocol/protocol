@@ -12,4 +12,5 @@ library Tokens {
     address public constant USDCE = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
     address public constant USDT = 0x94b008aA00579c1307B0EF2c499aD98a8ce58e58;
     address public constant WETH = 0x4200000000000000000000000000000000000006;
+    address public constant LINK = 0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6;
 }
