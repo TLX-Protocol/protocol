@@ -8,6 +8,7 @@ interface ISynthetixHandler {
     error ErrorGettingFillPrice();
     error ErrorGettingAssetPrice();
     error NoMargin();
+    error MaxMarketValueExceeded();
 
     /**
      * @notice Deposit `amount` of margin to Synthetix for the `market`.
@@ -40,6 +41,7 @@ interface ISynthetixHandler {
 
     /**
      * @notice Computes expected price impact for a position adjustment at current prices.
+     * @dev This also includes fees charged by Synthetix for modifying the position.
      * @param market The market for which to compute price impact for.
      * @param leverage The leverage to target.
      * @param baseAmount The margin amount to compute price impact for.
