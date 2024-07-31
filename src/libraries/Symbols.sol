@@ -11,4 +11,6 @@ library Symbols {
     string public constant SOL = "SOL";
     string public constant LINK = "LINK";
     string public constant OP = "OP";
+    string public constant PEPE = "PEPE";
+    string public constant DOGE = "DOGE";
 }
