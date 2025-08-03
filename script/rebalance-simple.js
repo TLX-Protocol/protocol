@@ -12,16 +12,26 @@ const factoryAbi = ["function allTokens() external view returns (address[] memor
 const tokenAbi = ["function canRebalance() external view returns (bool)", "function rebalance() external"];
 
 async function rebalance() {
-    const factory = new ethers.Contract(FACTORY, factoryAbi, signer);
-    const tokens = await factory.allTokens();
-    
-    for (const tokenAddr of tokens) {
-        const token = new ethers.Contract(tokenAddr, tokenAbi, signer);
-        if (await token.canRebalance()) {
-            await token.rebalance();
-            console.log(`Rebalanced ${tokenAddr}`);
-        }
+  const factory = new ethers.Contract(FACTORY, factoryAbi, signer);
+  const tokens = await factory.allTokens();
+  console.log(`tokens`, tokens)
+
+  for (const tokenAddr of tokens) {
+    const token = new ethers.Contract(tokenAddr, tokenAbi, signer);
+    const canRebalance = await token.canRebalance().catch(e => {
+      console.error(e);
+      return false;
+    });
+    console.log(`   canRebalance ${tokenAddr}: ${canRebalance}`);
+    if (canRebalance) {
+      await token.rebalance().catch(e => {
+        console.error(e);
+        console.log(`Failed rebalance ${tokenAddr}`);
+
+      });
+      console.log(`Rebalanced ${tokenAddr}`);
     }
+  }
 }
 
 rebalance().catch(console.error);
