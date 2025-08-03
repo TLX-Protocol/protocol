@@ -2,11 +2,15 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {TlxOwnable} from "../utils/TlxOwnable.sol";
 
 import {Errors} from "../libraries/Errors.sol";
+import {ScaledNumber} from "../libraries/ScaledNumber.sol";
 
+import {IStaker} from "../interfaces/IStaker.sol";
+import {IReferrals} from "../interfaces/IReferrals.sol";
 import {IZapSwap} from "../interfaces/IZapSwap.sol";
 import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
 import {IVelodromeRouter} from "../interfaces/exchanges/IVelodromeRouter.sol";
@@ -14,6 +18,9 @@ import {IUniswapRouter} from "../interfaces/exchanges/IUniswapRouter.sol";
 import {ILeveragedToken} from "../interfaces/ILeveragedToken.sol";
 
 contract ZapSwap is IZapSwap, TlxOwnable {
+    using SafeERC20 for IERC20;
+    using ScaledNumber for uint256;
+
     IAddressProvider internal immutable _addressProvider;
     IVelodromeRouter internal immutable _velodromeRouter;
     IUniswapRouter internal immutable _uniswapRouter;
@@ -37,6 +44,15 @@ contract ZapSwap is IZapSwap, TlxOwnable {
             address(_velodromeRouter),
             type(uint256).max
         );
+    }
+
+    function setReferral() external {
+        IReferrals referrals_ = _addressProvider.referrals();
+        bytes32 code = referrals_.code(address(this));
+        if (code == bytes32(0)) {
+            revert IReferrals.InvalidCode();
+        }
+        referrals_.setReferral(code);
     }
 
     /// @inheritdoc IZapSwap
@@ -181,12 +197,50 @@ contract ZapSwap is IZapSwap, TlxOwnable {
             leveragedTokenAmountIn_
         );
 
-        // Redeeming leveraged token for base asset
-        targetLeveragedToken.redeem(leveragedTokenAmountIn_, 0);
-
         IERC20 baseAsset_ = _addressProvider.baseAsset();
+
+        // Redeeming leveraged token for base asset
+        uint256 baseAssetAmountIn_ = targetLeveragedToken.redeem(
+            leveragedTokenAmountIn_,
+            0
+        );
+
+        IReferrals referrals_ = _addressProvider.referrals();
+        uint256 totalFeeRatio_ = referrals_.rebatePercent() +
+            referrals_.referralPercent();
+
+        // At this point, fees not related to the referral system (when referral + rebate < 1)
+        // have already been sent to the staker, but we need to redistribute all the referral fees
+        uint256 totalFees_ = referrals_.claimEarnings();
+        uint256 feesLeft_ = totalFees_;
+
+        // If totalFeeRatio_ is 0, neither the referral nor the rebate is enabled
+        // so we bypass the referral system
+        if (totalFeeRatio_ > 0) {
+            uint256 adjustedFees_ = totalFees_.div(totalFeeRatio_);
+
+            baseAsset_.safeIncreaseAllowance(
+                address(referrals_),
+                adjustedFees_
+            );
+            uint256 feesTaken_ = referrals_.takeEarnings(
+                adjustedFees_,
+                msg.sender
+            );
+            feesLeft_ = totalFees_ > feesTaken_ ? totalFees_ - feesTaken_ : 0;
+        }
+
+        // `feesLeft_` will be equal to the total fees if the user does not use a referral code.
+        // If a referral code is used, `feesLeft_` could be very slightly above 0 because of rounding errors.
+        // This means that we do a useless transfer to the staker but since we're on an L2 it's acceptable
+        if (feesLeft_ > 0) {
+            IStaker staker_ = _addressProvider.staker();
+
+            baseAsset_.safeIncreaseAllowance(address(staker_), feesLeft_);
+            staker_.donateRewards(feesLeft_);
+        }
+
         IERC20 zapAsset_ = IERC20(zapAssetAddress_);
-        uint256 baseAssetAmountIn_ = baseAsset_.balanceOf(address(this));
 
         // Swapping base asset for zap asset based on swap data
         _swapAsset(

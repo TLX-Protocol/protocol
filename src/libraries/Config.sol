@@ -52,6 +52,19 @@ library Config {
     uint256 public constant STREAMING_FEE = 0.02e18; // 2%
     uint256 public constant MAX_REBALANCES = 2; // The maximum number of rebalances that can be performed in a single transaction
 
+    uint256 public constant MAX_TOPUPS = 2; // The maximum number of topups that can be performed in a single transaction
+    uint256 public constant TOPUP_BASE_NEXT_ATTEMPT_DELAY = 1 minutes; // 1 minute (doubles each attempt)
+
+    uint256 public constant MIN_MARGIN = 80e18;
+    uint256 public constant MAX_SLIPPAGE = 0.05e18; // 5%
+    uint256 public constant TARGET_AMOUNT_PER_TOKEN = 120e18;
+
+    uint256 public constant META_KEEPER_MAX_TOPUPS = 3;
+    uint256 public constant META_KEEPER_TOPUP_AMOUNT = 10e18; // 10 LINK
+
+    uint256 public constant VOTER_INITIAL_TLX_PER_SECOND =
+        0.16204761904761905e18; // Used for the Velodrome Voter Helper
+
     // Bytes
     bytes32 public constant MERKLE_ROOT =
         bytes32(

@@ -14,6 +14,8 @@ import {Errors} from "../src/libraries/Errors.sol";
 import {ScaledNumber} from "../src/libraries/ScaledNumber.sol";
 
 import {ILeveragedToken} from "../src/interfaces/ILeveragedToken.sol";
+import {ISynthetixHandler} from "../src/interfaces/ISynthetixHandler.sol";
+import {IPerpsV2MarketConsolidated} from "../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 
 contract LeveragedTokenTest is IntegrationTest {
     using ScaledNumber for uint256;
@@ -78,7 +80,6 @@ contract LeveragedTokenTest is IntegrationTest {
 
         uint256 targetValue = 100e18;
         if (isLoss) targetValue = targetValue - slippage;
-        else targetValue = targetValue + slippage;
         assertEq(leveragedTokenAmountOut, targetValue);
         assertEq(leveragedToken.totalSupply(), targetValue);
         assertEq(leveragedToken.balanceOf(address(this)), targetValue);
@@ -149,11 +150,7 @@ contract LeveragedTokenTest is IntegrationTest {
                 leveragedToken.balanceOf(address(this)),
                 baseAmountIn - slippage
             );
-        else
-            assertEq(
-                leveragedToken.balanceOf(address(this)),
-                baseAmountIn + slippage
-            );
+        else assertEq(leveragedToken.balanceOf(address(this)), baseAmountIn);
 
         // Redeeming Leveraged Tokens
         uint256 leveragedTokenAmountIn = 1e18;
@@ -236,7 +233,7 @@ contract LeveragedTokenTest is IntegrationTest {
         );
         assertTrue(leveragedToken.canRebalance());
         leveragedToken.rebalance();
-        skip(30 seconds);
+        skip(10 seconds);
         _executeOrder(address(leveragedToken));
         assertApproxEqRel(
             synthetixHandler.leverage(market, address(leveragedToken)),
@@ -346,11 +343,7 @@ contract LeveragedTokenTest is IntegrationTest {
                 leveragedToken.balanceOf(address(this)),
                 amount - slippage
             );
-        else
-            assertEq(
-                leveragedToken.balanceOf(address(this)),
-                amount + slippage
-            );
+        else assertEq(leveragedToken.balanceOf(address(this)), amount);
 
         // Redeeming Leveraged Tokens
         assertEq(base.balanceOf(address(staker)), 0);
@@ -383,7 +376,8 @@ contract LeveragedTokenTest is IntegrationTest {
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
             .computePriceImpact(baseAmountIn, true);
 
-        assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
+        // both could be a loss if positive price impact is less than fee
+        assertTrue(isLoss || shortIsLoss, "neither short nor long are losses");
         assertGe(slippage, 0);
         assertGe(shortSlippage, 0);
     }
@@ -399,7 +393,7 @@ contract LeveragedTokenTest is IntegrationTest {
         (uint256 shortSlippage, bool shortIsLoss) = shortLeveragedToken
             .computePriceImpact(baseAmountIn, false);
 
-        assertFalse(isLoss == shortIsLoss, "short and long are both a loss");
+        assertTrue(isLoss || shortIsLoss, "neither short nor long are losses");
         assertGe(slippage, 0);
         assertGe(shortSlippage, 0);
     }
@@ -467,6 +461,29 @@ contract LeveragedTokenTest is IntegrationTest {
             address(referrals)
         );
         assertGt(referralsAfter, 0);
+    }
+
+    function testMintLargeAmount() public {
+        uint256 baseAmountIn = 10_096_656e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+
+        leveragedToken.mint(baseAmountIn, 0);
+    }
+
+    function testValidateMintAmount() public {
+        uint256 baseAmountIn = 60_096_656e18;
+        _mintTokensFor(Config.BASE_ASSET, address(this), baseAmountIn);
+        IERC20(Config.BASE_ASSET).approve(
+            address(leveragedToken),
+            baseAmountIn
+        );
+
+        vm.expectRevert();
+        leveragedToken.mint(baseAmountIn, 0);
     }
 
     function _mintTokens() public {

@@ -18,4 +18,5 @@ library AddressKeys {
     bytes32 public constant REBALANCE_FEE_RECEIVER = "rebalanceFeeReceiver";
     bytes32 public constant ZAP_SWAP = "zapSwap";
     bytes32 public constant OWNER = "owner";
+    bytes32 public constant UPKEEP_REGISTRY = "upkeepRegistry";
 }

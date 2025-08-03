@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ISynthetixHandler} from "./interfaces/ISynthetixHandler.sol";
 import {IAddressProvider} from "./interfaces/IAddressProvider.sol";
+import {ILeveragedToken} from "./interfaces/ILeveragedToken.sol";
 import {IPerpsV2MarketSettings} from "./interfaces/synthetix/IPerpsV2MarketSettings.sol";
 import {IPerpsV2MarketData} from "./interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "./interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
@@ -42,6 +43,7 @@ contract SynthetixHandler is ISynthetixHandler {
 
     /// @inheritdoc ISynthetixHandler
     function depositMargin(address market_, uint256 amount_) public override {
+        _validateMintAmount(market_, amount_);
         IPerpsV2MarketConsolidated(market_).transferMargin(int256(amount_));
     }
 
@@ -85,6 +87,7 @@ contract SynthetixHandler is ISynthetixHandler {
             );
     }
 
+    /// @inheritdoc ISynthetixHandler
     function computePriceImpact(
         address market_,
         uint256 leverage_,
@@ -92,21 +95,34 @@ contract SynthetixHandler is ISynthetixHandler {
         bool isLong_,
         bool isDeposit_
     ) public view override returns (uint256, bool) {
+        // Calculating target size delta
         uint256 assetPrice_ = assetPrice(market_);
         uint256 absTargetSizeDelta_ = baseAmount_.mul(leverage_).div(
             assetPrice_
         );
         int256 targetSizeDelta_ = int256(absTargetSizeDelta_);
+
+        // Calculating price impact
         if (!isLong_) targetSizeDelta_ = -targetSizeDelta_; // Invert if shorting
         if (!isDeposit_) targetSizeDelta_ = -targetSizeDelta_; // Invert if redeeming
         uint256 fillPrice_ = fillPrice(market_, targetSizeDelta_);
-
-        bool isLoss = (isLong_ && fillPrice_ > assetPrice_) ||
+        bool isLoss_ = (isLong_ && fillPrice_ > assetPrice_) ||
             (!isLong_ && fillPrice_ < assetPrice_);
-        uint256 slippage = absTargetSizeDelta_.mul(
+        uint256 slippage_ = absTargetSizeDelta_.mul(
             assetPrice_.absSub(fillPrice_)
         );
-        return (slippage, isLoss);
+
+        // Calculating fees
+        uint256 orderFee_ = _orderFee(market_, targetSizeDelta_);
+        if (isLoss_) {
+            slippage_ += orderFee_;
+        } else if (orderFee_ > slippage_) {
+            slippage_ = orderFee_ - slippage_;
+            isLoss_ = true;
+        } else {
+            slippage_ -= orderFee_;
+        }
+        return (slippage_, isLoss_);
     }
 
     /// @inheritdoc ISynthetixHandler
@@ -263,6 +279,32 @@ contract SynthetixHandler is ISynthetixHandler {
         return _marketSettings.maxMarketValue(_key(targetAsset_)).mul(price_);
     }
 
+    function _validateMintAmount(
+        address market_,
+        uint256 mintAmount_
+    ) internal view {
+        uint256 price_ = assetPrice(market_);
+        uint256 increase_ = mintAmount_.mul(_leverage()).div(price_);
+        bytes32 key_ = IPerpsV2MarketConsolidated(market_).marketKey();
+        uint256 maxMarketValue_ = _marketSettings.maxMarketValue(key_);
+        uint256 buffer_ = _addressProvider
+            .parameterProvider()
+            .maxBaseAssetAmountBuffer();
+        uint256 max_ = maxMarketValue_.mul(1e18 - buffer_);
+        (uint256 long_, uint256 short_) = IPerpsV2MarketConsolidated(market_)
+            .marketSizes();
+        uint256 currentSize_ = _isLong() ? long_ : short_;
+        if (currentSize_ + increase_ > max_) revert MaxMarketValueExceeded();
+    }
+
+    function _isLong() internal view returns (bool) {
+        return ILeveragedToken(address(this)).isLong();
+    }
+
+    function _leverage() internal view returns (uint256) {
+        return ILeveragedToken(address(this)).targetLeverage();
+    }
+
     function _pnl(
         address market_,
         address account_
@@ -271,6 +313,16 @@ contract SynthetixHandler is ISynthetixHandler {
             .profitLoss(account_);
         if (invalid_) revert ErrorGettingPnl();
         return pnl_;
+    }
+
+    function _orderFee(
+        address market_,
+        int256 sizeDelta_
+    ) internal view returns (uint256) {
+        (uint256 fee_, bool invalid_) = IPerpsV2MarketConsolidated(market_)
+            .orderFee(sizeDelta_, IPerpsV2MarketBaseTypes.OrderType.Offchain);
+        if (invalid_) revert ErrorGettingOrderFee();
+        return fee_;
     }
 
     function _minKeeperFee() internal view returns (uint256) {

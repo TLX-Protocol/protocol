@@ -14,7 +14,6 @@ import {ParameterKeys} from "../../src/libraries/ParameterKeys.sol";
 import {Config} from "../../src/libraries/Config.sol";
 import {Symbols} from "../../src/libraries/Symbols.sol";
 import {InitialMint} from "../../src/libraries/InitialMint.sol";
-import {ForkBlock} from "./ForkBlock.sol";
 import {ScaledNumber} from "../../src/libraries/ScaledNumber.sol";
 
 import {IVesting} from "../../src/interfaces/IVesting.sol";
@@ -25,6 +24,9 @@ import {AggregatorV2V3Interface} from "../../src/interfaces/chainlink/Aggregator
 import {IPerpsV2MarketData} from "../../src/interfaces/synthetix/IPerpsV2MarketData.sol";
 import {IPerpsV2MarketConsolidated} from "../../src/interfaces/synthetix/IPerpsV2MarketConsolidated.sol";
 import {IPerpsV2ExchangeRate} from "../../src/interfaces/synthetix/IPerpsV2ExchangeRate.sol";
+import {ILeveragedToken} from "../../src/interfaces/ILeveragedToken.sol";
+import {IRewards} from "../../src/interfaces/velodrome/IRewards.sol";
+import {IVoter} from "../../src/interfaces/velodrome/IVoter.sol";
 
 import {LeveragedTokenFactory} from "../../src/LeveragedTokenFactory.sol";
 import {AddressProvider} from "../../src/AddressProvider.sol";
@@ -37,6 +39,7 @@ import {GenesisLocker} from "../../src/GenesisLocker.sol";
 import {Bonding} from "../../src/Bonding.sol";
 import {Vesting} from "../../src/Vesting.sol";
 import {SynthetixHandler} from "../../src/SynthetixHandler.sol";
+import {VelodromeVoterAutomation} from "../../src/helpers/VelodromeVoterAutomation.sol";
 
 import {Base64} from "../../src/testing/Base64.sol";
 
@@ -48,11 +51,9 @@ contract IntegrationTest is Test {
     using ScaledNumber for uint256;
 
     // Some notes on why this is commented out below
-    // string constant PYTH_URL = "https://hermes.pyth.network/api/get_vaa";
-    // string constant PYTH_ID =
-    //     "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace"; // ETH/USD
-    string constant VAA =
-        "UE5BVQEAAAADuAEAAAADDQBdPXDahGNNr23Wo+CIBkq9kZLHqI667+PA5fraNH918xy+0w/XbhLUvraNuaNEBYsYb5LhiY/2MgEhngj22e03AAMFiZExKBlpCCR0j8/kvO3bvsoQi7pFKiFfIePaw5Rn9nzGWGhl3WjGcEgH9I4nVa7UrnAbRqPMIaXLDLASlk0wAQZjulzaozrgAZrb3iog34sIxRMXbrOhmPmmPwmnBIvUbh4yi6egeUxf5S+95hg7dh8nwiEM0M0tqHvEz821vna7AQjnVJaM3w6iHnSThMkWydx633fhvMuUCRjxURW01stnBAOCBL1WMsGQWXDDHsdrES3MEuiNVYEkhY9K2uAiN+X9AAlOcZBXAU0Jb5izrcVrG8QOYKIWiVVkfq5Jsh/yPED7pV4RyGefKh5SkF95DLNqFZC8HjYMMqSh8gC4J0+bc4K3AQpZSA6i4rbOHZbxSlgoeG/fpeOcJf8aIl6Uv++kK8SM/xNe0FQA4R5jSo+wAfVijjOF2jTWDEX9hO6TJ69Y/WU6AQsbbzxflnBwq4hC5TtFjtusMLEDBlIzp7pYfWByk6MSkCk1YbguZ4/RWBH/X11Z/ETKVFuo3nWXDd2evwJY2EjxAQxlPMZa410JIXlnxIA4H3inO61sBMYWLJxR0ybKn0DtYH3N4ev40QJ+YOVuqAO0sIPqm69M12pxqVhKPlH/+KixAA0/nKdIHaz0SmC2nsFksxa30x8TJD6dR61fyaMdDIS6E03/HhJ8vT9bqPHHcfuLcAOPKGkhfmkWqPFPjhnRKONXAQ4Y+j5vmyD9l52Qn+tagF1TjAKiDVFNcQfBSiK06ThXC3hdJjj7Pt5Usf8SeKrAA6/+pf0RHgzNN728OsF3+z+VAA9+Do9+UOqPwhn/i3GiM1TvGhXDQwadPCwG9N/bhJq/my8eDlKd5sinXGIIE/A1w83wx4Pz1r3faxkWRniOu6zWABHhKHcCh8nLecCQTH8rOGwD6iIH3vM0YhWtpBKiyzkBahEGR1Ewin1v51O6D2QqQAeLDNyhkrW1hNJKLJDFNjpIABKzqVlIGGw6k+c/UUejYxYY9LFYRyYLFlBkZk2IO3l2ywoU1r6lfZlmiNLdsIw6x0loIy1fzfS1GjvRwbRmjjyFAWVzEgsAAAAAABrhAfrtrFhR4yubI7X5QRqMK6xKrj7U3XuBHdGnLqSqcQAAAAABy1tpAUFVV1YAAAAAAAbSX6oAACcQ1Z4XBgUcxMOAKhsGv2fZAZvH7pIBAFUA/2FJGpMREt3xvYFHzRtkE3X3n1glEm1mVICHRjT9Cs4AAAA3IM7epAAAAAAFSGFk////+AAAAABlcxIKAAAAAGVzEgkAAAA3DMMpcAAAAAAFgWxeCiya6yAcnUvKQ6WTHY+hZESCgVoOLtDwnokED5y2b6Eo/RCJ6ls/X/v8suW6/MSSp9FerSPbzooMjgGRNqpKwYnD73KDP9tSHlUYubhmLIQKv5PZhQGXWEDmq7Y23DDpuFo8DRQBF1Kxr1MRzQsQfhBJNI+4j3J1BUAHMGLhlkueL2BRfvVilCZwu92oEu5GL4GtbNyMbsivwthqdUvxmwqmlRQ6xdue3kiLMTXVQa8OxRIkKuhpr4w8sQy4T6DSpv/XeLnwksYn";
+    string constant PYTH_URL = "https://hermes.pyth.network/api/get_vaa";
+
+    mapping(string => string) public assetPythIds;
 
     // Users
     address public alice = 0xEcfcf2996C7c2908Fc050f5EAec633c01A937712;
@@ -72,11 +73,27 @@ contract IntegrationTest is Test {
     Bonding public bonding;
     Vesting public vesting;
     SynthetixHandler public synthetixHandler;
+    VelodromeVoterAutomation public voterAutomation;
 
     function setUp() public virtual {
-        vm.selectFork(
-            vm.createFork(vm.envString("OPTIMISM_RPC"), ForkBlock.NUMBER)
-        );
+        vm.createSelectFork(vm.envString("OPTIMISM_RPC"), 122555729);
+
+        // Set Pyth IDs
+        assetPythIds[
+            Symbols.ETH
+        ] = "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace";
+        assetPythIds[
+            Symbols.BTC
+        ] = "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43";
+        assetPythIds[
+            Symbols.SOL
+        ] = "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
+        assetPythIds[
+            Symbols.LINK
+        ] = "0x8ac0c70fff57e9aefdf5edf44b51d62c2d433653cbb2cf5cc06bb115af04d221";
+        assetPythIds[
+            Symbols.OP
+        ] = "0x385f64d993f7b77d8182ed5003d97c60aa3361f3cecfe711544d2d59165e9bdf";
 
         // AddressProvider Setup
         addressProvider = new AddressProvider();
@@ -204,6 +221,22 @@ contract IntegrationTest is Test {
         );
 
         tlx.mintInitialSupply(InitialMint.getData(addressProvider));
+
+        // VelodromeVoterRunner Setup
+        voterAutomation = new VelodromeVoterAutomation(
+            address(addressProvider),
+            Config.VOTER_INITIAL_TLX_PER_SECOND,
+            Config.PERIOD_DECAY_MULTIPLIER,
+            Config.PERIOD_DURATION,
+            block.timestamp,
+            Contracts.TLX_ETH_REWARDS,
+            block.timestamp,
+            0
+        );
+        IVoter voter_ = IVoter(IRewards(Contracts.TLX_ETH_REWARDS).voter());
+        address governor_ = voter_.governor();
+        vm.prank(governor_);
+        voter_.whitelistToken(address(tlx), true);
     }
 
     receive() external payable {}
@@ -225,20 +258,31 @@ contract IntegrationTest is Test {
             .checked_write(amount_);
     }
 
+    // default version using ETH as the target asset
     function _executeOrder() internal {
-        _executeOrder(address(this));
-    }
-
-    function _executeOrder(address account_) internal {
-        // uint256 currentTime = block.timestamp;
-        // uint256 searchTime = currentTime + 5;
-        // string memory vaa = _getVaa(searchTime);
-        string memory vaa = _getVaa();
+        uint256 currentTime = block.timestamp;
+        uint256 searchTime = currentTime + 5;
+        string memory vaa = _getVaa(Symbols.ETH, searchTime);
         bytes memory decoded = Base64.decode(vaa);
         bytes memory hexData = abi.encodePacked(decoded);
         bytes[] memory priceUpdateData = new bytes[](1);
         priceUpdateData[0] = hexData;
         _market(Symbols.ETH).executeOffchainDelayedOrder{value: 1 ether}(
+            address(this),
+            priceUpdateData
+        );
+    }
+
+    function _executeOrder(address account_) internal {
+        uint256 currentTime = block.timestamp;
+        uint256 searchTime = currentTime + 5;
+        string memory asset = ILeveragedToken(account_).targetAsset();
+        string memory vaa = _getVaa(asset, searchTime);
+        bytes memory decoded = Base64.decode(vaa);
+        bytes memory hexData = abi.encodePacked(decoded);
+        bytes[] memory priceUpdateData = new bytes[](1);
+        priceUpdateData[0] = hexData;
+        _market(asset).executeOffchainDelayedOrder{value: 1 ether}(
             account_,
             priceUpdateData
         );
@@ -308,32 +352,23 @@ contract IntegrationTest is Test {
         return rate / divisor;
     }
 
-    // We used to use this API logic, allowing us to get it at any timestamp.
-    // The endpoint is in the format https://hermes.pyth.network/api/get_vaa?id=0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace&publish_time=1702040074
-    // However suddently the API became super flakey, and stopped working. Tried an alternative, and it was even worse
-    // Realised that the timestamp is always roughly the same, so we can just hard code the VAA.
-    // Although this will break when we update the block number, meaning we have to manually update the VAA again.
-    // Not ideal long term, but hopefully we can switch back to the API when it's more stable.
-
-    // function _getVaa(uint256 publishTime) internal returns (string memory) {
-    // string memory url = string.concat(
-    //     PYTH_URL,
-    //     "?id=",
-    //     PYTH_ID,
-    //     "&publish_time=",
-    //     Strings.toString(publishTime)
-    // );
-    // console.log(url);
-    // string[] memory inputs = new string[](3);
-    // inputs[0] = "curl";
-    // inputs[1] = url;
-    // inputs[2] = "-s";
-    // bytes memory res = vm.ffi(inputs);
-    // return abi.decode(string(res).parseRaw(".vaa"), (string));
-    // }
-
-    function _getVaa() internal pure returns (string memory) {
-        return VAA;
+    function _getVaa(
+        string memory asset,
+        uint256 publishTime
+    ) internal returns (string memory) {
+        string memory url = string.concat(
+            PYTH_URL,
+            "?id=",
+            assetPythIds[asset],
+            "&publish_time=",
+            Strings.toString(publishTime)
+        );
+        string[] memory inputs = new string[](3);
+        inputs[0] = "curl";
+        inputs[1] = url;
+        inputs[2] = "-s";
+        bytes memory res = vm.ffi(inputs);
+        return abi.decode(string(res).parseRaw(".vaa"), (string));
     }
 
     function _market(

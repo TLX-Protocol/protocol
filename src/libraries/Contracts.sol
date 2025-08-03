@@ -12,10 +12,15 @@ library Contracts {
     address public constant PERPS_V2_EXCHANGE_RATE =
         0x2C15259D4886e2C0946f9aB7a5E389c86b3c3b04;
 
+    // DEXs
     address public constant VELODROME_ROUTER =
         0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858;
     address public constant VELODROME_DEFAULT_FACTORY =
         0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
     address public constant UNISWAP_V3_ROUTER =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
+    // Velodrome
+    address public constant TLX_ETH_REWARDS =
+        0xCd9b5776485AdB0DD96D4536329D93756A7110a2;
 }
