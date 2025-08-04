@@ -17,7 +17,7 @@ const TOKEN_ABI = [
 
 async function pauseAllTokens() {
     // Connect to the network (update RPC URL as needed)
-    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL || "https://mainnet.optimism.io");
+    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
     
     // Load private key from environment
     const privateKey = process.env.PRIVATE_KEY;
