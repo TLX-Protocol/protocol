@@ -5,3 +5,4 @@ docs/
 .env
 node_modules/
 lcov.info
+package-lock.json
