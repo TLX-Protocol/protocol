@@ -69,6 +69,23 @@ node script/token-summary.js
 - Liquidated tokens summary
 - Network and timestamp information
 
+### `rebalance-simple.js`
+
+Rebalances all leverage tokens that need it.
+
+**Purpose:** Automatically rebalances leveraged tokens to maintain their target leverage ratios.
+
+**Usage:**
+```bash
+export PRIVATE_KEY="your_private_key"
+export RPC_URL="your_rpc_url"
+node script/rebalance-simple.js
+```
+
+**Requirements:**
+- Your address must be authorized as a rebalancer
+- Node.js with ethers.js installed
+
 ## Contract Addresses
 
 Both scripts use the following contract addresses (Optimism mainnet):
@@ -96,4 +113,4 @@ npm install ethers dotenv
 
 ## Network Support
 
-These scripts are configured for Optimism mainnet but can be adapted for other networks by updating the RPC URL and contract addresses. 
+These scripts are configured for Optimism mainnet but can be adapted for other networks by updating the RPC URL and contract addresses.
