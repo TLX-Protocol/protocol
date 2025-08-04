@@ -185,7 +185,7 @@ contract LeveragedToken is ILeveragedToken, ERC20, TlxOwnable {
     }
 
     /// @inheritdoc ILeveragedToken
-    function setIsPaused(bool isPaused_) public override onlyOwner {
+    function  setIsPaused(bool isPaused_) public override onlyOwner {
         if (isPaused == isPaused_) revert Errors.SameAsCurrent();
         isPaused = isPaused_;
         emit PausedSet(isPaused_);
